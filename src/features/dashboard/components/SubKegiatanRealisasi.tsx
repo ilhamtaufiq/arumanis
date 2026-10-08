@@ -7,11 +7,12 @@ import { Progress } from '@/components/ui/progress'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
-import type { Pekerjaan } from '@/features/pekerjaan/types'
+import { getTags } from '@/features/pekerjaan/api/tags'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { cn } from '@/lib/utils'
 import { Inbox, Tag as TagIcon } from 'lucide-react'
+import { getDashboardStats } from '../api/dashboard'
+import { useV2Stats } from '../hooks/use-v2-stats'
 import { formatCurrency, formatNumber } from '../lib/format'
 import type { SubKegiatanStat } from '../types'
 
@@ -22,12 +23,6 @@ const BAR_TONES = [
     '[&_[data-slot=progress-indicator]]:bg-chart-4',
     '[&_[data-slot=progress-indicator]]:bg-chart-5',
 ]
-
-const TAG_LABELS: Record<string, string> = {
-    pokir: 'Pokir',
-    perubahan: 'Perubahan',
-    rembug_warga: 'Rembug Warga',
-}
 
 interface Serapan {
     /** Persentase SP2D terhadap basis; null bila basis belum ada. */
@@ -53,120 +48,12 @@ function clampPersen(value: number): number {
     return Math.min(100, Math.max(0, value))
 }
 
-function pekerjaanMatchesTag(p: Pekerjaan, tagFilter: string): boolean {
-    if (tagFilter === 'all') return true
-
-    const filterLower = tagFilter.toLowerCase()
-
-    if (p.tags && Array.isArray(p.tags) && p.tags.length > 0) {
-        return p.tags.some((tag) => {
-            const name = (tag.name || '').toLowerCase()
-            const slug = (tag.slug || '').toLowerCase()
-            if (filterLower === 'pokir') return name.includes('pokir') || slug.includes('pokir')
-            if (filterLower === 'perubahan') return name.includes('perubahan') || slug.includes('perubahan')
-            if (filterLower === 'rembug_warga')
-                return (
-                    name.includes('rembug') ||
-                    name.includes('warga') ||
-                    slug.includes('rembug') ||
-                    slug.includes('warga')
-                )
-            return name.includes(filterLower) || slug.includes(filterLower)
-        })
-    }
-
-    const catText = (p.catatan || '').toLowerCase()
-    const pkgText = (p.nama_paket || '').toLowerCase()
-    if (filterLower === 'pokir') return catText.includes('pokir') || pkgText.includes('pokir')
-    if (filterLower === 'perubahan') return catText.includes('perubahan') || pkgText.includes('perubahan')
-    if (filterLower === 'rembug_warga')
-        return (
-            catText.includes('rembug') ||
-            catText.includes('warga') ||
-            pkgText.includes('rembug') ||
-            pkgText.includes('warga')
-        )
-
-    return false
-}
-
-function computeSubKegiatanStatsFromPekerjaan(pekerjaanList: Pekerjaan[], tagFilter: string): SubKegiatanStat[] {
-    const filtered = pekerjaanList.filter((p) => pekerjaanMatchesTag(p, tagFilter))
-    const map = new Map<
-        string,
-        {
-            count: number
-            pagu: number
-            sp2dTotal: number
-            kontrakTotal: number
-            progressSum: number
-            progressCount: number
-            batal: number
-            belumBerkontrak: number
-        }
-    >()
-
-    for (const p of filtered) {
-        const subKegName = p.kegiatan?.nama_sub_kegiatan || 'Lainnya'
-        const existing = map.get(subKegName) || {
-            count: 0,
-            pagu: 0,
-            sp2dTotal: 0,
-            kontrakTotal: 0,
-            progressSum: 0,
-            progressCount: 0,
-            batal: 0,
-            belumBerkontrak: 0,
-        }
-
-        const isCanceled = p.status === 'canceled'
-        const hasKontrak = Boolean(p.has_kontrak || (p.kontrak && p.kontrak.length > 0))
-        const nilKontrak = p.kontrak?.reduce((acc, k) => acc + (k.nilai_kontrak ?? 0), 0) ?? 0
-        const sp2d = p.progress_estimasi_keuangan_nilai ?? 0
-        const progFisik = p.progress_estimasi_fisik ?? p.progress_total ?? null
-
-        existing.count += 1
-        existing.pagu += p.pagu ?? 0
-        existing.sp2dTotal += sp2d
-        existing.kontrakTotal += nilKontrak
-
-        if (isCanceled) {
-            existing.batal += 1
-        } else if (!hasKontrak) {
-            existing.belumBerkontrak += 1
-        }
-
-        if (progFisik !== null && !isCanceled) {
-            existing.progressSum += progFisik
-            existing.progressCount += 1
-        }
-
-        map.set(subKegName, existing)
-    }
-
-    const result: SubKegiatanStat[] = []
-    for (const [name, stat] of map.entries()) {
-        result.push({
-            name,
-            count: stat.count,
-            // Simpan presisi penuh; pembulatan dilakukan saat tampil.
-            paguM: stat.pagu / 1_000_000,
-            sp2dTotal: stat.sp2dTotal,
-            kontrakTotal: stat.kontrakTotal,
-            progress: stat.progressCount > 0 ? Number((stat.progressSum / stat.progressCount).toFixed(1)) : 0,
-            hasProgress: stat.progressCount > 0,
-            batal: stat.batal,
-            belumBerkontrak: stat.belumBerkontrak,
-        })
-    }
-
-    return result.sort((a, b) => b.sp2dTotal - a.sp2dTotal)
-}
-
 /**
  * Realisasi per sub kegiatan — label + nilai SP2D + bar serapan (SP2D vs basis)
- * + progres fisik estimasi bila tersedia. Seluruh angka dari `/dashboard/stats`,
- * atau dihitung ulang dari daftar pekerjaan saat filter tag aktif.
+ * + progres fisik estimasi bila tersedia.
+ *
+ * Tanpa filter: memakai `items` dari dashboard utama. Dengan filter tag: mengambil
+ * ulang `/dashboard/stats?tag_id=…` sehingga angkanya memakai logika backend yang sama.
  */
 export function SubKegiatanRealisasi({
     items,
@@ -176,21 +63,31 @@ export function SubKegiatanRealisasi({
     isLoading: boolean
 }) {
     const { tahunAnggaran } = useAppSettingsValues()
+    const { canViewStats } = useV2Stats()
     const [tagFilter, setTagFilter] = useState<string>('all')
+    const tagId = tagFilter === 'all' ? null : Number(tagFilter)
 
-    const { data: pekerjaanResponse, isLoading: isPekerjaanLoading } = useQuery({
-        queryKey: ['sub-kegiatan-pekerjaan-tags', tahunAnggaran],
-        queryFn: () => getPekerjaan({ tahun: tahunAnggaran, status: 'all', per_page: 1000 }),
-        enabled: tagFilter !== 'all',
+    const { data: tagsResponse } = useQuery({
+        queryKey: ['tags-options'],
+        queryFn: () => getTags(),
+        staleTime: 5 * 60_000,
+    })
+    const tags = tagsResponse?.data ?? []
+    const selectedTagName = tags.find((t) => t.id === tagId)?.name
+
+    const {
+        data: taggedStats,
+        isLoading: isTaggedLoading,
+        isError: isTaggedError,
+    } = useQuery({
+        queryKey: ['dashboard-stats', tahunAnggaran, 'tag', tagId],
+        queryFn: () => getDashboardStats(tahunAnggaran, tagId ?? undefined),
+        enabled: tagId !== null && canViewStats,
         staleTime: 60_000,
     })
 
-    const filteredItems =
-        tagFilter === 'all'
-            ? items
-            : computeSubKegiatanStatsFromPekerjaan(pekerjaanResponse?.data ?? [], tagFilter)
-
-    const loadingState = isLoading || (tagFilter !== 'all' && isPekerjaanLoading)
+    const rows = tagId === null ? items : (taggedStats?.subKegiatanStats ?? [])
+    const loadingState = tagId === null ? isLoading : isTaggedLoading
 
     const renderHeader = () => (
         <CardHeader className='flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between'>
@@ -206,9 +103,11 @@ export function SubKegiatanRealisasi({
                     </SelectTrigger>
                     <SelectContent align='end'>
                         <SelectItem value='all'>Semua</SelectItem>
-                        <SelectItem value='pokir'>Pokir</SelectItem>
-                        <SelectItem value='perubahan'>Perubahan</SelectItem>
-                        <SelectItem value='rembug_warga'>Rembug Warga</SelectItem>
+                        {tags.map((tag) => (
+                            <SelectItem key={tag.id} value={String(tag.id)}>
+                                {tag.name}
+                            </SelectItem>
+                        ))}
                     </SelectContent>
                 </Select>
             </div>
@@ -232,7 +131,26 @@ export function SubKegiatanRealisasi({
         )
     }
 
-    if (filteredItems.length === 0) {
+    if (tagId !== null && isTaggedError) {
+        return (
+            <Card>
+                {renderHeader()}
+                <CardContent className='pt-6'>
+                    <Empty>
+                        <EmptyHeader>
+                            <EmptyMedia variant='icon'>
+                                <Inbox />
+                            </EmptyMedia>
+                            <EmptyTitle>Gagal memuat data tag</EmptyTitle>
+                            <EmptyDescription>Coba pilih ulang tag atau muat ulang halaman.</EmptyDescription>
+                        </EmptyHeader>
+                    </Empty>
+                </CardContent>
+            </Card>
+        )
+    }
+
+    if (rows.length === 0) {
         return (
             <Card>
                 {renderHeader()}
@@ -244,8 +162,8 @@ export function SubKegiatanRealisasi({
                             </EmptyMedia>
                             <EmptyTitle>Belum ada data sub kegiatan</EmptyTitle>
                             <EmptyDescription>
-                                {tagFilter !== 'all'
-                                    ? `Belum ada paket pekerjaan dengan tag "${TAG_LABELS[tagFilter] ?? tagFilter}".`
+                                {selectedTagName
+                                    ? `Belum ada paket pekerjaan dengan tag "${selectedTagName}" pada tahun anggaran ini.`
                                     : 'Belum ada paket aktif pada tahun anggaran ini.'}
                             </EmptyDescription>
                         </EmptyHeader>
@@ -260,7 +178,7 @@ export function SubKegiatanRealisasi({
             {renderHeader()}
 
             <CardContent className='grid grid-cols-1 gap-x-6 gap-y-6 md:grid-cols-2 xl:grid-cols-3'>
-                {filteredItems.map((item, index) => {
+                {rows.map((item, index) => {
                     const serapan = hitungSerapan(item)
                     const melebihi = serapan.percent !== null && serapan.percent > 100
                     const hasStatusNote = item.batal > 0 || item.belumBerkontrak > 0
