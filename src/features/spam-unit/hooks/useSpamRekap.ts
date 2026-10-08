@@ -3,7 +3,7 @@ import { useQueries, useQuery } from '@tanstack/react-query'
 import { getPublicSpamMapStats, type PublicSpamDesaMapStat } from '@/features/public/api/spam-stats'
 import { filterPublicSpmMapStats } from '@/features/public/lib/spm-reserved-wilayah'
 import { buildYearlyRows, normalizeWilayahName, type SpmRekapDesaInput } from '@/lib/spm-rekap'
-import { getSpamUnitStats } from '../api'
+import { getSpamUnitStats, getSpamUnitStatsSeries } from '../api'
 import type { UnitSpamStats } from '../types'
 
 export const SPAM_REKAP_TAHUN = ['2020', '2021', '2022', '2023', '2024', '2025', '2026'] as const
@@ -85,12 +85,11 @@ export function useSpamRekap({
         staleTime: 30_000,
     })
 
-    const yearlyQueries = useQueries({
-        queries: SPAM_REKAP_TAHUN.map((year) => ({
-            queryKey: ['spam-units-stats', kecamatanId, year],
-            queryFn: () => getSpamUnitStats({ kecamatan_id: kecamatanId, tahun: year }),
-            staleTime: 60_000,
-        })),
+    // Satu request untuk semua tahun (GET /spam-units/stats/series), bukan satu per tahun
+    const yearlyQuery = useQuery({
+        queryKey: ['spam-units-stats-series', kecamatanId, SPAM_REKAP_TAHUN.join(',')],
+        queryFn: () => getSpamUnitStatsSeries({ kecamatan_id: kecamatanId, years: SPAM_REKAP_TAHUN }),
+        staleTime: 60_000,
     })
 
     const scopeKecamatan = kecamatanId ? kecamatanName : undefined
@@ -119,12 +118,12 @@ export function useSpamRekap({
     )
 
     const totalStats = totalQuery.data?.data
-    const yearlyKey = yearlyQueries.map((query) => query.dataUpdatedAt).join('|')
+    const yearlyKey = String(yearlyQuery.dataUpdatedAt)
 
     const { yearlyRows, baseline, targetKk } = useMemo(() => {
         const inputs = SPAM_REKAP_TAHUN.map((year, index) => ({
             tahun: year,
-            ...servedKk(yearlyQueries[index]?.data?.data, false),
+            ...servedKk(yearlyQuery.data?.data?.[year], false),
         }))
         const sumYears = inputs.reduce((sum, row) => sum + row.kk, 0)
         const total = servedKk(totalStats, true).kk
@@ -150,7 +149,7 @@ export function useSpamRekap({
         yearlyBaseline: baseline,
         targetKk,
         firstTahun: SPAM_REKAP_TAHUN[0],
-        isYearlyLoading: totalQuery.isLoading || yearlyQueries.some((query) => query.isLoading),
+        isYearlyLoading: totalQuery.isLoading || yearlyQuery.isLoading,
         matrixYears: SPAM_REKAP_TAHUN,
         matrixByYear,
         isMatrixLoading: matrixEnabled && matrixQueries.some((query) => query.isLoading),

@@ -39,6 +39,18 @@ export const getSpamUnit = async (id: number) => {
     return api.get<{ success: boolean; data: UnitSpam }>(`/spam-units/${id}`);
 };
 
+/**
+ * Statistik beberapa tahun dalam satu request, dikunci per tahun.
+ */
+export const getSpamUnitStatsSeries = async (params: { kecamatan_id?: number; years: readonly string[] }) => {
+    return api.get<{ success: boolean; data: Record<string, UnitSpamStats> }>('/spam-units/stats/series', {
+        params: {
+            kecamatan_id: params.kecamatan_id,
+            years: params.years.join(','),
+        },
+    });
+};
+
 export const getSpamUnitStats = async (params?: { kecamatan_id?: number; tahun?: string }) => {
     return api.get<{ success: boolean; data: UnitSpamStats }>('/spam-units/stats', { 
         params: {
