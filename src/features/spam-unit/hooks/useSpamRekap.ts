@@ -1,6 +1,10 @@
 import { useMemo } from 'react'
-import { useQueries, useQuery } from '@tanstack/react-query'
-import { getPublicSpamMapStats, type PublicSpamDesaMapStat } from '@/features/public/api/spam-stats'
+import { useQuery } from '@tanstack/react-query'
+import {
+    getPublicSpamMapStats,
+    getPublicSpamMapStatsSeries,
+    type PublicSpamDesaMapStat,
+} from '@/features/public/api/spam-stats'
 import { filterPublicSpmMapStats } from '@/features/public/lib/spm-reserved-wilayah'
 import { buildYearlyRows, normalizeWilayahName, type SpmRekapDesaInput } from '@/lib/spm-rekap'
 import { getSpamUnitStats, getSpamUnitStatsSeries } from '../api'
@@ -99,20 +103,20 @@ export function useSpamRekap({
         [mapQuery.data?.data, scopeKecamatan, tahun],
     )
 
-    const matrixQueries = useQueries({
-        queries: SPAM_REKAP_TAHUN.map((year) => ({
-            queryKey: ['spam-rekap-map-stats', year],
-            queryFn: () => getPublicSpamMapStats({ tahun: year }),
-            staleTime: 60_000,
-            enabled: matrixEnabled,
-        })),
+    // Matriks: satu request untuk semua tahun (map-stats/series), hanya saat matriks dibuka
+    const matrixQuery = useQuery({
+        queryKey: ['spam-rekap-map-stats-series', SPAM_REKAP_TAHUN.join(',')],
+        queryFn: () => getPublicSpamMapStatsSeries(SPAM_REKAP_TAHUN),
+        staleTime: 60_000,
+        enabled: matrixEnabled,
     })
-    const matrixKey = matrixQueries.map((query) => query.dataUpdatedAt).join('|')
+    const matrixKey = String(matrixQuery.dataUpdatedAt)
     const matrixByYear = useMemo(
         () =>
-            matrixQueries.map((query) =>
-                query.data ? toDesaInputs(query.data.data, scopeKecamatan, false) : undefined,
-            ),
+            SPAM_REKAP_TAHUN.map((year) => {
+                const rows = matrixQuery.data?.data?.[year]
+                return rows ? toDesaInputs(rows, scopeKecamatan, false) : undefined
+            }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [matrixKey, scopeKecamatan],
     )
@@ -152,6 +156,6 @@ export function useSpamRekap({
         isYearlyLoading: totalQuery.isLoading || yearlyQuery.isLoading,
         matrixYears: SPAM_REKAP_TAHUN,
         matrixByYear,
-        isMatrixLoading: matrixEnabled && matrixQueries.some((query) => query.isLoading),
+        isMatrixLoading: matrixEnabled && matrixQuery.isLoading,
     }
 }

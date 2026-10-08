@@ -1,6 +1,10 @@
 import { useMemo } from 'react'
-import { useQueries, useQuery } from '@tanstack/react-query'
-import { getPublicSanitasiMapStats, type PublicSanitasiDesaMapStat } from '@/features/public/api/spam-stats'
+import { useQuery } from '@tanstack/react-query'
+import {
+    getPublicSanitasiMapStats,
+    getPublicSanitasiMapStatsSeries,
+    type PublicSanitasiDesaMapStat,
+} from '@/features/public/api/spam-stats'
 import { filterPublicSpmMapStats } from '@/features/public/lib/spm-reserved-wilayah'
 import { buildYearlyRows, normalizeWilayahName, type SpmRekapDesaInput } from '@/lib/spm-rekap'
 import { getSpmSanitasiStats, getSpmSanitasiStatsSeries } from '../api'
@@ -72,17 +76,20 @@ export function useSpmSanitasiRekap({
         [mapQuery.data?.data, scopeKecamatan],
     )
 
-    const matrixQueries = useQueries({
-        queries: REKAP_TAHUN.map((year) => ({
-            queryKey: ['spm-sanitasi-rekap-map-stats', year],
-            queryFn: () => getPublicSanitasiMapStats({ tahun: year }),
-            staleTime: 60_000,
-            enabled: matrixEnabled,
-        })),
+    // Matriks: satu request untuk semua tahun (map-stats/series), hanya saat matriks dibuka
+    const matrixQuery = useQuery({
+        queryKey: ['spm-sanitasi-rekap-map-stats-series', REKAP_TAHUN.join(',')],
+        queryFn: () => getPublicSanitasiMapStatsSeries(REKAP_TAHUN),
+        staleTime: 60_000,
+        enabled: matrixEnabled,
     })
-    const matrixKey = matrixQueries.map((query) => query.dataUpdatedAt).join('|')
+    const matrixKey = String(matrixQuery.dataUpdatedAt)
     const matrixByYear = useMemo(
-        () => matrixQueries.map((query) => (query.data ? toDesaInputs(query.data.data, scopeKecamatan) : undefined)),
+        () =>
+            REKAP_TAHUN.map((year) => {
+                const rows = matrixQuery.data?.data?.[year]
+                return rows ? toDesaInputs(rows, scopeKecamatan) : undefined
+            }),
         // eslint-disable-next-line react-hooks/exhaustive-deps
         [matrixKey, scopeKecamatan],
     )
@@ -119,6 +126,6 @@ export function useSpmSanitasiRekap({
         isYearlyLoading: totalQuery.isLoading || yearlyQuery.isLoading,
         matrixYears: REKAP_TAHUN,
         matrixByYear,
-        isMatrixLoading: matrixEnabled && matrixQueries.some((query) => query.isLoading),
+        isMatrixLoading: matrixEnabled && matrixQuery.isLoading,
     }
 }

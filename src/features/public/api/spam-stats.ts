@@ -77,6 +77,22 @@ export async function getPublicSanitasiStats(params?: { tahun?: string }) {
     })
 }
 
+/** Map-stats beberapa tahun dalam satu request, dikunci per tahun (spam air minum). */
+export async function getPublicSpamMapStatsSeries(years: readonly string[]) {
+    return api.get<{ success: boolean; data: Record<string, PublicSpamDesaMapStat[]> }>(
+        '/public/spam-units/map-stats/series',
+        { params: { years: years.join(',') } },
+    )
+}
+
+/** Map-stats beberapa tahun konstruksi dalam satu request, dikunci per tahun (sanitasi). */
+export async function getPublicSanitasiMapStatsSeries(years: readonly string[]) {
+    return api.get<{ success: boolean; data: Record<string, PublicSanitasiDesaMapStat[]> }>(
+        '/public/spm-sanitasi/map-stats/series',
+        { params: { years: years.join(',') } },
+    )
+}
+
 export async function getPublicSanitasiMapStats(params?: { tahun?: string }) {
     return api.get<{ success: boolean; data: PublicSanitasiDesaMapStat[] }>(
         '/public/spm-sanitasi/map-stats',
