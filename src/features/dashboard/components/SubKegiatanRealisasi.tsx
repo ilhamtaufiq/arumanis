@@ -99,7 +99,7 @@ export function SubKegiatanRealisasi({
                 <TagIcon className='h-4 w-4 text-muted-foreground' aria-hidden />
                 <Select value={tagFilter} onValueChange={setTagFilter}>
                     <SelectTrigger className='h-8 w-[150px] text-xs' aria-label='Filter tag'>
-                        <SelectValue placeholder='Filter Tags' />
+                        <SelectValue placeholder='Filter Tag' />
                     </SelectTrigger>
                     <SelectContent align='end'>
                         <SelectItem value='all'>Semua</SelectItem>
