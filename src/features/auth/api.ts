@@ -1,7 +1,8 @@
 import { invalidateSessionCache } from '@/lib/auth-session'
 import type { LoginRequest, LoginResponse, User } from './types'
+import { API_BASE } from '@/lib/api-base'
 
-const AUTH_PREFIX = '/api/auth'
+const AUTH_PREFIX = `${API_BASE}/auth`
 
 async function authJson<T>(path: string, init?: RequestInit): Promise<T> {
     const response = await fetch(`${AUTH_PREFIX}${path}`, {
@@ -68,7 +69,7 @@ export async function syncAuthToken(token: string): Promise<void> {
  * URL redirect Google OAuth (Laravel).
  */
 export async function getGoogleAuthUrl(): Promise<{ url: string }> {
-    const response = await fetch('/api/auth/google', {
+    const response = await fetch(`${API_BASE}/auth/google`, {
         credentials: 'include',
         headers: { Accept: 'application/json' },
     })

@@ -1,9 +1,10 @@
 import { buildExternalAppCallbackUrl } from '@/lib/post-login-redirect'
 import { getGisAppBaseUrl } from '@/lib/gis-app'
 import { getPengawasAppBaseUrl } from '@/lib/pengawas-app'
+import { API_BASE } from '@/lib/api-base'
 
 export async function createHandoffCode(): Promise<string> {
-  const response = await fetch('/api/auth/handoff', {
+  const response = await fetch(`${API_BASE}/auth/handoff`, {
     method: 'POST',
     credentials: 'include',
     headers: { Accept: 'application/json' },

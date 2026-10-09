@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/stores/auth-stores'
+import { API_BASE } from '@/lib/api-base'
 
-const ME_ENDPOINT = '/api/auth/me'
+const ME_ENDPOINT = `${API_BASE}/auth/me`
 /** How long a successful /me response is reused for navigations and preloads. */
 const SESSION_CACHE_MS = 30_000
 

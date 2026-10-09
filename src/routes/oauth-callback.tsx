@@ -12,6 +12,7 @@ import {
     resolvePostLoginPath,
 } from '@/lib/post-login-redirect'
 import { DashboardDestinationModal } from '@/components/common/DashboardDestinationModal'
+import { API_BASE } from '@/lib/api-base'
 
 function readHashParams() {
     const hash = window.location.hash.startsWith('#')
@@ -66,7 +67,7 @@ function OAuthCallback() {
                 await syncAuthToken(token)
                 auth.setSessionActive(true)
 
-                const meResponse = await fetch('/api/auth/me', {
+                const meResponse = await fetch(`${API_BASE}/auth/me`, {
                     credentials: 'include',
                     headers: { Accept: 'application/json' },
                 })
