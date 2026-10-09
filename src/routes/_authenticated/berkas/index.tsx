@@ -14,6 +14,12 @@ const DrivePage = lazy(() =>
 
 const berkasSearchSchema = z.object({
     view: z.enum(['grid', 'list']).optional().catch('grid'),
+    // Filter, zona, dan folder dibaca dari URL. Tanpa ini, zod membuangnya dan
+    // `?type=images` tidak pernah berlaku.
+    type: z.enum(['all', 'images', 'docs']).optional().catch(undefined),
+    zone: z.enum(['pekerjaan', 'users']).optional().catch(undefined),
+    pekerjaan: z.coerce.number().int().positive().optional().catch(undefined),
+    folder: z.coerce.number().int().positive().optional().catch(undefined),
 })
 
 export const Route = createFileRoute('/_authenticated/berkas/')({
