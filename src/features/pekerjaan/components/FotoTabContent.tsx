@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getOutput } from '@/features/output/api/output';
 import { getPenerimaList } from '@/features/penerima/api';
 import type { Foto } from '@/features/foto/types';
-import { getFotoFullUrl, getFotoThumbUrl } from '@/features/foto/lib/foto-url';
+import { getFotoFullUrl, getFotoThumbUrl, tryFullFotoUrl } from '@/features/foto/lib/foto-url';
 import {
     isFotoKoordinatInvalid,
     summarizeFotoKoordinatStatus,
@@ -1116,6 +1116,7 @@ export default function FotoTabContent({ pekerjaanId, pekerjaan }: FotoTabConten
                                                                         className="w-full h-full object-cover"
                                                                         onError={(e) => {
                                                                             const target = e.target as HTMLImageElement;
+                                                                            if (tryFullFotoUrl(target, fotos[0])) return;
                                                                             target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64"%3E%3Crect fill="%23ddd" width="64" height="64"/%3E%3Ctext fill="%23999" x="50%25" y="50%25" text-anchor="middle" dominant-baseline="middle" font-size="10"%3ENo Img%3C/text%3E%3C/svg%3E';
                                                                         }}
                                                                     />
