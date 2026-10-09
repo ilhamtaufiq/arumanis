@@ -21,6 +21,8 @@ type UseSpamRekapParams = {
     tahun?: string
     /** Muat capaian per desa untuk setiap tahun (matriks peningkatan) */
     matrixEnabled?: boolean
+    /** Muat data per desa (map-stats). Dashboard hanya butuh total dan per tahun, jadi false. */
+    includeDesa?: boolean
 }
 
 /**
@@ -75,11 +77,13 @@ export function useSpamRekap({
     kecamatanName,
     tahun,
     matrixEnabled = false,
+    includeDesa = true,
 }: UseSpamRekapParams) {
     const mapQuery = useQuery({
         queryKey: ['spam-rekap-map-stats', tahun ?? 'all'],
         queryFn: () => getPublicSpamMapStats(tahun ? { tahun } : undefined),
         staleTime: 60_000,
+        enabled: includeDesa,
     })
 
     // Akumulasi seluruh tahun (target + titik awal tren); kunci sama dengan dashboard
@@ -148,7 +152,7 @@ export function useSpamRekap({
 
     return {
         desaInputs,
-        isDesaLoading: mapQuery.isLoading,
+        isDesaLoading: includeDesa && mapQuery.isLoading,
         yearlyRows,
         yearlyBaseline: baseline,
         targetKk,

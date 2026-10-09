@@ -135,7 +135,7 @@ function SpmChartCard({ title, icon: Icon, capaianLabel, rows, baseline, targetK
 }
 
 export function DashboardSpmCharts() {
-    const air = useSpamRekap({})
+    const air = useSpamRekap({ includeDesa: false })
     const sanitasi = useSpmSanitasiRekap({})
 
     return (
