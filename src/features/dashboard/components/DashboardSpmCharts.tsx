@@ -89,28 +89,6 @@ function SpmChartCard({
                     </div>
                 ) : (
                     <>
-                        <div className="mb-3 overflow-x-auto">
-                            <table className="w-full text-xs">
-                                <thead>
-                                    <tr className="text-left text-muted-foreground">
-                                        <th className="py-1 font-medium">Tahun</th>
-                                        <th className="py-1 text-right font-medium">Tambahan</th>
-                                        <th className="py-1 text-right font-medium">Kumulatif</th>
-                                        <th className="py-1 text-right font-medium">Cakupan</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {rows.map((row) => (
-                                        <tr key={row.tahun} className="border-t">
-                                            <td className="py-1">{row.tahun}</td>
-                                            <td className="py-1 text-right">{formatNumber(row.capaian)}</td>
-                                            <td className="py-1 text-right">{formatNumber(row.kumulatif)}</td>
-                                            <td className="py-1 text-right">{formatPercent(row.coverageKumulatif, 2)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
                         <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
                             <span className="inline-flex items-center gap-1.5">
                                 <span className="h-2.5 w-2.5 rounded-sm bg-sky-500" />
