@@ -2,6 +2,7 @@ import api from '@/lib/api-client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { EmailTemplateDraft, EmailTemplateKey, EmailTemplateMeta } from '../constants/email-templates';
 import type { KontrakTemplateFormField, KontrakTemplateMeta } from '../constants/kontrak-templates';
+import { API_BASE } from '@/lib/api-base'
 
 // Types
 export interface AppSetting {
@@ -266,7 +267,7 @@ export const cancelBackupJob = async (jobId: string): Promise<BackupJobResponse>
  * or the whole archive is buffered in JS heap and will OOM / 502.
  */
 export const getBackupDownloadUrl = (filename: string): string => {
-    return `/api/app-settings/backups/${encodeURIComponent(filename)}`
+    return `${API_BASE}/app-settings/backups/${encodeURIComponent(filename)}`
 }
 
 /** @deprecated Prefer getBackupDownloadUrl + native browser download for large archives. */

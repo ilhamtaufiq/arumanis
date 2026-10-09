@@ -1,7 +1,7 @@
 import { ApiError } from '@/lib/api-client.types'
+import { API_BASE } from '@/lib/api-base'
 
-// Base API dari VITE_API_BASE_URL (build-time). Tanpa nilai, pakai /api pada origin yang sama.
-const API_PREFIX = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
+const API_PREFIX = API_BASE
 
 export { ApiError } from '@/lib/api-client.types'
 

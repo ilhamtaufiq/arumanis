@@ -1,3 +1,4 @@
+import { API_BASE } from '@/lib/api-base'
 /**
  * Large-file download helpers.
  *
@@ -9,8 +10,7 @@
  * browser can stream the response straight to disk.
  */
 
-// Base API dari VITE_API_BASE_URL (build-time). Tanpa nilai, pakai /api pada origin yang sama.
-const API_PREFIX = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
+const API_PREFIX = API_BASE
 
 /** Build a same-origin API URL (with optional query params). */
 export function buildBffApiUrl(

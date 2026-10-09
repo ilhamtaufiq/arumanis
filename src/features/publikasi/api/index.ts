@@ -1,4 +1,5 @@
 import api from '@/lib/api-client';
+import { API_BASE } from '@/lib/api-base'
 
 
 export interface PublikasiPost {
@@ -102,7 +103,7 @@ export const uploadPublikasiVideo = async (
 
     return new Promise<PublikasiVideoUploadResponse>((resolve, reject) => {
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', '/api/blog/upload-video');
+        xhr.open('POST', `${API_BASE}/blog/upload-video`);
         xhr.withCredentials = true;
         xhr.setRequestHeader('Accept', 'application/json');
 
