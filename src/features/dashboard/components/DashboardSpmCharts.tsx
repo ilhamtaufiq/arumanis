@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useSpamRekap } from '@/features/spam-unit/hooks/useSpamRekap'
 import { useSpmSanitasiRekap } from '@/features/spm-sanitasi/hooks/useSpmSanitasiRekap'
-import type { SpmYearlyRow } from '@/lib/spm-rekap'
+import { coveragePercent, type SpmYearlyRow } from '@/lib/spm-rekap'
 import { formatNumber, formatPercent } from '@/components/common/spm-rekap/format'
 
 type SpmChartCardProps = {
@@ -26,9 +26,23 @@ type SpmChartCardProps = {
     targetKk: number
     isLoading: boolean
     to: string
+    /** KPI total (tanpa tahun). Tidak ditampilkan bila tidak diisi. */
+    totalKk?: number
+    isTotalLoading?: boolean
 }
 
-function SpmChartCard({ title, icon: Icon, capaianLabel, rows, baseline, targetKk, isLoading, to }: SpmChartCardProps) {
+function SpmChartCard({
+    title,
+    icon: Icon,
+    capaianLabel,
+    rows,
+    baseline,
+    targetKk,
+    isLoading,
+    to,
+    totalKk,
+    isTotalLoading,
+}: SpmChartCardProps) {
     const hasData = baseline > 0 || rows.some((row) => row.capaian > 0)
     const last = rows.at(-1)
 
@@ -48,6 +62,22 @@ function SpmChartCard({ title, icon: Icon, capaianLabel, rows, baseline, targetK
                 </div>
             </CardHeader>
             <CardContent>
+                {totalKk !== undefined && !isTotalLoading ? (
+                    <dl className="mb-4 grid grid-cols-3 gap-2 text-center">
+                        <div className="rounded-lg bg-muted/50 p-2">
+                            <dt className="text-[11px] text-muted-foreground">{capaianLabel}</dt>
+                            <dd className="text-sm font-semibold">{formatNumber(totalKk)}</dd>
+                        </div>
+                        <div className="rounded-lg bg-muted/50 p-2">
+                            <dt className="text-[11px] text-muted-foreground">Target</dt>
+                            <dd className="text-sm font-semibold">{formatNumber(targetKk)}</dd>
+                        </div>
+                        <div className="rounded-lg bg-muted/50 p-2">
+                            <dt className="text-[11px] text-muted-foreground">Cakupan</dt>
+                            <dd className="text-sm font-semibold">{formatPercent(coveragePercent(totalKk, targetKk), 2)}</dd>
+                        </div>
+                    </dl>
+                ) : null}
                 {isLoading ? (
                     <div className="flex h-56 items-center justify-center text-sm text-muted-foreground">
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -59,6 +89,28 @@ function SpmChartCard({ title, icon: Icon, capaianLabel, rows, baseline, targetK
                     </div>
                 ) : (
                     <>
+                        <div className="mb-3 overflow-x-auto">
+                            <table className="w-full text-xs">
+                                <thead>
+                                    <tr className="text-left text-muted-foreground">
+                                        <th className="py-1 font-medium">Tahun</th>
+                                        <th className="py-1 text-right font-medium">Tambahan</th>
+                                        <th className="py-1 text-right font-medium">Kumulatif</th>
+                                        <th className="py-1 text-right font-medium">Cakupan</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {rows.map((row) => (
+                                        <tr key={row.tahun} className="border-t">
+                                            <td className="py-1">{row.tahun}</td>
+                                            <td className="py-1 text-right">{formatNumber(row.capaian)}</td>
+                                            <td className="py-1 text-right">{formatNumber(row.kumulatif)}</td>
+                                            <td className="py-1 text-right">{formatPercent(row.coverageKumulatif, 2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                         <div className="mb-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
                             <span className="inline-flex items-center gap-1.5">
                                 <span className="h-2.5 w-2.5 rounded-sm bg-sky-500" />
@@ -149,6 +201,8 @@ export function DashboardSpmCharts() {
                 targetKk={air.targetKk}
                 isLoading={air.isYearlyLoading}
                 to="/spam-unit"
+                totalKk={air.totalKk}
+                isTotalLoading={air.isTotalLoading}
             />
             <SpmChartCard
                 title="Capaian SPM Sanitasi"

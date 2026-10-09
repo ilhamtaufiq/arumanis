@@ -152,6 +152,9 @@ export function useSpamRekap({
 
     return {
         desaInputs,
+        /** KK terlayani total (tanpa tahun): untuk KPI, siap sebelum data tahunan */
+        totalKk: servedKk(totalStats, true).kk,
+        isTotalLoading: totalQuery.isLoading,
         isDesaLoading: includeDesa && mapQuery.isLoading,
         yearlyRows,
         yearlyBaseline: baseline,
