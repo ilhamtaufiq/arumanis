@@ -138,7 +138,8 @@ export default function MediaLibrary() {
 
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
-    const [filter, setFilter] = useState<FilterType>(searchParams.type || 'all');
+    // Filter dibaca dari URL, supaya tombol back dan link yang dibagikan ikut berlaku.
+    const filter: FilterType = searchParams.type ?? 'all';
     const [sortField, setSortField] = useState<DriveSortField>('date');
     const [sortDirection, setSortDirection] = useState<DriveSortDirection>('desc');
     const [view, setView] = useState<ViewType>('grid');
@@ -738,7 +739,7 @@ export default function MediaLibrary() {
                                             variant={filter === value ? 'secondary' : 'ghost'}
                                             size="sm"
                                             className="h-8 rounded-md text-xs"
-                                            onClick={() => setFilter(value)}
+                                            onClick={() => navigateSearch({ type: value === 'all' ? undefined : value })}
                                         >
                                             {label}
                                         </Button>
