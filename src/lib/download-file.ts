@@ -9,7 +9,8 @@
  * browser can stream the response straight to disk.
  */
 
-const API_PREFIX = '/api'
+// Base API dari VITE_API_BASE_URL (build-time). Tanpa nilai, pakai /api pada origin yang sama.
+const API_PREFIX = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '')
 
 /** Build a same-origin API URL (with optional query params). */
 export function buildBffApiUrl(
