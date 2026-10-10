@@ -41,7 +41,7 @@ const VENDOR_CHUNK_GROUPS: Record<string, string[]> = {
   // memakai clsx). Dipisah agar tidak ikut tertarik ke chunk vendor berat.
   'vendor-utils': ['clsx', 'tailwind-merge', 'class-variance-authority'],
   // Heavy libraries - loaded separately
-  'vendor-pdf': ['jspdf', 'jspdf-autotable', 'html2canvas'],
+  'vendor-pdf': ['jspdf', 'jspdf-autotable'],
   'vendor-xlsx': ['xlsx'],
   'vendor-charts': ['recharts'],
   'vendor-maps': ['leaflet', 'react-leaflet'],

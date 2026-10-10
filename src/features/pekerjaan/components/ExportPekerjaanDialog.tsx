@@ -27,6 +27,7 @@ import {
     PEKERJAAN_EXPORT_COLUMNS,
     pekerjaanHasKontrak,
     pekerjaanIsCanceled,
+    buildStyledExcelWorkbook,
     sanitizeExcelSheetName,
     sumNilaiKontrak,
     sumNilaiKontrakUnique,
@@ -447,9 +448,6 @@ export function ExportPekerjaanDialog({
                   ]
 
             if (format === 'excel') {
-                const { buildStyledExcelWorkbook } = await import(
-                    '../lib/export-pekerjaan-columns'
-                )
                 const dateStamp = new Date().toISOString().split('T')[0]
                 const noKontrakItems = allData.filter((item) => !pekerjaanHasKontrak(item))
                 const canceledItems = allData.filter((item) => pekerjaanIsCanceled(item))

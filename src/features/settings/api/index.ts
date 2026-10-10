@@ -1,4 +1,5 @@
 import api from '@/lib/api-client';
+import { invalidateMaintenanceCache } from '@/lib/maintenance-session';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { EmailTemplateDraft, EmailTemplateKey, EmailTemplateMeta } from '../constants/email-templates';
 import type { KontrakTemplateFormField, KontrakTemplateMeta } from '../constants/kontrak-templates';
@@ -509,7 +510,6 @@ export const useUpdateAppSettings = () => {
         onSuccess: async () => {
             queryClient.invalidateQueries({ queryKey: ['app-settings'] });
             queryClient.invalidateQueries({ queryKey: ['app-settings-maintenance'] });
-            const { invalidateMaintenanceCache } = await import('@/lib/maintenance-session')
             invalidateMaintenanceCache()
         },
     });

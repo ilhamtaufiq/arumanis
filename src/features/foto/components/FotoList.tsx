@@ -1,3 +1,4 @@
+import { tryFullFotoUrl } from '@/features/foto/lib/foto-url'
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from '@tanstack/react-router';
 import type { Foto } from '../types';
@@ -191,6 +192,7 @@ export default function FotoList() {
                                                                         src={foto.foto_thumb_url || foto.foto_url}
                                                                         alt="Preview"
                                                                         loading="lazy"
+                                                                        onError={(e) => tryFullFotoUrl(e.currentTarget, foto)}
                                                                         className="h-16 w-16 object-cover rounded-md hover:scale-105 transition-transform"
                                                                     />
                                                                 </button>
