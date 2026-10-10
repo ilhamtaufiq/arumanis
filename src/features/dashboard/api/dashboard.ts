@@ -46,3 +46,48 @@ export const getExecutiveProgress = async (tahun: string, pekerjaanIds?: number[
     });
     return response.data;
 };
+
+export interface ProgresKpi {
+    total_pekerjaan: number
+    total_pagu: number
+    rata_progres: number | null
+    belum_progres: number
+}
+
+export interface PengawasKpi {
+    aktif: number
+    pekerjaan_diawasi: number
+    belum_diawasi: number
+    rata_progres: number | null
+}
+
+export interface ProgresPerKecamatan {
+    nama: string
+    jumlah: number
+    rata_progres: number | null
+}
+
+export interface ProgresPerPengawas {
+    user_id: number
+    nama: string
+    role: 'pengawas' | 'konsultan_pengawas'
+    jumlah_pekerjaan: number
+    rata_progres: number | null
+}
+
+export interface ProgresMvp {
+    kpi: ProgresKpi
+    pengawas: {
+        pengawas: PengawasKpi
+        konsultan_pengawas: PengawasKpi
+    }
+    per_kecamatan: ProgresPerKecamatan[]
+    per_pengawas: ProgresPerPengawas[]
+}
+
+export const getProgresMvp = async (year?: string) => {
+    const response = await api.get<{ data: ProgresMvp }>('/dashboard/progres-mvp', {
+        params: { tahun: year },
+    });
+    return response.data;
+};
