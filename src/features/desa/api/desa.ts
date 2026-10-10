@@ -1,12 +1,8 @@
 import api from '@/lib/api-client';
-import type { Desa, DesaKkSyncResult, DesaResponse } from '../types';
+import type { Desa, DesaResponse } from '../types';
 
 export const getDesa = async (params?: { kecamatan_id?: number; page?: number; search?: string }) => {
     return api.get<DesaResponse>('/desa', { params: params as Record<string, string | number | undefined> });
-};
-
-export const syncDesaKk = async (payload?: { tahun?: number; semester?: number }) => {
-    return api.post<DesaKkSyncResult>('/desa/sync-kk', payload ?? {});
 };
 
 export const getDesaById = async (id: number) => {

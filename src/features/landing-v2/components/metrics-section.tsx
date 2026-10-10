@@ -1,16 +1,23 @@
+import { useLandingCopy } from "../i18n";
 
 import { useEffect, useState, useRef } from "react";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 
 function AnimatedCounter({ end, suffix = "", prefix = "" }: { end: number; suffix?: string; prefix?: string }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const [hasAnimated, setHasAnimated] = useState(false);
+  const reducedMotion = usePrefersReducedMotion();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated) {
           setHasAnimated(true);
+          if (reducedMotion) {
+            setCount(end);
+            return;
+          }
           const duration = 2000;
           const startTime = performance.now();
 
@@ -33,7 +40,7 @@ function AnimatedCounter({ end, suffix = "", prefix = "" }: { end: number; suffi
 
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
-  }, [end, hasAnimated]);
+  }, [end, hasAnimated, reducedMotion]);
 
   return (
     <div ref={ref} className="text-6xl lg:text-8xl font-display tracking-tight">
@@ -42,37 +49,19 @@ function AnimatedCounter({ end, suffix = "", prefix = "" }: { end: number; suffi
   );
 }
 
-const metrics = [
-  {
-    value: 32,
-    suffix: "",
-    prefix: "",
-    label: "Kecamatan terpantau",
-  },
-  {
-    value: 360,
-    suffix: "",
-    prefix: "",
-    label: "Desa & kelurahan terdata",
-  },
-  {
-    value: 12,
-    suffix: "+",
-    prefix: "",
-    label: "Modul layanan terintegrasi",
-  },
-  {
-    value: 1,
-    suffix: "",
-    prefix: "",
-    label: "Portal data terpadu",
-  },
+const metricMeta = [
+  { value: 32, suffix: "", prefix: "" },
+  { value: 360, suffix: "", prefix: "" },
+  { value: 12, suffix: "+", prefix: "" },
+  { value: 1, suffix: "", prefix: "" },
 ];
 
 export function MetricsSection() {
   const [time, setTime] = useState(new Date());
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const { copy } = useLandingCopy();
+  const metrics = metricMeta.map((meta, i) => ({ ...meta, label: copy.metrics.labels[i] }));
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
@@ -99,22 +88,22 @@ export function MetricsSection() {
           <div>
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-primary" />
-              Dasbor capaian
+              {copy.metrics.eyebrow}
             </span>
             <h2
               className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
-              Layanan yang
+              {copy.metrics.title}
               <br />
-              dapat diukur.
+              {copy.metrics.titleLine2}
             </h2>
           </div>
           <div className="flex items-center gap-4 font-mono text-sm text-muted-foreground">
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              Live
+              {copy.metrics.live}
             </span>
             <span className="text-foreground/30">|</span>
             <span>{time.toLocaleTimeString()}</span>

@@ -15,8 +15,6 @@ import { gitConfig } from '@/lib/shared';
 import { useFumadocsLoader } from 'fumadocs-core/source/client';
 import { useMDXComponents } from '@/components/mdx';
 import { DocsHomePage } from '@/components/docs-home';
-import { fetchCmsPanduanBySlug, type CmsPanduanPage } from '@/lib/panduan-api';
-import { CmsPanduanView } from '@/components/cms-panduan-view';
 
 type SerializedPageTree = Awaited<ReturnType<typeof source.serializePageTree>>;
 
@@ -43,20 +41,6 @@ export async function loader({ params }: Route.LoaderArgs) {
       path: '',
       markdownUrl: '',
       pageTree: null as SerializedPageTree | null,
-      cmsPage: null as CmsPanduanPage | null,
-    };
-  }
-
-  // /docs/cms/:slug → content from API (admin CMS)
-  if (slugs[0] === 'cms' && slugs[1]) {
-    const cmsPage = await fetchCmsPanduanBySlug(slugs[1]);
-    if (!cmsPage) throw new Response('Not found', { status: 404 });
-    return {
-      kind: 'cms' as const,
-      path: `cms/${slugs[1]}`,
-      markdownUrl: '',
-      pageTree: await safePageTree(),
-      cmsPage,
     };
   }
 
@@ -68,7 +52,6 @@ export async function loader({ params }: Route.LoaderArgs) {
     path: page.path,
     markdownUrl: getPageMarkdownUrl(page).url,
     pageTree: await safePageTree(),
-    cmsPage: null as CmsPanduanPage | null,
   };
 }
 
@@ -118,17 +101,9 @@ export default function Page({ loaderData }: Route.ComponentProps) {
 function DocsInner({
   loaderData,
 }: {
-  loaderData: Extract<Route.ComponentProps['loaderData'], { kind: 'cms' | 'page' }>;
+  loaderData: Extract<Route.ComponentProps['loaderData'], { kind: 'page' }>;
 }) {
   const { pageTree } = useFumadocsLoader(loaderData);
-
-  if (loaderData.kind === 'cms' && loaderData.cmsPage) {
-    return (
-      <DocsLayout {...baseOptions()} tree={pageTree}>
-        <CmsPanduanView page={loaderData.cmsPage} />
-      </DocsLayout>
-    );
-  }
 
   return (
     <DocsLayout {...baseOptions()} tree={pageTree}>

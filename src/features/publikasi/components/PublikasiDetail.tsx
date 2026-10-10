@@ -24,7 +24,6 @@ import {
 import { usePageSeo } from '@/hooks/use-page-seo'
 import { buildArticleJsonLd, resolvePublicAssetUrl } from '@/lib/seo'
 import { resolveUserAvatarUrl } from '@/lib/user-avatar'
-import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import { PublikasiContent } from './PublikasiContent'
 import { PublikasiCommentSection } from './comments/PublikasiCommentSection'
 
@@ -70,18 +69,6 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
     }, [post, slug, logoUrl])
 
     usePageSeo(pageSeo)
-
-    useEffect(() => {
-        if (!post) {
-            return
-        }
-
-        void trackVisitorEvent('publication_view', {
-            slug,
-            title: post.title,
-            category: post.category ?? 'uncategorized',
-        })
-    }, [post, slug])
 
     useEffect(() => {
         let ticking = false
@@ -211,7 +198,7 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
                             </div>
                         ) : null}
 
-                        <PublikasiContent html={post.content} publicationSlug={slug} />
+                        <PublikasiContent html={post.content} />
 
                         <PublikasiCommentSection
                             blogSlug={slug}

@@ -1,9 +1,9 @@
 import api from '@/lib/api-client';
 import type { KegiatanStats, DataQualityStats, AnalyticsStats } from '../types';
 
-export const getDashboardStats = async (year?: string) => {
+export const getDashboardStats = async (year?: string, tagId?: number) => {
     const response = await api.get<{ data: KegiatanStats }>('/dashboard/stats', {
-        params: { tahun: year }
+        params: { tahun: year, tag_id: tagId }
     });
     return response.data;
 };

@@ -1,8 +1,6 @@
-import { useEffect } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Layers } from 'lucide-react'
 import { InnovationSpmScopeCallout } from './components/innovation-spm-scope-callout'
-import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import {
     INNOVATION_DOC_UPDATED_AT,
     INNOVATION_DOC_VERSION_LATAR_BELAKANG,
@@ -26,10 +24,6 @@ function BeforeAfterTable({ rows }: { rows: [string, string, string][] }) {
 }
 
 export function RancangBangunInovasi() {
-    useEffect(() => {
-        void trackVisitorEvent('innovation_page_view', { page: 'rancang-bangun-inovasi' })
-    }, [])
-
     return (
         <LegalPageLayout
             title='Latar Belakang'
@@ -234,7 +228,7 @@ export function RancangBangunInovasi() {
                 <BeforeAfterTable
                     rows={[
                         ['Paket pekerjaan terpantau', 'Tidak terstandar / per berkas', 'Paket pekerjaan dalam modul terpusat'],
-                        ['Interval update progres', '2–4 minggu (laporan dokumen)', 'Mingguan — Panel Pengawasan + Puspen'],
+                        ['Interval update progres', '2–4 minggu (laporan dokumen)', 'Mingguan — Panel Pengawasan'],
                         ['Dokumentasi foto terpusat', 'Tersebar di perangkat pengawas', 'Foto terindeks + lokasi'],
                         ['Identifikasi deviasi', 'Setelah laporan bulanan', 'Real-time — dashboard KPI & deviasi'],
                     ]}
@@ -297,7 +291,7 @@ export function RancangBangunInovasi() {
                         'API publik capaian SPM — endpoint stats & map-stats air minum dan sanitasi untuk landing tanpa autentikasi.',
                         'Peta choropleth Leaflet — visualisasi capaian SR/KK air minum dan infrastruktur sanitasi per desa.',
                         'Ringkasan cakupan desa di hero landing — gabungan indikator air minum (KK > 0) dan sanitasi (infrastruktur terdata).',
-                        'Sinkronisasi progres estimasi — Panel Pengawasan ↔ modul Puspen dua arah.',
+                        'Sinkronisasi progres estimasi — Panel Pengawasan.',
                         'SSO Panel Pengawasan — satu akun untuk dua aplikasi.',
                         'Pelaporan error terkontrol — halaman publik graceful degradation.',
                         'Role-based wilayah — operator hanya mengelola data wilayah kerjanya.',
@@ -333,7 +327,7 @@ Modul sesuai peran:
 Ekspor laporan PDF/Excel`}</LegalFlowBlock>
                 <LegalList
                     items={[
-                        'Buka Aset & Capaian SPAM (/spam-unit), filter kecamatan/desa/tahun.',
+                        'Buka SPM Air Minum (/spam-unit), filter kecamatan/desa/tahun.',
                         'Tambah/edit unit — desa, kapasitas, POKMAS, status SIMSPAM.',
                         'Detail unit → tab Achievements: capaian SR, KK, jiwa per tahun.',
                         'Tab Budgets: rencana anggaran dan sumber dana.',

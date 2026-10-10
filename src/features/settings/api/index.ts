@@ -2,6 +2,7 @@ import api from '@/lib/api-client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { EmailTemplateDraft, EmailTemplateKey, EmailTemplateMeta } from '../constants/email-templates';
 import type { KontrakTemplateFormField, KontrakTemplateMeta } from '../constants/kontrak-templates';
+import { API_BASE } from '@/lib/api-base'
 
 // Types
 export interface AppSetting {
@@ -21,18 +22,9 @@ export interface AppSettingsFormData {
     app_name?: string;
     app_description?: string;
     tahun_anggaran?: string;
-    chat_provider?: string;
-    chat_base_url?: string;
-    chat_model?: string;
-    chat_api_key?: string;
-    chat_price_input_per_1m_idr?: string;
-    chat_price_output_per_1m_idr?: string;
-    /** Role yang boleh akses AMI asisten AI; array kosong = semua role. */
-    ami_access_roles?: string[];
     landing_page_active?: string;
     spm_detail_page_active?: string;
     capaian_publik_section_active?: string;
-    puspen_progress_fisik_public?: string;
     /** Tampilkan berkas berjudul RAB ke role pengawas / konsultan_pengawas */
     pengawas_berkas_show_rab?: string;
     /** Tampilkan berkas berjudul GAMBAR ke role pengawas / konsultan_pengawas */
@@ -192,16 +184,6 @@ export const getAppSettings = async (): Promise<AppSettingsResponse> => {
     return api.get<AppSettingsResponse>('/app-settings');
 };
 
-export type AiModelInfo = { id: string; available: boolean; min_tier?: string | null };
-export type ListAiModelsResponse = { models: AiModelInfo[]; used_stored_key?: boolean; error?: string };
-
-export const listAiModels = async (baseUrl: string, apiKey?: string): Promise<ListAiModelsResponse> => {
-    return api.post<ListAiModelsResponse>('/app-settings/list-ai-models', {
-        base_url: baseUrl,
-        ...(apiKey?.trim() ? { api_key: apiKey.trim() } : {}),
-    });
-};
-
 export type MaintenanceStatusResponse = {
     data: {
         enabled: boolean
@@ -285,7 +267,7 @@ export const cancelBackupJob = async (jobId: string): Promise<BackupJobResponse>
  * or the whole archive is buffered in JS heap and will OOM / 502.
  */
 export const getBackupDownloadUrl = (filename: string): string => {
-    return `/bff/api/app-settings/backups/${encodeURIComponent(filename)}`
+    return `${API_BASE}/app-settings/backups/${encodeURIComponent(filename)}`
 }
 
 /** @deprecated Prefer getBackupDownloadUrl + native browser download for large archives. */
@@ -366,26 +348,6 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     if (data.tahun_anggaran !== undefined) {
         formData.append('tahun_anggaran', data.tahun_anggaran);
     }
-    if (data.chat_provider !== undefined) {
-        formData.append('chat_provider', data.chat_provider);
-    }
-    if (data.chat_base_url !== undefined) {
-        formData.append('chat_base_url', data.chat_base_url);
-    }
-    if (data.chat_model !== undefined) {
-        formData.append('chat_model', data.chat_model);
-    }
-    if (data.chat_api_key !== undefined && data.chat_api_key.trim()) {
-        const apiKey = data.chat_api_key.trim();
-        formData.append('chat_api_key', apiKey);
-        formData.append('chat_api_key_local', apiKey);
-    }
-    if (data.chat_price_input_per_1m_idr !== undefined) {
-        formData.append('chat_price_input_per_1m_idr', data.chat_price_input_per_1m_idr);
-    }
-    if (data.chat_price_output_per_1m_idr !== undefined) {
-        formData.append('chat_price_output_per_1m_idr', data.chat_price_output_per_1m_idr);
-    }
     if (data.landing_page_active !== undefined) {
         formData.append('landing_page_active', data.landing_page_active);
     }
@@ -395,20 +357,8 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     if (data.capaian_publik_section_active !== undefined) {
         formData.append('capaian_publik_section_active', data.capaian_publik_section_active);
     }
-    if (data.puspen_progress_fisik_public !== undefined) {
-        formData.append('puspen_progress_fisik_public', data.puspen_progress_fisik_public);
-    }
     if (data.pengawas_berkas_show_rab !== undefined) {
         formData.append('pengawas_berkas_show_rab', data.pengawas_berkas_show_rab);
-    }
-    if (data.ami_access_roles !== undefined) {
-        if (Array.isArray(data.ami_access_roles) && data.ami_access_roles.length > 0) {
-            data.ami_access_roles.forEach((role) => {
-                formData.append('ami_access_roles[]', role);
-            });
-        } else {
-            formData.append('ami_access_roles', '[]');
-        }
     }
     if (data.pengawas_berkas_show_gambar !== undefined) {
         formData.append('pengawas_berkas_show_gambar', data.pengawas_berkas_show_gambar);

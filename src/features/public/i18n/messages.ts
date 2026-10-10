@@ -3,6 +3,53 @@ import type { PublicLocale, PublicMessages } from './types'
 export const publicMessages: Record<PublicLocale, PublicMessages> = {
     id: {
         landing: {
+            shell: {
+                nav: {
+                    program: 'Program',
+                    howItWorks: 'Cara kerja',
+                    publications: 'Publikasi',
+                    collaboration: 'Kolaborasi',
+                    about: 'Tentang kami',
+                    signIn: 'Masuk',
+                    aspiration: 'Sampaikan aspirasi',
+                    home: 'Arumanis, ke atas halaman',
+                    mainNavLabel: 'Navigasi utama',
+                    openMenu: 'Buka menu',
+                    closeMenu: 'Tutup menu',
+                },
+                hero: {
+                    eyebrow: 'Portal Infrastruktur Air Minum dan Sanitasi',
+                    titleLine: 'Layanan dasar',
+                    words: ['melayani', 'menjaga', 'mengalir', 'bertumbuh'],
+                    description:
+                        'Platform kolaborasi pemerintah untuk memperluas akses air minum dan sanitasi yang layak, aman, dan berkelanjutan di Kabupaten Cianjur.',
+                    ctaProgram: 'Kenali program kami',
+                    ctaPublications: 'Publikasi',
+                },
+                collab: {
+                    label: 'Untuk kolaborator',
+                    titleLead: 'Data untuk',
+                    titleTail: 'keputusan yang tepat.',
+                    description:
+                        'Dashboard dan modul Arumanis membantu pemerintah, operator, PPTK, pengawas, dan mitra melihat data program secara konsisten—dari rencana sampai hasil di lapangan.',
+                    features: [
+                        { title: 'Dashboard terpadu', description: 'Ringkasan kegiatan, anggaran, kontrak, output, dan penerima manfaat.' },
+                        { title: 'Dokumentasi lapangan', description: 'Foto progress, geo-fence, watermark GPS, berkas, dan checklist.' },
+                        { title: 'Kolaborasi pengawasan', description: 'Panel pengawas, penugasan, laporan, tiket, dan SSO dalam satu alur.' },
+                        { title: 'Data lebih akuntabel', description: 'Audit log, RBAC, publikasi capaian SPM, dan akses sesuai peran.' },
+                    ],
+                    decisions: [
+                        { label: 'Kondisi data', detail: 'Data kegiatan lengkap?', yes: 'Validasi capaian', no: 'Lengkapi dokumentasi' },
+                        { label: 'Capaian layanan', detail: 'Target air minum tercapai?', yes: 'Tetapkan tindak lanjut', no: 'Prioritaskan intervensi' },
+                        { label: 'Pengawasan', detail: 'Output terverifikasi?', yes: 'Lanjutkan evaluasi', no: 'Kirim untuk pemeriksaan' },
+                    ],
+                    yes: 'YA',
+                    notYet: 'BELUM',
+                    tabsLabel: 'Contoh alur keputusan',
+                    linkModules: 'Lihat modul Arumanis',
+                    linkAchievements: 'Lihat capaian SPM',
+                },
+            },
             nav: {
                 achievements: 'Capaian',
                 access: 'Informasi',
@@ -383,6 +430,53 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
     },
     en: {
         landing: {
+            shell: {
+                nav: {
+                    program: 'Program',
+                    howItWorks: 'How it works',
+                    publications: 'Publications',
+                    collaboration: 'Collaboration',
+                    about: 'About us',
+                    signIn: 'Sign In',
+                    aspiration: 'Share your feedback',
+                    home: 'Arumanis, back to top',
+                    mainNavLabel: 'Main navigation',
+                    openMenu: 'Open menu',
+                    closeMenu: 'Close menu',
+                },
+                hero: {
+                    eyebrow: 'Drinking Water and Sanitation Infrastructure Portal',
+                    titleLine: 'Basic services',
+                    words: ['serving', 'protecting', 'flowing', 'growing'],
+                    description:
+                        'A government collaboration platform to expand access to decent, safe, and sustainable drinking water and sanitation in Cianjur Regency.',
+                    ctaProgram: 'Explore our program',
+                    ctaPublications: 'Publications',
+                },
+                collab: {
+                    label: 'For collaborators',
+                    titleLead: 'Data for',
+                    titleTail: 'better decisions.',
+                    description:
+                        'Arumanis dashboards and modules help government, operators, officials, supervisors, and partners see program data consistently—from planning to results in the field.',
+                    features: [
+                        { title: 'Unified dashboard', description: 'Summary of activities, budgets, contracts, outputs, and beneficiaries.' },
+                        { title: 'Field documentation', description: 'Progress photos, geo-fence, GPS watermark, files, and checklists.' },
+                        { title: 'Supervision collaboration', description: 'Supervisor panel, assignments, reports, tickets, and SSO in one flow.' },
+                        { title: 'More accountable data', description: 'Audit log, RBAC, SPM achievement publication, and role-based access.' },
+                    ],
+                    decisions: [
+                        { label: 'Data condition', detail: 'Is activity data complete?', yes: 'Validate achievements', no: 'Complete documentation' },
+                        { label: 'Service achievement', detail: 'Drinking water target met?', yes: 'Set follow-up actions', no: 'Prioritize intervention' },
+                        { label: 'Supervision', detail: 'Is the output verified?', yes: 'Continue evaluation', no: 'Send for inspection' },
+                    ],
+                    yes: 'YES',
+                    notYet: 'NOT YET',
+                    tabsLabel: 'Decision flow examples',
+                    linkModules: 'View Arumanis modules',
+                    linkAchievements: 'View SPM achievements',
+                },
+            },
             nav: {
                 achievements: 'Achievements',
                 access: 'Information',

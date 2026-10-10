@@ -282,6 +282,11 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      // API lewat origin yang sama supaya cookie sesi terkirim (lihat README: VITE_API_PROXY_TARGET).
+      '/api': {
+        target: process.env.VITE_API_PROXY_TARGET || 'http://apiamis.test',
+        changeOrigin: true,
+      },
       '/storage': {
         target: `http://127.0.0.1:${BFF_PORT}`,
         changeOrigin: true,

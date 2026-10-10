@@ -30,18 +30,8 @@ export type PekerjaanProgressEstimasi = {
     updated_at: string | null;
 };
 
-export type PuspenProgressFisikSnapshot = {
-    kontrak_id: number;
-    kode_paket: string | null;
-    rencana: number | null;
-    realisasi: number | null;
-    deviasi: number | null;
-    updated_at: string | null;
-};
-
 export type PekerjaanProgressEstimasiResponse = {
     data: PekerjaanProgressEstimasi;
-    puspen_progress_fisik: PuspenProgressFisikSnapshot[];
 };
 
 export type SavePekerjaanProgressEstimasiPayload = {

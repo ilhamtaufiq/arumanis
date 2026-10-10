@@ -17,7 +17,6 @@ const PUBLIC_REDIRECT_PREFIXES = [
     '/terms',
     '/rancang-bangun-inovasi',
     '/tujuan-manfaat-hasil',
-    '/puspen',
 ]
 
 export function isPublicOnlyUser(roles: unknown): boolean {

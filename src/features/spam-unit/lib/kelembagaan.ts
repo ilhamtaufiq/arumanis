@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx'
+import { sumAchievementsForTahun } from './achievement-source'
 import type { UnitSpam } from '../types'
 import { SPAM_ACCUMULATION_START_TAHUN, SPAM_BASELINE_CAP_TAHUN } from './baseline'
 
@@ -110,27 +111,15 @@ export function pickCapaian(unit: UnitSpam, tahun?: string) {
     if (list.length === 0) {
         return { sr: 0, kk: 0, jiwa: 0, bjpKk: 0, bjpJiwa: 0, tahunLabel: tahun || '-' }
     }
+    // Satu tahun bisa punya rekam manual + integrasi → dijumlahkan
     if (tahun) {
-        const match = list.find((a) => String(a.tahun) === String(tahun))
-        return {
-            sr: match?.jumlah_sr ?? 0,
-            kk: match?.jumlah_kk ?? 0,
-            jiwa: match?.jumlah_jiwa ?? 0,
-            bjpKk: match?.jumlah_bjp_kk ?? 0,
-            bjpJiwa: match?.jumlah_bjp_jiwa ?? 0,
-            tahunLabel: tahun,
-        }
+        return { ...sumAchievementsForTahun(list, tahun), tahunLabel: tahun }
     }
     // Snapshot tahun terbaru (capaian kelembagaan per unit)
-    const sorted = [...list].sort((a, b) => String(b.tahun).localeCompare(String(a.tahun)))
-    const latest = sorted[0]
+    const latestTahun = [...list].sort((a, b) => String(b.tahun).localeCompare(String(a.tahun)))[0]?.tahun
     return {
-        sr: latest?.jumlah_sr ?? 0,
-        kk: latest?.jumlah_kk ?? 0,
-        jiwa: latest?.jumlah_jiwa ?? 0,
-        bjpKk: latest?.jumlah_bjp_kk ?? 0,
-        bjpJiwa: latest?.jumlah_bjp_jiwa ?? 0,
-        tahunLabel: latest?.tahun ?? '-',
+        ...sumAchievementsForTahun(list, String(latestTahun ?? '')),
+        tahunLabel: latestTahun ?? '-',
     }
 }
 

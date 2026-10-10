@@ -1,24 +1,14 @@
+import { useLandingCopy } from "../i18n";
 
 import { useEffect, useState, useRef } from "react";
 
-const integrations = [
-  { name: "APIAMIS", category: "Backend layanan" },
-  { name: "SIPD Renja", category: "Perencanaan" },
-  { name: "SPSE", category: "Pengadaan" },
-  { name: "OnlyOffice", category: "Dokumen" },
-  { name: "WhatsApp", category: "Komunikasi" },
-  { name: "PUSPEN", category: "Pengendalian" },
-  { name: "SPAM Unit", category: "Air minum" },
-  { name: "SPM", category: "Capaian layanan" },
-  { name: "Panel Pengawas", category: "Pengawasan" },
-  { name: "Peta Wilayah", category: "Data spasial" },
-  { name: "Berita Acara", category: "Dokumentasi" },
-  { name: "Asisten AI", category: "Bantuan kerja" },
-];
+const integrationNames = ["APIAMIS", "SIPD Renja", "SPSE", "OnlyOffice", "SPAM Unit", "SPM", "Panel Pengawas", "Peta Wilayah", "Berita Acara"];
 
 export function IntegrationsSection() {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const { copy } = useLandingCopy();
+  const integrations = integrationNames.map((name, i) => ({ name, category: copy.integrations.categories[i] }));
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -43,16 +33,16 @@ export function IntegrationsSection() {
         >
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
             <span className="w-8 h-px bg-primary" />
-Modul dan koneksi
+{copy.integrations.eyebrow}
             <span className="w-8 h-px bg-primary" />
           </span>
           <h2 className="text-4xl lg:text-6xl font-display tracking-tight mb-6">
-            Satu ekosistem
+            {copy.integrations.title}
             <br />
-            untuk kerja lintas bidang.
+            {copy.integrations.titleLine2}
           </h2>
           <p className="text-xl text-muted-foreground">
-            Hubungkan data perencanaan, pelaksanaan, dokumen, lapangan, pengawasan, dan capaian layanan air minum serta sanitasi.
+            {copy.integrations.description}
           </p>
         </div>
 

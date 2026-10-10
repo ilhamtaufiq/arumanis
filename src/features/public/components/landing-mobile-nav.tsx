@@ -38,7 +38,6 @@ export function LandingMobileNav({
             : []),
         { label: copy.nav.about, href: '#about' },
         { label: copy.nav.publications, href: '#publikasi' },
-        { label: copy.nav.instagram, href: '#instagram' },
     ]
 
     return (

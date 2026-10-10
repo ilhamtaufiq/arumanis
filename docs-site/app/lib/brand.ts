@@ -10,7 +10,7 @@ export const brand = {
   appNameFull: 'Arumanis — Portal Air Minum & Sanitasi Kabupaten Cianjur',
   docsTitle: 'Arumanis Docs',
   description:
-    'Panduan pengguna Arumanis: sistem informasi air minum dan sanitasi Kabupaten Cianjur — pekerjaan, SPSE, OnlyOffice, panel pengawas, dan Puspen.',
+    'Panduan pengguna Arumanis: sistem informasi air minum dan sanitasi Kabupaten Cianjur — pekerjaan, SPSE, OnlyOffice, panel pengawas.',
   siteUrl: 'https://arumanis.cianjur.space',
   docsUrl: 'https://arumanis.cianjur.space/docs',
   /** Default from app settings `brand_primary_color` */

@@ -1,38 +1,16 @@
+import { useLandingCopy } from "../i18n";
 
 import { useEffect, useRef, useState } from "react";
 
-const features = [
-  {
-    number: "01",
-    title: "Air Minum & Sanitasi",
-    description: "Menghubungkan sumber air, layanan sanitasi, dan kebutuhan masyarakat dalam satu ekosistem layanan dasar Kabupaten Cianjur.",
-    visual: "water",
-  },
-  {
-    number: "02",
-    title: "Perencanaan Berbasis Data",
-    description: "Gunakan data wilayah dan kebutuhan masyarakat untuk menentukan prioritas pembangunan yang tepat sasaran.",
-    visual: "ai",
-  },
-  {
-    number: "03",
-    title: "Kolaborasi Lintas Sektor",
-    description: "Memperkuat koordinasi pemerintah, mitra pembangunan, dan masyarakat untuk hasil yang berkelanjutan.",
-    visual: "collab",
-  },
-  {
-    number: "04",
-    title: "Akuntabilitas Layanan",
-    description: "Mendorong layanan publik yang transparan, aman, dan dapat dipantau bersama oleh seluruh pemangku kepentingan.",
-    visual: "security",
-  },
+const featureMeta: Array<{ number: string; visual: string; link?: string }> = [
+  { number: "01", visual: "water" },
+  { number: "02", visual: "ai" },
+  { number: "03", visual: "collab" },
+  { number: "04", visual: "security" },
   {
     number: "05",
-    title: "Survey Lapangan e-Survey",
-    description: "Aplikasi survey kebutuhan data perencanaan SPAM Perpipaan, SPAM Pengeboran, dan MCK — dengan foto lampiran, titik GPS, penugasan tim, dan mode offline untuk daerah tanpa sinyal.",
     visual: "survey",
     link: import.meta.env.VITE_ESURVEY_URL ?? "https://esurvey.cianjur.space",
-    linkLabel: "Buka e-Survey",
   },
 ];
 
@@ -236,8 +214,9 @@ function SecurityVisual() {
 }
 
 function WaterVisual() {
+  const { copy } = useLandingCopy();
   return (
-    <svg viewBox="0 0 240 180" className="w-full h-full" role="img" aria-label="Ilustrasi air minum dan sanitasi">
+    <svg viewBox="0 0 240 180" className="w-full h-full" role="img" aria-label={copy.features.waterAlt}>
       <defs>
         <linearGradient id="waterFill" x1="0" x2="0" y1="0" y2="1">
           <stop offset="0" stopColor="currentColor" stopOpacity="0.28" />
@@ -328,7 +307,17 @@ function AnimatedVisual({ type }: { type: string }) {
   }
 }
 
-function FeatureCard({ feature, index }: { feature: typeof features[0]; index: number }) {
+type FeatureCardData = {
+  number: string;
+  visual: string;
+  link?: string;
+  title: string;
+  description: string;
+  linkLabel?: string;
+};
+
+function FeatureCard({ feature, index }: { feature: FeatureCardData; index: number }) {
+  const { copy } = useLandingCopy();
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -367,14 +356,14 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
             <p className="text-lg text-muted-foreground leading-relaxed">
               {feature.description}
             </p>
-            {"link" in feature && feature.link ? (
+            {feature.link ? (
               <a
-                href={feature.link as string}
+                href={feature.link}
                 target="_blank"
                 rel="noopener"
                 className="inline-flex items-center gap-2 mt-6 rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
               >
-                {("linkLabel" in feature && feature.linkLabel as string) || "Buka aplikasi"}
+                {feature.linkLabel || copy.features.openApp}
                 <span aria-hidden="true">→</span>
               </a>
             ) : null}
@@ -395,6 +384,11 @@ function FeatureCard({ feature, index }: { feature: typeof features[0]; index: n
 export function FeaturesSection() {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const { copy } = useLandingCopy();
+  const features: FeatureCardData[] = featureMeta.map((meta, i) => ({
+    ...meta,
+    ...copy.features.items[i],
+  }));
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -419,16 +413,16 @@ export function FeaturesSection() {
         <div className="mb-16 lg:mb-24">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
             <span className="w-8 h-px bg-primary" />
-            Layanan utama
+            {copy.features.eyebrow}
           </span>
           <h2
             className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
               isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
-            Melayani kebutuhan dasar.
+            {copy.features.title}
             <br />
-            <span className="text-muted-foreground">Tanpa yang berlebihan.</span>
+            <span className="text-muted-foreground">{copy.features.titleMuted}</span>
           </h2>
         </div>
 

@@ -4,26 +4,45 @@ import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { AnchorLink } from "./anchor-link";
-
-const navLinks = [
-  { name: "Program", href: "#features" },
-  { name: "Cara kerja", href: "#how-it-works" },
-  { name: "Publikasi", href: "#publikasi" },
-  { name: "Kolaborasi", href: "#developers" },
-  { name: "Tentang kami", href: "#footer" },
-];
+import { LocaleToggle } from "@/features/public/components/locale-toggle";
+import { usePublicLocale } from "@/features/public/i18n/use-public-locale";
 
 export function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { messages } = usePublicLocale();
+  const copy = messages.landing.shell.nav;
+  const navLinks = [
+    { name: copy.program, href: "#features" },
+    { name: copy.howItWorks, href: "#how-it-works" },
+    { name: copy.publications, href: "#publikasi" },
+    { name: copy.collaboration, href: "#developers" },
+    { name: copy.about, href: "#footer" },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    window.addEventListener("scroll", handleScroll);
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Mobile overlay: lock page scroll and close on Escape
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsMobileMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isMobileMenuOpen]);
 
   return (
     <header
@@ -33,7 +52,8 @@ export function Navigation() {
           : "top-0 left-0 right-0"
       }`}
     >
-      <nav 
+      <nav
+        aria-label={copy.mainNavLabel}
         className={`mx-auto transition-all duration-500 ${
           isScrolled || isMobileMenuOpen
             ? "bg-background/80 backdrop-blur-xl border border-foreground/10 rounded-2xl shadow-lg max-w-[1200px]"
@@ -46,11 +66,12 @@ export function Navigation() {
           }`}
         >
           {/* Logo */}
-          <AnchorLink href="#" className="flex items-center gap-2 group">
+          <AnchorLink href="#" aria-label={copy.home} className="flex items-center gap-2 group">
             <span className={`font-display tracking-tight transition-all duration-500 ${isScrolled ? "text-xl" : "text-2xl"}`}>Arumanis</span>
             <img
               src="/arumanis.svg"
-              alt="Logo Arumanis"
+              alt=""
+              aria-hidden="true"
               className={`w-auto transition-all duration-500 ${isScrolled ? "h-6" : "h-8"}`}
             />
           </AnchorLink>
@@ -71,23 +92,27 @@ export function Navigation() {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center gap-4">
+            <LocaleToggle variant="legal" />
             <Link to="/sign-in" className={`text-foreground/70 hover:text-foreground transition-all duration-500 ${isScrolled ? "text-xs" : "text-sm"}`}>
-              Masuk
+              {copy.signIn}
             </Link>
             <Button
               size="sm"
               asChild
               className={`bg-primary hover:bg-primary/90 text-primary-foreground rounded-full transition-all duration-500 ${isScrolled ? "px-4 h-8 text-xs" : "px-6"}`}
             >
-              <AnchorLink href="#hubungi-kami">Sampaikan aspirasi</AnchorLink>
+              <AnchorLink href="#hubungi-kami">{copy.aspiration}</AnchorLink>
             </Button>
           </div>
 
           {/* Mobile Menu Button */}
           <button
+            type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2"
-            aria-label="Toggle menu"
+            className="md:hidden flex h-11 w-11 items-center justify-center -mr-2"
+            aria-label={isMobileMenuOpen ? copy.closeMenu : copy.openMenu}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="landing-mobile-menu"
           >
             {isMobileMenuOpen ? (
               <X className="w-6 h-6" />
@@ -101,7 +126,9 @@ export function Navigation() {
       
       {/* Mobile Menu - Full Screen Overlay */}
       <div
-        className={`md:hidden fixed inset-0 bg-background z-40 transition-all duration-500 ${
+        id="landing-mobile-menu"
+        inert={!isMobileMenuOpen}
+        className={`md:hidden fixed inset-0 bg-background z-40 transition-all duration-500 motion-reduce:transition-none ${
           isMobileMenuOpen 
             ? "opacity-100 pointer-events-auto" 
             : "opacity-0 pointer-events-none"
@@ -128,6 +155,7 @@ export function Navigation() {
             ))}
           </div>
           
+          <LocaleToggle variant="legal" className="mb-6 self-start" />
           {/* Bottom CTAs */}
           <div className={`flex gap-4 pt-8 border-t border-foreground/10 transition-all duration-500 ${
             isMobileMenuOpen 
@@ -142,14 +170,14 @@ export function Navigation() {
               className="flex-1 rounded-full h-14 text-base"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <Link to="/sign-in">Masuk</Link>
+              <Link to="/sign-in">{copy.signIn}</Link>
             </Button>
             <Button
               asChild
               className="flex-1 bg-primary text-primary-foreground rounded-full h-14 text-base"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              <AnchorLink href="#hubungi-kami">Sampaikan aspirasi</AnchorLink>
+              <AnchorLink href="#hubungi-kami">{copy.aspiration}</AnchorLink>
             </Button>
           </div>
         </div>

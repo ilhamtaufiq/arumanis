@@ -29,7 +29,6 @@ import OutputTabContent from './OutputTabContent';
 
 import PenerimaTabContent from './PenerimaTabContent';
 import BerkasTabContent from './BerkasTabContent';
-import SimulationTabContent from './SimulationTabContent';
 import { useAuthStore } from '@/stores/auth-stores';
 
 // Lazy load FotoTabContent - contains many images
@@ -383,7 +382,6 @@ export default function PekerjaanDetail() {
                             </TabsTrigger>
                             <TabsTrigger value="berkas">Berkas</TabsTrigger>
                             <TabsTrigger value="progress">Progress</TabsTrigger>
-                            <TabsTrigger value="simulasi">Simulasi</TabsTrigger>
 
                         </TabsList>
                     </div>
@@ -412,9 +410,6 @@ export default function PekerjaanDetail() {
                         ) : null}
                         {activeTab === 'progress' ? (
                             <PekerjaanProgressEstimasiTab pekerjaanId={Number(id)} />
-                        ) : null}
-                        {activeTab === 'simulasi' ? (
-                            <SimulationTabContent pekerjaanId={Number(id)} />
                         ) : null}
                     </div>
 

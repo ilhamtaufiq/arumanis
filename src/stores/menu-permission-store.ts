@@ -98,8 +98,6 @@ export const useMenuPermissionStore = create<MenuPermissionState>((set, get) => 
         // Deny by default - only allow if menu is in allowedMenus
         if (allowedMenus.includes(menuKey)) return true
 
-        // Legacy alias: Asisten AI dipindah dari menuKey "chat" → "asisten-ai"
-        if (menuKey === 'asisten-ai' && allowedMenus.includes('chat')) return true
 
         return false
     },

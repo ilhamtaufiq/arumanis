@@ -155,7 +155,7 @@ export function buildIntegrasiSesudahRows(m: InnovationMetrics): [string, string
 export function buildMonitoringSesudahRows(m: InnovationMetrics): [string, string, string][] {
     return [
         ['Paket pekerjaan terpantau', 'Tidak terstandar / per berkas', `${formatCount(m.pekerjaan)} paket dalam modul pekerjaan`],
-        ['Interval update progres', '2–4 minggu (laporan dokumen)', 'Mingguan — Panel Pengawasan + Puspen'],
+        ['Interval update progres', '2–4 minggu (laporan dokumen)', 'Mingguan — Panel Pengawasan'],
         ['Dokumentasi foto terpusat', 'Tersebar di perangkat pengawas', `${formatCount(m.foto)} foto terindeks + GPS`],
         ['Identifikasi deviasi', 'Setelah laporan bulanan', 'Real-time — dashboard KPI & deviasi'],
     ]
@@ -259,7 +259,7 @@ export function buildHasilUtamaRows(m: InnovationMetrics): [string, string, stri
             'API publik stats & map-stats (air minum + sanitasi)',
         ],
         ['H6', 'Modul SPAM Unit', 'CRUD unit, capaian SPM air minum, POKMAS, anggaran, impor CSV/Excel', 'Route /spam-unit'],
-        ['H7', 'Modul Monitoring Pekerjaan & Puspen', 'Paket, progress estimasi, sinkronisasi Panel Pengawasan', `${formatCount(m.pekerjaan)} paket pekerjaan terdata`],
+        ['H7', 'Modul Monitoring Pekerjaan', 'Paket, progress estimasi, sinkronisasi Panel Pengawasan', `${formatCount(m.pekerjaan)} paket pekerjaan terdata`],
         ['H8', 'Repositori Dokumentasi Lapangan', 'Foto progres berslot dan metadata GPS', `${formatCount(m.foto)} berkas foto terindeks`],
         ['H9', 'Sistem Notifikasi & Tiket', 'Broadcast pengumuman dan pelacakan kendala', 'Modul notifikasi & tiket berstatus'],
         ['H10', 'Dokumentasi Pengguna', 'Panduan operator, pengawas, dan publik', '/docs/'],

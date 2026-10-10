@@ -1,3 +1,4 @@
+import { useLandingCopy } from "../i18n";
 
 import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
@@ -9,6 +10,7 @@ export function CtaSection() {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const { copy } = useLandingCopy();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -52,14 +54,13 @@ export function CtaSection() {
               {/* Left content */}
               <div className="flex-1">
                 <h2 className="text-4xl lg:text-7xl font-display tracking-tight mb-8 leading-[0.95]">
-Siap memperkuat
+{copy.cta.title}
               <br />
-              layanan Cianjur?
+              {copy.cta.titleLine2}
                 </h2>
 
                 <p className="text-xl text-muted-foreground mb-12 leading-relaxed max-w-xl">
-Mari berkolaborasi mempercepat layanan air minum dan sanitasi.
-              Sampaikan aspirasi dan kebutuhan wilayah Anda.
+{copy.cta.description}
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-start gap-4">
@@ -69,7 +70,7 @@ Mari berkolaborasi mempercepat layanan air minum dan sanitasi.
                     className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 h-14 text-base rounded-full group"
                   >
                     <Link to="/sign-in">
-                      Buka Arumanis
+                      {copy.cta.open}
                       <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </Button>
@@ -79,12 +80,12 @@ Mari berkolaborasi mempercepat layanan air minum dan sanitasi.
                     asChild
                     className="h-14 px-8 text-base rounded-full border-foreground/20 hover:bg-foreground/5"
                   >
-                    <Link to="/publikasi">Lihat informasi program</Link>
+                    <Link to="/publikasi">{copy.cta.info}</Link>
                   </Button>
                 </div>
 
                 <p className="text-sm text-muted-foreground mt-8 font-mono">
-                  Platform informasi dan pengendalian layanan air minum serta sanitasi Kabupaten Cianjur
+                  {copy.cta.note}
                 </p>
               </div>
 

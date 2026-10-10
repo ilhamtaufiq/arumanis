@@ -1,6 +1,7 @@
 import { ApiError } from '@/lib/api-client.types'
+import { API_BASE } from '@/lib/api-base'
 
-const API_PREFIX = '/bff/api'
+const API_PREFIX = API_BASE
 
 export { ApiError } from '@/lib/api-client.types'
 

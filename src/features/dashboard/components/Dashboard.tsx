@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { formatDistanceToNow, isToday } from 'date-fns'
+import { formatDistanceToNow } from 'date-fns'
+import { isTodayWib, toWib } from '@/lib/wib'
 import { id as localeId } from 'date-fns/locale'
 import {
     Activity,
@@ -30,6 +31,7 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { useAuthStore } from '@/stores/auth-stores'
 import { getDashboardStats } from '../api/dashboard'
 import { formatCurrency, formatNumber } from '../lib/format'
+import { DashboardSpmCharts } from './DashboardSpmCharts'
 import { DashboardStatCard } from './DashboardStatCard'
 
 function greeting() {
@@ -75,12 +77,9 @@ const ACTIVITY_LABELS: Record<string, string> = {
     SpamBudget: 'anggaran SPAM',
     SpmSanitasi: 'SPM sanitasi',
     PetaPeripaan: 'peta perpipaan',
-    PuspenMediaShare: 'media puspen',
     PanduanPage: 'halaman panduan',
     MenuPermission: 'izin menu',
     RoutePermission: 'izin rute',
-    SimulationNetwork: 'jaringan simulasi',
-    SimulationNetworkVersion: 'versi simulasi',
     SignatureLibrary: 'pustaka tanda tangan',
     ToolPdf: 'perkakas PDF',
     Tag: 'tag',
@@ -193,7 +192,7 @@ export function Dashboard() {
 
     const stats = statsQuery.data
     const todayEvents =
-        events?.filter((e) => isToday(new Date(e.start))).slice(0, 5) ?? []
+        events?.filter((e) => isTodayWib(toWib(e.start))).slice(0, 5) ?? []
     const recentActivity = activityData?.data?.slice(0, 6) ?? []
     const unread = notifData?.notifications?.slice(0, 3) ?? []
     // biome-ignore lint: tiket response shape varies, read defensively
@@ -276,6 +275,8 @@ export function Dashboard() {
                         </section>
                     ) : null}
 
+                    <DashboardSpmCharts />
+
                     <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <Card className="rounded-xl border border-border/70 bg-card/60 backdrop-blur-md shadow-sm">
                             <CardHeader className="pb-3">
@@ -303,6 +304,7 @@ export function Dashboard() {
                                                         {new Date(e.start).toLocaleTimeString('id-ID', {
                                                             hour: '2-digit',
                                                             minute: '2-digit',
+                                                            timeZone: 'Asia/Jakarta',
                                                         })}
                                                     </span>
                                                     <div className="min-w-0 flex-1">

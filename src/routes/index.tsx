@@ -3,6 +3,7 @@ import { lazy, Suspense } from 'react'
 import { usePageSeo } from '@/hooks/use-page-seo'
 import { buildOrganizationJsonLd } from '@/lib/seo'
 import { usePublicLocale } from '@/features/public/i18n/use-public-locale'
+import { useLandingCopy } from '@/features/landing-v2/i18n'
 import '../features/landing-v2/landing-v2.css'
 import { Navigation } from '@/features/landing-v2/components/navigation'
 import { HeroSection } from '@/features/landing-v2/components/hero-section'
@@ -53,10 +54,10 @@ export const Route = createFileRoute('/')({
 })
 
 function LandingPage() {
+  const { copy } = useLandingCopy()
   usePageSeo({
-    title: 'Arumanis Cianjur | Air Minum dan Sanitasi',
-    description:
-      'Arumanis adalah gerakan kolaborasi untuk akses air minum dan sanitasi yang layak, aman, dan berkelanjutan di Kabupaten Cianjur.',
+    title: copy.seo.title,
+    description: copy.seo.description,
     url: typeof window !== 'undefined' ? `${window.location.origin}/` : undefined,
     type: 'website',
     jsonLd: buildOrganizationJsonLd(),

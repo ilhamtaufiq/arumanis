@@ -1,4 +1,4 @@
-import { Download, FileUp, MoreVertical, Pencil, Share2, Trash2 } from 'lucide-react'
+import { Download, MoreVertical, Pencil, Share2, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -9,7 +9,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { UserDriveItem } from '../../api/user-drive'
-import { useSyncMediaToPaperless } from '../../hooks/usePaperless'
 
 type DriveFileActionsProps = {
     item: UserDriveItem
@@ -20,7 +19,6 @@ type DriveFileActionsProps = {
 
 /** Aksi file gaya `file-actions` v2 di atas API user-drive real (tanpa star: tanpa backend). */
 export function DriveFileActions({ item, onRename, onShare, onDelete }: DriveFileActionsProps) {
-    const syncMutation = useSyncMediaToPaperless()
     const canDownload = item.kind === 'file' && !!item.file_url
 
     return (
@@ -50,15 +48,6 @@ export function DriveFileActions({ item, onRename, onShare, onDelete }: DriveFil
                                 <Share2 />
                                 Bagikan
                             </DropdownMenuItem>
-                            {item.media_id ? (
-                                <DropdownMenuItem
-                                    onSelect={() => syncMutation.mutate(item.media_id as number)}
-                                    disabled={syncMutation.isPending}
-                                >
-                                    <FileUp />
-                                    Sinkron ke Paperless
-                                </DropdownMenuItem>
-                            ) : null}
                         </>
                     ) : null}
                 </DropdownMenuGroup>

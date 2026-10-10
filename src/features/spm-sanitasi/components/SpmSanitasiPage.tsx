@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useDebounce } from '@/hooks/use-debounce'
 import {
@@ -59,14 +60,13 @@ import {
 } from '../api'
 import { invalidateSpmIntegrationQueries } from '../hooks/useSpmIntegration'
 import {
-    findPekerjaanForJenis,
     getApiErrorMessage,
     getDesaLabel,
     inferJenisFromIntegrationRow,
 } from '../lib/integration-helpers'
 import { autoCreateInfrastrukturFromDesa } from '../lib/auto-create-infrastruktur'
 import { ImportSpmSanitasiDialog } from './ImportSpmSanitasiDialog'
-import { SpmSanitasiCapaianPanel } from './SpmSanitasiCapaianPanel'
+import { SpmSanitasiCapaianTab } from './SpmSanitasiCapaianTab'
 import { SpmSanitasiIntegrationTable } from './SpmSanitasiIntegrationTable'
 import { SpmSanitasiTagPekerjaanDialog } from './SpmSanitasiTagPekerjaanDialog'
 import { SpmDesaDetailPanel } from './SpmDesaDetailPanel'
@@ -107,10 +107,11 @@ function formatCurrency(value?: number | null) {
 }
 
 export type SpmSanitasiPageSearch = {
+    kecamatan_id?: number
     desa_id?: number
     tahun?: string
     jenis?: SpmSanitasiJenis
-    tab?: 'data' | 'integration'
+    tab?: 'capaian' | 'data' | 'integration'
     q?: string
 }
 
@@ -122,18 +123,33 @@ export default function SpmSanitasiPage({
     const queryClient = useQueryClient()
     const bootDesa = initialSearch?.desa_id
     const bootJenis = initialSearch?.jenis ?? 'spaldt'
-    const bootTab = initialSearch?.tab ?? 'data'
+    const bootTab = initialSearch?.tab ?? (bootDesa ? 'data' : 'capaian')
     const bootQ = initialSearch?.q ?? ''
     const bootTahun = initialSearch?.tahun ?? ''
 
-    const [pageTab, setPageTab] = useState<'data' | 'integration'>(bootTab)
+    const [pageTab, setPageTab] = useState<'capaian' | 'data' | 'integration'>(bootTab)
     const [activeJenis, setActiveJenis] = useState<SpmSanitasiJenis>(bootJenis)
     const [page, setPage] = useState(1)
     const [search, setSearch] = useState(bootQ)
     const debouncedSearch = useDebounce(search, SPM_SEARCH_DEBOUNCE_MS)
-    const [selectedKec, setSelectedKec] = useState<number | ''>('')
+    const [selectedKec, setSelectedKec] = useState<number | ''>(initialSearch?.kecamatan_id ?? '')
     const [selectedDesa, setSelectedDesa] = useState<number | ''>(bootDesa ?? '')
     const [selectedTahun, setSelectedTahun] = useState(bootTahun)
+
+    // Simpan tab & filter di URL agar bisa dibagikan / bertahan saat refresh
+    const navigate = useNavigate({ from: '/spm-sanitasi/' })
+    useEffect(() => {
+        void navigate({
+            search: (prev) => ({
+                ...prev,
+                tab: pageTab,
+                kecamatan_id: selectedKec || undefined,
+                desa_id: selectedDesa || undefined,
+                tahun: selectedTahun || undefined,
+            }),
+            replace: true,
+        })
+    }, [navigate, pageTab, selectedKec, selectedDesa, selectedTahun])
     const [formOpen, setFormOpen] = useState(false)
     const [editing, setEditing] = useState<SpmSanitasi | null>(null)
     const [deleteId, setDeleteId] = useState<number | null>(null)
@@ -458,17 +474,43 @@ export default function SpmSanitasiPage({
                 </p>
             </div>
 
-            <Tabs value={pageTab} onValueChange={(v) => setPageTab(v as 'data' | 'integration')}>
+            <Tabs value={pageTab} onValueChange={(v) => setPageTab(v as typeof pageTab)}>
                 <TabsList>
+                    <TabsTrigger value="capaian" className="flex items-center gap-2">
+                        <TrendingUp className="h-4 w-4" />
+                        Capaian SPM
+                    </TabsTrigger>
                     <TabsTrigger value="data" className="flex items-center gap-2">
                         <Building2 className="h-4 w-4" />
-                        Infrastruktur & Capaian
+                        Data Infrastruktur
                     </TabsTrigger>
                     <TabsTrigger value="integration" className="flex items-center gap-2">
                         <MapPinned className="h-4 w-4" />
                         Integrasi Paket Pekerjaan
                     </TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="capaian" className="mt-6">
+                    <SpmSanitasiCapaianTab
+                        kecamatans={kecamatans?.data ?? []}
+                        kecamatanId={selectedKec || undefined}
+                        tahun={selectedTahun || undefined}
+                        onKecChange={(kec) => {
+                            setSelectedKec(kec)
+                            setSelectedDesa('')
+                            setPage(1)
+                        }}
+                        onTahunChange={(t) => {
+                            setSelectedTahun(t)
+                            setPage(1)
+                        }}
+                        onDesaOpen={(desaName) => {
+                            setSearch(desaName)
+                            setPage(1)
+                            setPageTab('data')
+                        }}
+                    />
+                </TabsContent>
 
                 <TabsContent value="data" className="mt-6 space-y-6">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -525,11 +567,6 @@ export default function SpmSanitasiPage({
                     </Card>
                 ))}
             </div>
-
-            <SpmSanitasiCapaianPanel
-                kecamatanId={selectedKec || undefined}
-                tahun={selectedTahun || undefined}
-            />
 
             <Card>
                 <CardHeader>
@@ -870,6 +907,11 @@ export default function SpmSanitasiPage({
                                     updateField('jumlah_pemanfaat_kk', e.target.value ? Number(e.target.value) : null)
                                 }
                             />
+                            {editing?.pemanfaat_dari_integrasi ? (
+                                <p className="text-[11px] text-sky-700 dark:text-sky-400">
+                                    Terisi otomatis dari paket tertaut. Bila diubah, nilai menjadi isian manual dan tidak lagi diperbarui dari paket.
+                                </p>
+                            ) : null}
                         </div>
                         {formData.jenis === 'spaldt' && (
                             <div className="space-y-2">
@@ -928,6 +970,11 @@ export default function SpmSanitasiPage({
                                     updateField('pembiayaan_total', e.target.value ? Number(e.target.value) : null)
                                 }
                             />
+                            {editing?.pembiayaan_dari_integrasi ? (
+                                <p className="text-[11px] text-sky-700 dark:text-sky-400">
+                                    Terisi otomatis dari paket tertaut. Bila diubah, nilai menjadi isian manual.
+                                </p>
+                            ) : null}
                         </div>
                         <div className="space-y-2">
                             <Label>Kapasitas Desain/Terpasang (m³/hari)</Label>

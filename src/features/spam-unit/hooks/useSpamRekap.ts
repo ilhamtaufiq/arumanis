@@ -1,0 +1,168 @@
+import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import {
+    getPublicSpamMapStats,
+    getPublicSpamMapStatsSeries,
+    type PublicSpamDesaMapStat,
+} from '@/features/public/api/spam-stats'
+import { filterPublicSpmMapStats } from '@/features/public/lib/spm-reserved-wilayah'
+import { buildYearlyRows, normalizeWilayahName, type SpmRekapDesaInput } from '@/lib/spm-rekap'
+import { getSpamUnitStats, getSpamUnitStatsSeries } from '../api'
+import type { UnitSpamStats } from '../types'
+
+export const SPAM_REKAP_TAHUN = ['2020', '2021', '2022', '2023', '2024', '2025', '2026'] as const
+
+const JIWA_PER_KK = 5
+
+type UseSpamRekapParams = {
+    kecamatanId?: number
+    /** Nama kecamatan terpilih — map-stats hanya membawa nama, bukan id */
+    kecamatanName?: string
+    tahun?: string
+    /** Muat capaian per desa untuk setiap tahun (matriks peningkatan) */
+    matrixEnabled?: boolean
+    /** Muat data per desa (map-stats). Dashboard hanya butuh total dan per tahun, jadi false. */
+    includeDesa?: boolean
+}
+
+/**
+ * @param includeBjpMaster BJP master desa tidak bertahun — hanya dihitung pada
+ *   tampilan akumulasi (tanpa filter tahun), bukan pada tambahan per tahun.
+ */
+function toDesaInputs(
+    data: PublicSpamDesaMapStat[] | undefined,
+    kecamatanName: string | undefined,
+    includeBjpMaster: boolean,
+): SpmRekapDesaInput[] {
+    const kec = normalizeWilayahName(kecamatanName)
+    return filterPublicSpmMapStats(data ?? [])
+        .filter((row) => !kec || normalizeWilayahName(row.kecamatan) === kec)
+        .map((row) => {
+            const bjp = (row.bjp_unit ?? 0) + (includeBjpMaster ? (row.bjp_master ?? 0) : 0)
+            return {
+                desaId: row.desa_id,
+                desa: row.desa,
+                kecamatan: row.kecamatan ?? '-',
+                target: row.target,
+                capaian: row.kk + bjp,
+                jiwa: row.jiwa + bjp * JIWA_PER_KK,
+                unit: row.unit_count,
+                sr: row.sr,
+                bjp,
+            }
+        })
+}
+
+/** KK terlayani = KK JP + BJP unit (+ BJP master bila cakupan akumulasi). */
+function servedKk(stats: UnitSpamStats | undefined, includeBjpMaster: boolean) {
+    if (!stats) return { kk: 0, jiwa: 0, sr: 0 }
+    const capaian = stats.ringkasan?.capaian
+    const spm = stats.ringkasan?.spm
+    const jpKk = capaian?.kk ?? stats.capaian_kk ?? stats.total_kk ?? 0
+    const bjp = (spm?.bjp_unit_kk ?? 0) + (includeBjpMaster ? (spm?.bjp_master_kk ?? 0) : 0)
+    return {
+        kk: jpKk + bjp,
+        jiwa: (capaian?.jiwa ?? stats.capaian_jiwa ?? stats.total_jiwa ?? 0) + bjp * JIWA_PER_KK,
+        sr: capaian?.sr ?? stats.capaian_sr ?? stats.total_sr ?? 0,
+    }
+}
+
+/**
+ * Data rekap capaian SPM Air Minum (KK terlayani = KK JP + BJP):
+ * - per desa / kecamatan dari `/public/spam-units/map-stats`
+ * - per tahun dari `/spam-units/stats?tahun=` (tambahan pada tahun tersebut)
+ */
+export function useSpamRekap({
+    kecamatanId,
+    kecamatanName,
+    tahun,
+    matrixEnabled = false,
+    includeDesa = true,
+}: UseSpamRekapParams) {
+    const mapQuery = useQuery({
+        queryKey: ['spam-rekap-map-stats', tahun ?? 'all'],
+        queryFn: () => getPublicSpamMapStats(tahun ? { tahun } : undefined),
+        staleTime: 60_000,
+        enabled: includeDesa,
+    })
+
+    // Akumulasi seluruh tahun (target + titik awal tren); kunci sama dengan dashboard
+    const totalQuery = useQuery({
+        queryKey: ['spam-units-stats', kecamatanId, undefined],
+        queryFn: () => getSpamUnitStats({ kecamatan_id: kecamatanId }),
+        staleTime: 30_000,
+    })
+
+    // Satu request untuk semua tahun (GET /spam-units/stats/series), bukan satu per tahun
+    const yearlyQuery = useQuery({
+        queryKey: ['spam-units-stats-series', kecamatanId, SPAM_REKAP_TAHUN.join(',')],
+        queryFn: () => getSpamUnitStatsSeries({ kecamatan_id: kecamatanId, years: SPAM_REKAP_TAHUN }),
+        staleTime: 60_000,
+    })
+
+    const scopeKecamatan = kecamatanId ? kecamatanName : undefined
+
+    const desaInputs = useMemo(
+        () => toDesaInputs(mapQuery.data?.data, scopeKecamatan, !tahun),
+        [mapQuery.data?.data, scopeKecamatan, tahun],
+    )
+
+    // Matriks: satu request untuk semua tahun (map-stats/series), hanya saat matriks dibuka
+    const matrixQuery = useQuery({
+        queryKey: ['spam-rekap-map-stats-series', SPAM_REKAP_TAHUN.join(',')],
+        queryFn: () => getPublicSpamMapStatsSeries(SPAM_REKAP_TAHUN),
+        staleTime: 60_000,
+        enabled: matrixEnabled,
+    })
+    const matrixKey = String(matrixQuery.dataUpdatedAt)
+    const matrixByYear = useMemo(
+        () =>
+            SPAM_REKAP_TAHUN.map((year) => {
+                const rows = matrixQuery.data?.data?.[year]
+                return rows ? toDesaInputs(rows, scopeKecamatan, false) : undefined
+            }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [matrixKey, scopeKecamatan],
+    )
+
+    const totalStats = totalQuery.data?.data
+    const yearlyKey = String(yearlyQuery.dataUpdatedAt)
+
+    const { yearlyRows, baseline, targetKk } = useMemo(() => {
+        const inputs = SPAM_REKAP_TAHUN.map((year, index) => ({
+            tahun: year,
+            ...servedKk(yearlyQuery.data?.data?.[year], false),
+        }))
+        const sumYears = inputs.reduce((sum, row) => sum + row.kk, 0)
+        const total = servedKk(totalStats, true).kk
+        // Capaian di luar rentang tahun + BJP master desa (tidak bertahun)
+        const base = Math.max(0, total - sumYears)
+        const target = totalStats?.ringkasan?.spm?.target_kk ?? totalStats?.total_target ?? 0
+        return {
+            yearlyRows: buildYearlyRows(
+                inputs.map((row) => ({ tahun: row.tahun, capaian: row.kk, jiwa: row.jiwa, sr: row.sr })),
+                target,
+                base,
+            ),
+            baseline: base,
+            targetKk: target,
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [yearlyKey, totalStats])
+
+    return {
+        desaInputs,
+        /** KK terlayani total (tanpa tahun): untuk KPI, siap sebelum data tahunan */
+        totalKk: servedKk(totalStats, true).kk,
+        isTotalLoading: totalQuery.isLoading,
+        isDesaLoading: includeDesa && mapQuery.isLoading,
+        yearlyRows,
+        yearlyBaseline: baseline,
+        targetKk,
+        firstTahun: SPAM_REKAP_TAHUN[0],
+        isYearlyLoading: totalQuery.isLoading || yearlyQuery.isLoading,
+        matrixYears: SPAM_REKAP_TAHUN,
+        matrixByYear,
+        isMatrixLoading: matrixEnabled && matrixQuery.isLoading,
+    }
+}

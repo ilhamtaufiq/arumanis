@@ -1,3 +1,4 @@
+import { API_BASE } from '@/lib/api-base'
 /**
  * Large-file download helpers.
  *
@@ -5,13 +6,13 @@
  * the whole body is buffered in the JS heap and will OOM or surface as
  * `TypeError: Failed to fetch` / `net::ERR_FAILED 200`.
  *
- * Same-origin `/bff/api/...` URLs send the session cookie automatically, so the
+ * Same-origin `/api/...` URLs send the session cookie automatically, so the
  * browser can stream the response straight to disk.
  */
 
-const API_PREFIX = '/bff/api'
+const API_PREFIX = API_BASE
 
-/** Build a same-origin BFF API URL (with optional query params). */
+/** Build a same-origin API URL (with optional query params). */
 export function buildBffApiUrl(
     endpoint: string,
     params?: Record<string, string | number | undefined | null>,

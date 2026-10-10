@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { ApiError } from '@/lib/api-client'
-import { isEchoEnabled } from '@/lib/echo'
 import { useAuthStore } from '@/stores/auth-stores'
 import {
     deleteBroadcast,
@@ -17,13 +16,8 @@ import {
     type PaginatedNotifications,
 } from '../api/notifications'
 
-/**
- * Poll only when WebSocket (Reverb/Echo) is not configured.
- * With Echo enabled, badge updates come from useRealtimeNotifications.
- */
+/** Badge notifikasi diperbarui dengan polling (realtime sudah dihapus, K3). */
 export const UNREAD_NOTIFICATIONS_POLL_MS = 60_000
-/** Rare safety net when WS is on (missed events / reconnect gaps). */
-export const UNREAD_NOTIFICATIONS_WS_BACKUP_POLL_MS = 5 * 60_000
 
 export const notificationKeys = {
     all: ['notifications'] as const,
@@ -57,16 +51,12 @@ export function useNotificationList(unreadOnly = false, page = 1) {
 
 export function useUnreadNotifications(pollInterval?: number) {
     const isSessionActive = useAuthStore((state) => state.auth.isSessionActive)
-    const realtime = isEchoEnabled()
-    const effectivePoll =
-        pollInterval ??
-        (realtime ? UNREAD_NOTIFICATIONS_WS_BACKUP_POLL_MS : UNREAD_NOTIFICATIONS_POLL_MS)
+    const effectivePoll = pollInterval ?? UNREAD_NOTIFICATIONS_POLL_MS
 
     return useQuery({
         queryKey: notificationKeys.unread(),
         queryFn: () => getNotifications(true),
         enabled: isSessionActive,
-        // WS path: rare backup poll only. HTTP path: moderate poll for badge.
         refetchInterval: (query) => {
             if (!isSessionActive) return false
             const status = query.state.error instanceof ApiError
@@ -77,7 +67,7 @@ export function useUnreadNotifications(pollInterval?: number) {
         },
         refetchIntervalInBackground: false,
         refetchOnWindowFocus: true,
-        staleTime: realtime ? 60_000 : Math.min(effectivePoll, 30_000),
+        staleTime: Math.min(effectivePoll, 30_000),
         retry: (failureCount, error) => {
             if (error instanceof ApiError && [401, 403].includes(error.status)) {
                 return false

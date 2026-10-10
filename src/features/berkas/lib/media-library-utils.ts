@@ -3,7 +3,6 @@ import type { UserDriveItem } from '@/features/berkas/api/user-drive';
 import type { MediaItem } from '@/features/berkas/components/MediaCard';
 import type { Foto } from '@/features/foto/types';
 import type { Pekerjaan } from '@/features/pekerjaan/types';
-import type { PuspenMediaLibraryItem } from '@/features/puspen/api/media-sharing';
 import { isImageFile } from '@/lib/file-preview';
 import { formatPekerjaanLokasi } from '@/lib/wilayah-fields';
 import { normalizeStorageUrl } from '@/features/foto/lib/foto-url';
@@ -16,7 +15,7 @@ export const MEDIA_LIBRARY_USER_DRIVE_PER_PAGE = 48
 export type MediaLibraryFilterType = 'all' | 'images' | 'docs'
 export type MediaLibraryViewType = 'grid' | 'list'
 
-export type DriveZone = 'puspen' | 'pekerjaan' | 'users';
+export type DriveZone = 'pekerjaan' | 'users';
 export type DriveSortField = 'date' | 'name';
 export type DriveSortDirection = 'asc' | 'desc';
 
@@ -84,20 +83,6 @@ export function berkasToMediaItem(berkas: Berkas): MediaItem {
         pekerjaan_name: berkas.pekerjaan?.nama_paket || '-',
         created_at: berkas.created_at,
         jenis_dokumen: berkas.jenis_dokumen,
-    };
-}
-
-export function puspenToMediaItem(item: PuspenMediaLibraryItem): MediaItem {
-    const isImage = item.mimeType.startsWith('image/');
-
-    return {
-        id: item.id,
-        source: 'puspen',
-        type: isImage ? 'image' : 'document',
-        name: item.name || item.fileName,
-        url: normalizeStorageUrl(item.url),
-        pekerjaan_name: item.modelType,
-        created_at: item.createdAt ?? new Date().toISOString(),
     };
 }
 

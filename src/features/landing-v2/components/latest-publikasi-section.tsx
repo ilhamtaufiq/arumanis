@@ -1,3 +1,4 @@
+import { useLandingCopy } from "../i18n";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -12,6 +13,7 @@ import {
 export function LatestPublikasiSection() {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const { copy } = useLandingCopy();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -56,16 +58,16 @@ export function LatestPublikasiSection() {
           <div>
             <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground mb-6">
               <span className="w-8 h-px bg-primary" />
-              Publikasi terbaru
+              {copy.publikasi.eyebrow}
             </span>
             <h2
               className={`text-4xl lg:text-6xl font-display tracking-tight transition-all duration-700 ${
                 isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
               }`}
             >
-              Kabar terkini
+              {copy.publikasi.title}
               <br />
-              <span className="text-muted-foreground">dari lapangan.</span>
+              <span className="text-muted-foreground">{copy.publikasi.titleMuted}</span>
             </h2>
           </div>
 
@@ -73,7 +75,7 @@ export function LatestPublikasiSection() {
             to="/publikasi"
             className="group inline-flex w-fit items-center gap-2 text-sm font-medium text-foreground/70 hover:text-primary transition-colors"
           >
-            Lihat semua publikasi
+            {copy.publikasi.seeAll}
             <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
@@ -135,7 +137,7 @@ export function LatestPublikasiSection() {
                     {getExcerpt(post.content, 120)}
                   </p>
                   <span className="mt-auto inline-flex items-center gap-1.5 pt-2 text-xs font-semibold uppercase tracking-[0.16em] text-foreground group-hover:text-primary transition-colors">
-                    Baca artikel
+                    {copy.publikasi.read}
                     <ArrowUpRight className="h-3.5 w-3.5" />
                   </span>
                 </div>

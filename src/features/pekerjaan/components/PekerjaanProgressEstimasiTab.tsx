@@ -2,9 +2,7 @@ import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
     Banknote,
-    Calendar,
     HardHat,
-    Info,
     Loader2,
     Plus,
     Trash2,
@@ -15,10 +13,9 @@ import { toast } from 'sonner';
 
 import { DatePickerField } from '@/components/shared/DatePickerField';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import {
@@ -26,7 +23,6 @@ import {
     savePekerjaanProgressEstimasi,
     type ProgressHistoryEntry,
     type ProgressEstimasiSection,
-    type PuspenProgressFisikSnapshot,
 } from '../api/progress-estimasi';
 
 type HistoryDraft = { tanggal: string; persen: string };
@@ -367,7 +363,6 @@ export default function PekerjaanProgressEstimasiTab({ pekerjaanId }: PekerjaanP
         onSuccess: async () => {
             await Promise.all([
                 queryClient.invalidateQueries({ queryKey: ['pekerjaan-progress-estimasi', pekerjaanId] }),
-                queryClient.invalidateQueries({ queryKey: ['puspen-progress-fisik'] }),
             ]);
         },
         onError: () => {
@@ -446,7 +441,6 @@ export default function PekerjaanProgressEstimasiTab({ pekerjaanId }: PekerjaanP
         persist(nextHistories);
     };
 
-    const puspenItems = data?.puspen_progress_fisik ?? [];
     const emptySection: ProgressEstimasiSection = {
         rencana: [],
         realisasi: [],
@@ -465,29 +459,6 @@ export default function PekerjaanProgressEstimasiTab({ pekerjaanId }: PekerjaanP
 
     return (
         <div className="space-y-5">
-            {puspenItems.length > 0 && (
-                <Card className="border-dashed">
-                    <CardHeader className="pb-3">
-                        <CardTitle className="flex items-center gap-2 text-base">
-                            <Info className="h-4 w-4" />
-                            Referensi Puspen Progress Fisik
-                        </CardTitle>
-                        <CardDescription>
-                            Progress fisik disinkronkan dua arah dengan Puspen. Nilai terakhir di sini memperbarui
-                            halaman Puspen progress fisik untuk kontrak terkait.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex flex-wrap gap-2">
-                        {puspenItems.map((item: PuspenProgressFisikSnapshot) => (
-                            <Badge key={item.kontrak_id} variant="outline" className="px-3 py-2 text-sm font-normal">
-                                {item.kode_paket || `Kontrak #${item.kontrak_id}`}: Rencana{' '}
-                                {formatPercent(item.rencana)}% - Realisasi {formatPercent(item.realisasi)}%
-                            </Badge>
-                        ))}
-                    </CardContent>
-                </Card>
-            )}
-
             <Tabs defaultValue="fisik" className="space-y-5">
                 <TabsList className="grid w-full max-w-md grid-cols-2">
                     <TabsTrigger value="fisik" className="gap-2">

@@ -205,38 +205,6 @@ export function isPublicationDownloadLink(anchor: HTMLAnchorElement): boolean {
     return PUBLICATION_DOWNLOAD_PATTERN.test(href)
 }
 
-export function setupPublicationDownloadTracking(
-    container: HTMLElement,
-    onDownload: (payload: { href: string; label: string }) => void,
-): () => void {
-    const handleClick = (event: MouseEvent) => {
-        const target = event.target
-        if (!(target instanceof Element)) {
-            return
-        }
-
-        const anchor = target.closest('a')
-        if (!(anchor instanceof HTMLAnchorElement) || !container.contains(anchor)) {
-            return
-        }
-
-        if (!isPublicationDownloadLink(anchor)) {
-            return
-        }
-
-        const href = anchor.href || anchor.getAttribute('href') || ''
-        const label = anchor.textContent?.trim() || anchor.getAttribute('aria-label') || 'download'
-
-        onDownload({ href, label })
-    }
-
-    container.addEventListener('click', handleClick)
-
-    return () => {
-        container.removeEventListener('click', handleClick)
-    }
-}
-
 export function setupPublicationMedia(container: HTMLElement): () => void {
     container.querySelectorAll<HTMLElement>('[data-manual-video="true"]').forEach(bindPlaceholder)
 

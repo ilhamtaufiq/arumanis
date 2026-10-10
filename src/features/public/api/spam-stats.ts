@@ -10,13 +10,16 @@ export type PublicSpamDesaMapStat = {
     sr: number
     kk: number
     jiwa: number
+    /** BJP master desa (tidak bertahun) — backend baru */
+    bjp_master?: number
+    /** BJP dari achievement unit (mengikuti filter tahun) — backend baru */
+    bjp_unit?: number
 }
 
 export async function getPublicSpamUnitStats(params?: { tahun?: string }) {
     return api.get<{ success: boolean; data: UnitSpamStats }>('/public/spam-units/stats', {
         params: {
             ...params,
-            _t: Date.now(),
         },
     })
 }
@@ -25,7 +28,6 @@ export async function getPublicSpamMapStats(params?: { tahun?: string }) {
     return api.get<{ success: boolean; data: PublicSpamDesaMapStat[] }>('/public/spam-units/map-stats', {
         params: {
             ...params,
-            _t: Date.now(),
         },
     })
 }
@@ -71,9 +73,24 @@ export async function getPublicSanitasiStats(params?: { tahun?: string }) {
     return api.get<{ success: boolean; data: PublicSanitasiStats }>('/public/spm-sanitasi/stats', {
         params: {
             ...params,
-            _t: Date.now(),
         },
     })
+}
+
+/** Map-stats beberapa tahun dalam satu request, dikunci per tahun (spam air minum). */
+export async function getPublicSpamMapStatsSeries(years: readonly string[]) {
+    return api.get<{ success: boolean; data: Record<string, PublicSpamDesaMapStat[]> }>(
+        '/public/spam-units/map-stats/series',
+        { params: { years: years.join(',') } },
+    )
+}
+
+/** Map-stats beberapa tahun konstruksi dalam satu request, dikunci per tahun (sanitasi). */
+export async function getPublicSanitasiMapStatsSeries(years: readonly string[]) {
+    return api.get<{ success: boolean; data: Record<string, PublicSanitasiDesaMapStat[]> }>(
+        '/public/spm-sanitasi/map-stats/series',
+        { params: { years: years.join(',') } },
+    )
 }
 
 export async function getPublicSanitasiMapStats(params?: { tahun?: string }) {
@@ -82,7 +99,6 @@ export async function getPublicSanitasiMapStats(params?: { tahun?: string }) {
         {
             params: {
                 ...params,
-                _t: Date.now(),
             },
         },
     )

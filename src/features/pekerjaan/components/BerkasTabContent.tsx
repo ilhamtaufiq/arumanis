@@ -29,8 +29,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown, ChevronDown, FileType, Share2, Search } from 'lucide-react';
-import { BerkasQuickShareDialog } from './BerkasQuickShareDialog';
+import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown, ChevronDown, FileType, Search } from 'lucide-react';
 import { toast } from 'sonner';
 import EmbeddedBerkasForm from './EmbeddedBerkasForm';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
@@ -65,9 +64,6 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
     const [downloadingZip, setDownloadingZip] = useState(false);
     const [editingFile, setEditingFile] = useState<Berkas | null>(null);
     const [previewingFile, setPreviewingFile] = useState<Berkas | null>(null);
-    const [quickShareOpen, setQuickShareOpen] = useState(false);
-    const [quickShareBerkasIds, setQuickShareBerkasIds] = useState<number[] | undefined>(undefined);
-    const [quickShareLabel, setQuickShareLabel] = useState('semua berkas pekerjaan ini');
     const [currentPage, setCurrentPage] = useState(1);
     const [searchQuery, setSearchQuery] = useState('');
     const debouncedSearch = useDebounce(searchQuery, 300);
@@ -120,13 +116,6 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
         deleteMutation.mutate(id);
     };
 
-    const openQuickShare = (berkasIds?: number[], label = 'semua berkas pekerjaan ini') => {
-        setQuickShareBerkasIds(berkasIds);
-        setQuickShareLabel(label);
-        setQuickShareOpen(true);
-    };
-
-    const quickShareFileCount = quickShareBerkasIds?.length ?? berkasList.length;
 
     const handleDownload = (url: string, jenisDokumen: string) => {
         // Create a temporary link and trigger download
@@ -228,14 +217,6 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                     </div>
                     {berkasList.length > 0 && (
                         <>
-                            <Button
-                                variant="secondary"
-                                className="flex items-center gap-2"
-                                onClick={() => openQuickShare(undefined, 'semua berkas pekerjaan ini')}
-                            >
-                                <Share2 className="h-4 w-4" />
-                                Quick Share
-                            </Button>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button
@@ -335,14 +316,6 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => openQuickShare([berkas.id], `berkas "${berkas.jenis_dokumen}"`)}
-                                                title="Quick Share ke Puspen"
-                                            >
-                                                <Share2 className="h-4 w-4 text-primary" />
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
                                                 onClick={() => handleDownload(berkas.berkas_url, berkas.jenis_dokumen)}
                                             >
                                                 <Download className="h-4 w-4" />
@@ -395,16 +368,6 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                     meta={meta}
                 />
             )}
-
-            <BerkasQuickShareDialog
-                open={quickShareOpen}
-                onOpenChange={setQuickShareOpen}
-                pekerjaanId={pekerjaanId}
-                namaPaket={namaPaket}
-                berkasIds={quickShareBerkasIds}
-                fileCount={quickShareFileCount}
-                fileLabel={quickShareLabel}
-            />
 
             <DocumentPreviewModal
                 isOpen={!!previewingFile}

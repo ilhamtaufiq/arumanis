@@ -12,6 +12,7 @@ import {
     resolvePostLoginPath,
 } from '@/lib/post-login-redirect'
 import { DashboardDestinationModal } from '@/components/common/DashboardDestinationModal'
+import { API_BASE } from '@/lib/api-base'
 
 function readHashParams() {
     const hash = window.location.hash.startsWith('#')
@@ -66,12 +67,12 @@ function OAuthCallback() {
                 await syncAuthToken(token)
                 auth.setSessionActive(true)
 
-                const meResponse = await fetch('/bff/auth/me', {
+                const meResponse = await fetch(`${API_BASE}/auth/me`, {
                     credentials: 'include',
                     headers: { Accept: 'application/json' },
                 })
                 const mePayload = await meResponse.json()
-                const userData = mePayload?.user
+                const userData = mePayload?.data
 
                 if (!userData) {
                     throw new Error('Failed to load user profile')

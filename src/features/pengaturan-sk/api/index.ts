@@ -1,5 +1,6 @@
 import api from '@/lib/api-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { API_BASE } from '@/lib/api-base'
 
 export interface Sk {
     id: number;
@@ -54,7 +55,7 @@ export const deleteSk = async (id: number) => {
 };
 
 export const getSkDownloadUrl = (id: number): string => {
-    return `/bff/api/sk/${id}`;
+    return `${API_BASE}/sk/${id}`;
 };
 
 // Hooks

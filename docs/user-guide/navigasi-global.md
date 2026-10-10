@@ -54,7 +54,7 @@ Sidebar adalah menu navigasi utama di sebelah kiri. Terbagi dalam grup:
 - **Kecamatan** (`/kecamatan`) — Data kecamatan
 - **Desa** (`/desa`) — Data desa
 - **Pekerjaan** (`/pekerjaan`) — Data pekerjaan/proyek
-- **Aset & Capaian SPAM** (`/spam-unit`) — Data aset
+- **SPM Air Minum** (`/spam-unit`) — Data aset
 - **Draft Pekerjaan** (`/draft-pekerjaan`) — Draft pekerjaan
 - **Penyedia** (`/penyedia`) — Data vendor/penyedia
 - **Kontrak** (`/kontrak`) — Data kontrak

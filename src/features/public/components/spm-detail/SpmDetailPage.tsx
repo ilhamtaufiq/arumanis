@@ -31,7 +31,6 @@ import { SpmInfrastructureBreakdown } from './SpmInfrastructureBreakdown'
 import { SpmYearlyTrendChart } from './SpmYearlyTrendChart'
 import { SpmSectionNav } from './SpmSectionNav'
 import { LocaleToggle } from '../locale-toggle'
-import { trackVisitorEvent } from '@/lib/analytics/visitor-events'
 import { SpmSyncDisclaimer } from '../spm-sync-disclaimer'
 
 const Grainient = lazy(() => lazyImport(() => import('@/components/ui/Grainient'), 'grainient'))
@@ -61,13 +60,6 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
     const tableSectionRef = useRef<HTMLElement>(null)
 
     useEffect(() => {
-        void trackVisitorEvent('spm_detail_view', {
-            sector,
-            tahun: tahun ?? 'latest',
-        })
-    }, [sector, tahun])
-
-    useEffect(() => {
         setSelectedDesaId(null)
         setKecamatanFilter('')
         setCoverageTierFilter('all')
@@ -90,10 +82,7 @@ export function SpmDetailPage({ sector: sectorProp, tahun }: SpmDetailPageProps)
 
     const handleDesaSelect = useCallback((desaId: number | null) => {
         setSelectedDesaId(desaId)
-        if (desaId) {
-            void trackVisitorEvent('spm_detail_desa_select', { sector, desa_id: desaId })
-        }
-    }, [sector])
+    }, [])
 
     const scrollToSection = useCallback((section: SpmSection) => {
         setActiveSection(section)

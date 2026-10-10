@@ -2,6 +2,42 @@ export type PublicLocale = 'id' | 'en'
 
 export type PublicMessages = {
     landing: {
+        shell: {
+            nav: {
+                program: string
+                howItWorks: string
+                publications: string
+                collaboration: string
+                about: string
+                signIn: string
+                aspiration: string
+                home: string
+                mainNavLabel: string
+                openMenu: string
+                closeMenu: string
+            }
+            hero: {
+                eyebrow: string
+                titleLine: string
+                words: string[]
+                description: string
+                ctaProgram: string
+                ctaPublications: string
+            }
+            collab: {
+                label: string
+                titleLead: string
+                titleTail: string
+                description: string
+                features: Array<{ title: string; description: string }>
+                decisions: Array<{ label: string; detail: string; yes: string; no: string }>
+                yes: string
+                notYet: string
+                tabsLabel: string
+                linkModules: string
+                linkAchievements: string
+            }
+        }
         nav: {
             achievements: string
             access: string
