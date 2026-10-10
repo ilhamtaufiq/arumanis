@@ -22,6 +22,7 @@ import {
     MapPin,
     MessageSquare,
     Newspaper,
+    NotebookPen,
     Package,
     Recycle,
     RefreshCw,
@@ -124,6 +125,11 @@ export const sidebarData: SidebarData = {
                     url: '/tiket',
                     icon: MessageSquare,
                     menuKey: 'tiket',
+                },
+                {
+                    title: 'Jurnal Kegiatan',
+                    url: '/jurnal-kegiatan',
+                    icon: NotebookPen,
                 },
                 {
                     title: 'Usulan Kegiatan',
