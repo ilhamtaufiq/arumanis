@@ -5,6 +5,7 @@ export type PeripaanItem = {
     id: number
     nama: string
     pekerjaan_id: number | null
+    /** Hanya terisi di `getPeripaan` (detail) dan respons unggah; daftar tidak memuatnya. */
     geojson: FeatureCollection | null
     file_url: string | null
     file_name: string | null
@@ -22,17 +23,18 @@ export const getPeripaanList = async (params?: { pekerjaan_id?: number }) => {
     return response.data
 }
 
-export const createPeripaan = async (data: {
-    file: File
-    nama: string
-    pekerjaan_id?: number | null
-    geojson?: FeatureCollection | null
-}) => {
+/** Satu berkas beserta GeoJSON-nya. */
+export const getPeripaan = async (id: number) => {
+    const response = await api.get<{ data: PeripaanItem }>(`/peripaan/${id}`)
+    return response.data
+}
+
+/** Unggah berkas KML/KMZ. GeoJSON dibuat di server dari berkas itu. */
+export const createPeripaan = async (data: { file: File; nama: string; pekerjaan_id?: number | null }) => {
     const formData = new FormData()
     formData.append('file', data.file)
     formData.append('nama', data.nama)
     if (data.pekerjaan_id) formData.append('pekerjaan_id', String(data.pekerjaan_id))
-    if (data.geojson) formData.append('geojson', JSON.stringify(data.geojson))
     return (await api.post<{ data: PeripaanItem }>('/peripaan', formData)).data
 }
 
