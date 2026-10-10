@@ -26,9 +26,6 @@ import { Badge } from '@/components/ui/badge';
 import {
     Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from '@/components/ui/dialog';
-import { Header } from '@/components/layout/header';
-import { Main } from '@/components/layout/main';
-import { Heading } from '@/components/ui/heading';
 import { DashboardStatCard } from '@/features/dashboard/components/DashboardStatCard';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
@@ -55,6 +52,7 @@ import { ProgressRekapPagination } from './ProgressRekapPagination';
 /** Tag names to surface in filter dropdown (case-insensitive match). */
 const REKAP_TAG_NAMES = ['rembug warga', 'pokir'] as const;
 
+/** Isi rekap progres (filter, tabel, ekspor). Halaman pembungkus menyediakan header dan judul. */
 export default function ProgressRekap() {
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
@@ -264,13 +262,7 @@ export default function ProgressRekap() {
 
     return (
         <>
-            <Header />
-            <Main>
-                <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-                    <Heading
-                        title="Rekap Progres Estimasi"
-                        description="Ringkasan realisasi progress estimasi fisik per pekerjaan. Gunakan filter Status untuk menyertakan/mengecualikan paket dibatalkan."
-                    />
+            <div className="mb-6 flex justify-end">
                     {isFiltered && (
                         <Button
                             variant="outline"
@@ -282,7 +274,7 @@ export default function ProgressRekap() {
                             Reset Filter
                         </Button>
                     )}
-                </div>
+            </div>
 
                 {/* Summary cards */}
                 {!loading && pekerjaanList.length > 0 && (
@@ -641,7 +633,6 @@ export default function ProgressRekap() {
                         </div>
                     </DialogContent>
                 </Dialog>
-            </Main>
         </>
     );
 }

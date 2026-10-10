@@ -54,7 +54,7 @@ export function RekapProgressCompact() {
                     <CardDescription>Paket teratas berdasar progres fisik estimasi · TA {tahunAnggaran}</CardDescription>
                 </div>
                 <Button variant='outline' size='sm' asChild>
-                    <Link to='/progress_rekap'>
+                    <Link to='/dashboard/progres'>
                         Rekap penuh
                         <ArrowRight />
                     </Link>

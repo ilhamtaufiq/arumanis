@@ -1,26 +1,41 @@
 import { useQuery } from '@tanstack/react-query'
-import { Briefcase, Gauge, Wallet, AlertCircle, HardHat, UserCheck } from 'lucide-react'
+import { Medal } from 'lucide-react'
 import { BannerNotification } from '@/features/notifications/components/BannerNotification'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Heading } from '@/components/ui/heading'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
-import { getProgresMvp, type PengawasKpi, type ProgresMvp } from '../api/dashboard'
-import { formatCurrency, formatNumber } from '../lib/format'
-import { DashboardBarChart } from './DashboardCharts'
-import { DashboardStatCard } from './DashboardStatCard'
+import ProgressRekap from '@/features/progress/components/ProgressRekap'
+import { getProgresMvp, type ProgresPerPengawas } from '../api/dashboard'
+import { formatNumber } from '../lib/format'
 
-const pct = (v: number | null | undefined) => (v == null ? '—' : `${v.toFixed(1)}%`)
+const pct = (v: number | null | undefined) => (v == null ? '—' : `${Number(v).toFixed(1)}%`)
 
+type RoleKey = ProgresPerPengawas['role']
+
+/** Urutkan peringkat: progres tertinggi di atas, lalu jumlah paket terbanyak. Progres kosong di bawah. */
+function rankFor(list: ProgresPerPengawas[], role: RoleKey) {
+    return list
+        .filter((o) => o.role === role)
+        .sort((a, b) => {
+            const av = a.rata_progres ?? -1
+            const bv = b.rata_progres ?? -1
+            return bv - av || b.jumlah_pekerjaan - a.jumlah_pekerjaan
+        })
+}
+
+/** Halaman progres pekerjaan: peringkat pengawasan di atas, lalu rekap progres paket. */
 export function DashboardProgresPage() {
     const { tahunAnggaran } = useAppSettingsValues()
-    const { data, isLoading, isError } = useQuery({
-        queryKey: ['dashboard-progres-mvp', tahunAnggaran],
+    const { data: mvp, isLoading: mvpLoading } = useQuery({
+        queryKey: ['progres-pengawas-rank', tahunAnggaran],
         queryFn: () => getProgresMvp(tahunAnggaran),
         staleTime: 60_000,
     })
-    const stats: ProgresMvp | undefined = data?.data
+    const kpi = mvp?.data
+    const rankPengawas = kpi ? rankFor(kpi.per_pengawas, 'pengawas') : []
+    const rankKonsultan = kpi ? rankFor(kpi.per_pengawas, 'konsultan_pengawas') : []
 
     return (
         <>
@@ -30,129 +45,29 @@ export function DashboardProgresPage() {
                 <div className="flex w-full min-w-0 flex-col gap-6">
                     <Heading
                         title="Progres Pekerjaan"
-                        description={`TA ${tahunAnggaran} · Progres fisik terbaru per pekerjaan`}
+                        description={`TA ${tahunAnggaran} · Peringkat pengawasan dan rekap progres estimasi per paket. Gunakan filter Status untuk menyertakan paket dibatalkan.`}
                     />
 
-                    {isError ? (
-                        <p className="rounded-lg border border-red-500/20 bg-red-500/[0.04] p-4 text-sm text-red-600">
-                            Data progres belum bisa dimuat. Coba muat ulang halaman.
-                        </p>
-                    ) : null}
-
-                    <section aria-labelledby="kpi-progres" className="flex flex-col gap-3">
-                        <h2 id="kpi-progres" className="text-sm font-semibold text-muted-foreground">
-                            Ringkasan
+                    <section aria-labelledby="peringkat-pengawas" className="flex flex-col gap-3">
+                        <h2 id="peringkat-pengawas" className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                            <Medal className="h-4 w-4" /> Peringkat pengawasan
                         </h2>
-                        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                            <DashboardStatCard
-                                title="Total pekerjaan"
-                                value={formatNumber(stats?.kpi.total_pekerjaan ?? 0)}
-                                icon={Briefcase}
-                                isLoading={isLoading}
-                                variant="primary"
-                            />
-                            <DashboardStatCard
-                                title="Rata-rata progres fisik"
-                                value={pct(stats?.kpi.rata_progres)}
-                                description="Hanya pekerjaan yang punya riwayat realisasi"
-                                icon={Gauge}
-                                isLoading={isLoading}
-                                variant="success"
-                            />
-                            <DashboardStatCard
-                                title="Belum ada progres"
-                                value={formatNumber(stats?.kpi.belum_progres ?? 0)}
-                                description="Belum ada realisasi fisik"
-                                icon={AlertCircle}
-                                isLoading={isLoading}
-                                variant="warning"
-                            />
-                            <DashboardStatCard
-                                title="Total pagu"
-                                value={formatCurrency(stats?.kpi.total_pagu ?? 0)}
-                                icon={Wallet}
-                                isLoading={isLoading}
-                                variant="info"
-                            />
-                        </div>
-                    </section>
-
-                    <section aria-labelledby="kpi-pengawas" className="flex flex-col gap-3">
-                        <h2 id="kpi-pengawas" className="text-sm font-semibold text-muted-foreground">
-                            Pengawasan
-                        </h2>
-                        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                            <PengawasCard
-                                title="Pengawas"
-                                icon={HardHat}
-                                kpi={stats?.pengawas.pengawas}
-                                isLoading={isLoading}
-                            />
-                            <PengawasCard
+                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                            <RankingCard title="Pengawas" kpi={kpi?.pengawas.pengawas} ranking={rankPengawas} isLoading={mvpLoading} />
+                            <RankingCard
                                 title="Konsultan pengawas"
-                                icon={UserCheck}
-                                kpi={stats?.pengawas.konsultan_pengawas}
-                                isLoading={isLoading}
+                                kpi={kpi?.pengawas.konsultan_pengawas}
+                                ranking={rankKonsultan}
+                                isLoading={mvpLoading}
                             />
                         </div>
                     </section>
 
-                    <DashboardBarChart
-                        title="Pekerjaan per kecamatan"
-                        description="Jumlah pekerjaan dan rata-rata progres fisik"
-                        data={(stats?.per_kecamatan ?? []).map((k) => ({
-                            name: k.nama,
-                            value: k.jumlah,
-                            progres: k.rata_progres ?? 0,
-                        }))}
-                        isLoading={isLoading}
-                        dataKey="value"
-                        layout="horizontal"
-                        height={320}
-                    />
-
-                    <section aria-labelledby="daftar-pengawas" className="flex flex-col gap-3">
-                        <h2 id="daftar-pengawas" className="text-sm font-semibold text-muted-foreground">
-                            Pengawas dan konsultan pengawas
+                    <section aria-labelledby="rekap-paket" className="flex flex-col gap-3">
+                        <h2 id="rekap-paket" className="text-sm font-semibold text-muted-foreground">
+                            Rekap progres per paket
                         </h2>
-                        <div className="overflow-x-auto rounded-xl border bg-card">
-                            <table className="w-full text-sm">
-                                <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
-                                    <tr>
-                                        <th scope="col" className="px-3 py-2 font-medium">Nama</th>
-                                        <th scope="col" className="px-3 py-2 font-medium">Peran</th>
-                                        <th scope="col" className="px-3 py-2 text-right font-medium">Pekerjaan</th>
-                                        <th scope="col" className="px-3 py-2 text-right font-medium">Rata-rata progres</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {isLoading ? (
-                                        <tr>
-                                            <td colSpan={4} className="p-3">
-                                                <Skeleton className="h-6 w-full" />
-                                            </td>
-                                        </tr>
-                                    ) : (stats?.per_pengawas.length ?? 0) === 0 ? (
-                                        <tr>
-                                            <td colSpan={4} className="p-3 text-center text-muted-foreground">
-                                                Belum ada pengawas yang ditugaskan.
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        stats?.per_pengawas.map((o) => (
-                                            <tr key={`${o.user_id}-${o.role}`} className="border-t">
-                                                <td className="px-3 py-2">{o.nama || '—'}</td>
-                                                <td className="px-3 py-2">
-                                                    {o.role === 'pengawas' ? 'Pengawas' : 'Konsultan pengawas'}
-                                                </td>
-                                                <td className="px-3 py-2 text-right tabular-nums">{formatNumber(o.jumlah_pekerjaan)}</td>
-                                                <td className="px-3 py-2 text-right tabular-nums">{pct(o.rata_progres)}</td>
-                                            </tr>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                        <ProgressRekap />
                     </section>
                 </div>
             </Main>
@@ -160,49 +75,62 @@ export function DashboardProgresPage() {
     )
 }
 
-function PengawasCard({
+type PengawasKpiView = {
+    aktif: number
+    pekerjaan_diawasi: number
+    belum_diawasi: number
+    rata_progres: number | null
+}
+
+function RankingCard({
     title,
-    icon,
     kpi,
+    ranking,
     isLoading,
 }: {
     title: string
-    icon: typeof HardHat
-    kpi: PengawasKpi | undefined
+    kpi: PengawasKpiView | undefined
+    ranking: ProgresPerPengawas[]
     isLoading: boolean
 }) {
     return (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <DashboardStatCard
-                title={`${title} aktif`}
-                value={formatNumber(kpi?.aktif ?? 0)}
-                icon={icon}
-                isLoading={isLoading}
-                compact
-            />
-            <DashboardStatCard
-                title="Pekerjaan diawasi"
-                value={formatNumber(kpi?.pekerjaan_diawasi ?? 0)}
-                icon={Briefcase}
-                isLoading={isLoading}
-                compact
-            />
-            <DashboardStatCard
-                title="Belum diawasi"
-                value={formatNumber(kpi?.belum_diawasi ?? 0)}
-                icon={AlertCircle}
-                isLoading={isLoading}
-                variant="warning"
-                compact
-            />
-            <DashboardStatCard
-                title="Rata-rata progres"
-                value={pct(kpi?.rata_progres)}
-                icon={Gauge}
-                isLoading={isLoading}
-                variant="success"
-                compact
-            />
+        <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
+            <div className="flex items-baseline justify-between">
+                <h3 className="font-semibold">{title}</h3>
+                <span className="text-xs text-muted-foreground">{formatNumber(kpi?.aktif ?? 0)} aktif</span>
+            </div>
+            <dl className="grid grid-cols-3 gap-2 text-center">
+                <div className="rounded-lg bg-muted/40 p-2">
+                    <dt className="text-[11px] text-muted-foreground">Paket diawasi</dt>
+                    <dd className="text-base font-semibold tabular-nums">{formatNumber(kpi?.pekerjaan_diawasi ?? 0)}</dd>
+                </div>
+                <div className="rounded-lg bg-muted/40 p-2">
+                    <dt className="text-[11px] text-muted-foreground">Belum diawasi</dt>
+                    <dd className="text-base font-semibold tabular-nums">{formatNumber(kpi?.belum_diawasi ?? 0)}</dd>
+                </div>
+                <div className="rounded-lg bg-muted/40 p-2">
+                    <dt className="text-[11px] text-muted-foreground">Rata progres</dt>
+                    <dd className="text-base font-semibold tabular-nums">{pct(kpi?.rata_progres)}</dd>
+                </div>
+            </dl>
+            {isLoading ? (
+                <Skeleton className="h-24 w-full" />
+            ) : ranking.length === 0 ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">Belum ada penugasan.</p>
+            ) : (
+                <ol className="flex flex-col divide-y text-sm">
+                    {ranking.slice(0, 10).map((o, i) => (
+                        <li key={o.user_id} className="flex items-center gap-3 py-2">
+                            <span className={`w-6 text-center font-semibold tabular-nums ${i < 3 ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                                {i + 1}
+                            </span>
+                            <span className="min-w-0 flex-1 truncate">{o.nama || '—'}</span>
+                            <span className="text-xs text-muted-foreground tabular-nums">{formatNumber(o.jumlah_pekerjaan)} paket</span>
+                            <span className="w-16 text-right font-semibold tabular-nums">{pct(o.rata_progres)}</span>
+                        </li>
+                    ))}
+                </ol>
+            )}
         </div>
     )
 }
