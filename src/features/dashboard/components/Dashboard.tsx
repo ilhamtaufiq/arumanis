@@ -373,7 +373,7 @@ export function Dashboard() {
                                     </Button>
                                     <span className="text-muted-foreground/40">•</span>
                                     <Button variant="link" size="sm" className="h-auto p-0 font-semibold" asChild>
-                                        <Link to="/progress_rekap">Rekap Progress</Link>
+                                        <Link to="/dashboard/progres">Rekap Progress</Link>
                                     </Button>
                                     <span className="text-muted-foreground/40">•</span>
                                     <Button variant="link" size="sm" className="h-auto p-0 font-semibold" asChild>
@@ -432,7 +432,7 @@ export function Dashboard() {
                                 </div>
                             )}
                             <Button variant="link" size="sm" className="mt-2 h-auto p-0" asChild>
-                                <Link to="/progress_rekap">Buka rekap progress →</Link>
+                                <Link to="/dashboard/progres">Buka rekap progress →</Link>
                             </Button>
                         </CardContent>
                     </Card>

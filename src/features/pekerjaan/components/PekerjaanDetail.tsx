@@ -119,7 +119,7 @@ export default function PekerjaanDetail() {
         : defaultTab;
 
     // Asal navigasi: back ke halaman yang sama tempat "Detail" diklik.
-    const backTo = search.from === 'rekap' ? '/progress_rekap' : '/pekerjaan';
+    const backTo = search.from === 'rekap' ? '/dashboard/progres' : '/pekerjaan';
 
     if (loading) {
         return <PageContainer isloading />;
