@@ -20,7 +20,8 @@ export function DashboardProgresPage() {
         queryFn: () => getPenilaianPengawas(tahunAnggaran),
         staleTime: 60_000,
     })
-    const penilaian = penilaianRes?.data
+    // api.get sudah mengembalikan isi `data` dari respons, jadi tidak perlu `.data` lagi.
+    const penilaian = penilaianRes
 
     return (
         <>
