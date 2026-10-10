@@ -86,3 +86,62 @@ export function firstErrorPerField(
     }
     return result
 }
+
+export const FOTO_MAX_COUNT = 10
+export const FOTO_MAX_BYTES = 10 * 1024 * 1024
+export const FOTO_ACCEPT_TYPES = ['image/jpeg', 'image/png'] as const
+export const FOTO_ACCEPT_ATTR = FOTO_ACCEPT_TYPES.join(',')
+export const FOTO_THUMB_LIMIT = 5
+
+/** Sumber gambar untuk daftar: thumbnail, atau url penuh bila thumbnail kosong. */
+export function fotoThumbSrc(foto: { url: string; thumb: string }): string {
+    return foto.thumb || foto.url
+}
+
+/** Membagi foto untuk daftar: beberapa pertama ditampilkan, sisanya dihitung sebagai "+n". */
+export function splitFotoForThumbs<T>(foto: T[], limit = FOTO_THUMB_LIMIT): { visible: T[]; remaining: number } {
+    return { visible: foto.slice(0, limit), remaining: Math.max(0, foto.length - limit) }
+}
+
+export function formatBytesMb(bytes: number): string {
+    return `${Math.round((bytes / (1024 * 1024)) * 10) / 10} MB`
+}
+
+/**
+ * Memeriksa berkas yang baru dipilih sebelum diunggah.
+ * `sudahAda` adalah jumlah foto yang sudah tersimpan atau sudah dipilih sebelumnya.
+ */
+export function validateFotoSelection(
+    files: File[],
+    sudahAda: number,
+): { accepted: File[]; messages: string[] } {
+    const messages: string[] = []
+    const valid: File[] = []
+    let slotTersisa = Math.max(0, FOTO_MAX_COUNT - sudahAda)
+
+    for (const file of files) {
+        if (!(FOTO_ACCEPT_TYPES as readonly string[]).includes(file.type)) {
+            messages.push(`"${file.name}" harus berformat JPG atau PNG.`)
+            continue
+        }
+        if (file.size > FOTO_MAX_BYTES) {
+            messages.push(`"${file.name}" melebihi batas 10 MB.`)
+            continue
+        }
+        if (slotTersisa <= 0) {
+            messages.push(`Maksimal ${FOTO_MAX_COUNT} foto per kegiatan. "${file.name}" tidak ditambahkan.`)
+            continue
+        }
+        slotTersisa -= 1
+        valid.push(file)
+    }
+
+    return { accepted: valid, messages }
+}
+
+/** Mengambil pesan error untuk field foto dari 422 (bisa berupa string atau daftar string). */
+export function fotoErrorMessage(errors: Record<string, string[] | string | undefined> | undefined): string | null {
+    const raw = errors?.foto
+    const message = Array.isArray(raw) ? raw[0] : raw
+    return message || null
+}

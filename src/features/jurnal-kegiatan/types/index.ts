@@ -1,3 +1,9 @@
+export interface JurnalFoto {
+    id: number
+    url: string
+    thumb: string
+}
+
 export interface JurnalEntry {
     id: number
     tanggal: string
@@ -6,6 +12,7 @@ export interface JurnalEntry {
     output: number | null
     satuan: string | null
     keterangan: string | null
+    foto: JurnalFoto[]
     created_at: string
     updated_at: string
 }

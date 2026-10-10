@@ -2,7 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { toast } from 'sonner'
 import { ApiError } from '@/lib/api-client'
 import { getApiErrorMessage } from '@/lib/api-error-message'
-import { createJurnal, deleteJurnal, getJurnalList, updateJurnal } from '../api/jurnal-kegiatan'
+import { createJurnal, deleteJurnal, deleteJurnalFoto, getJurnalList, updateJurnal, uploadJurnalFoto } from '../api/jurnal-kegiatan'
 import type { JurnalParams, JurnalPayload } from '../types'
 
 export const jurnalKeys = {
@@ -64,6 +64,35 @@ export function useDeleteJurnal() {
         },
         onError: (error) => {
             toast.error(getApiErrorMessage(error, 'Gagal menghapus kegiatan'))
+        },
+    })
+}
+
+export function useUploadJurnalFoto() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: ({ id, files }: { id: number; files: File[] }) => uploadJurnalFoto(id, files),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: jurnalKeys.all })
+        },
+        onError: (error) => {
+            if (shouldToast(error)) toast.error(getApiErrorMessage(error, 'Gagal mengunggah foto'))
+        },
+    })
+}
+
+export function useDeleteJurnalFoto() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: ({ id, mediaId }: { id: number; mediaId: number }) => deleteJurnalFoto(id, mediaId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: jurnalKeys.all })
+            toast.success('Foto berhasil dihapus')
+        },
+        onError: (error) => {
+            toast.error(getApiErrorMessage(error, 'Gagal menghapus foto'))
         },
     })
 }

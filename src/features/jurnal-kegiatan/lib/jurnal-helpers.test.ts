@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import type { JurnalEntry } from '../types'
 import {
+    fotoErrorMessage,
+    fotoThumbSrc,
+    FOTO_MAX_COUNT,
+    splitFotoForThumbs,
+    validateFotoSelection,
     firstErrorPerField,
     formatTanggal,
     periodKey,
@@ -17,6 +22,7 @@ const entry = (id: number, tanggal: string): JurnalEntry => ({
     output: null,
     satuan: null,
     keterangan: null,
+    foto: [],
     created_at: '',
     updated_at: '',
 })
@@ -81,5 +87,54 @@ describe('firstErrorPerField', () => {
                 message: ['abaikan'],
             }),
         ).toEqual({ kegiatan: 'Kegiatan wajib diisi.', rhk: 'RHK tidak valid.' })
+    })
+})
+
+const berkas = (name: string, type: string, size = 1024) =>
+    new File([new Uint8Array(size)], name, { type })
+
+describe('validateFotoSelection', () => {
+    it('menerima JPG dan PNG, menolak format lain dan berkas di atas 10 MB', () => {
+        const result = validateFotoSelection(
+            [
+                berkas('a.jpg', 'image/jpeg'),
+                berkas('b.png', 'image/png'),
+                berkas('c.gif', 'image/gif'),
+                berkas('d.jpg', 'image/jpeg', 10 * 1024 * 1024 + 1),
+            ],
+            0,
+        )
+        expect(result.accepted.map((f) => f.name)).toEqual(['a.jpg', 'b.png'])
+        expect(result.messages).toHaveLength(2)
+        expect(result.messages[0]).toContain('JPG atau PNG')
+        expect(result.messages[1]).toContain('10 MB')
+    })
+
+    it('membatasi jumlah foto per kegiatan termasuk foto yang sudah ada', () => {
+        const files = [berkas('1.jpg', 'image/jpeg'), berkas('2.jpg', 'image/jpeg')]
+        const result = validateFotoSelection(files, FOTO_MAX_COUNT - 1)
+        expect(result.accepted).toHaveLength(1)
+        expect(result.messages).toHaveLength(1)
+    })
+})
+
+describe('fotoThumbSrc and splitFotoForThumbs', () => {
+    it('memakai url bila thumbnail kosong', () => {
+        expect(fotoThumbSrc({ url: 'u.jpg', thumb: '' })).toBe('u.jpg')
+        expect(fotoThumbSrc({ url: 'u.jpg', thumb: 't.jpg' })).toBe('t.jpg')
+    })
+
+    it('menampilkan maksimal 5 dan menghitung sisanya', () => {
+        const items = [1, 2, 3, 4, 5, 6, 7]
+        expect(splitFotoForThumbs(items)).toEqual({ visible: [1, 2, 3, 4, 5], remaining: 2 })
+        expect(splitFotoForThumbs([1, 2])).toEqual({ visible: [1, 2], remaining: 0 })
+    })
+})
+
+describe('fotoErrorMessage', () => {
+    it('menerima errors.foto berupa daftar atau string', () => {
+        expect(fotoErrorMessage({ foto: ['Ukuran foto maksimal 10 MB.'] })).toBe('Ukuran foto maksimal 10 MB.')
+        expect(fotoErrorMessage({ foto: 'Format tidak didukung.' })).toBe('Format tidak didukung.')
+        expect(fotoErrorMessage({ kegiatan: ['x'] })).toBeNull()
     })
 })
