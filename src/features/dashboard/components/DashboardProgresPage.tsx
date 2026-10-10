@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Medal } from 'lucide-react'
 import { BannerNotification } from '@/features/notifications/components/BannerNotification'
@@ -5,6 +6,7 @@ import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Heading } from '@/components/ui/heading'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Button } from '@/components/ui/button'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import ProgressRekap from '@/features/progress/components/ProgressRekap'
 import { getPenilaianPengawas, type PenilaianOrang, type PenilaianParameter } from '../api/dashboard'
@@ -31,13 +33,7 @@ export function DashboardProgresPage() {
                 <div className="flex w-full min-w-0 flex-col gap-6">
                     <Heading
                         title="Progres Pekerjaan"
-                        description={`TA ${tahunAnggaran} · Peringkat pengawasan dan rekap progres estimasi per paket. Gunakan filter Status untuk menyertakan paket dibatalkan.`}
-                    />
-
-                    <PenilaianSection
-                        data={penilaian}
-                        isLoading={penilaianLoading}
-                        isError={penilaianError}
+                        description={`TA ${tahunAnggaran} · Rekap progres estimasi per paket dan penilaian pengawas.`}
                     />
 
                     <section aria-labelledby="rekap-paket" className="flex flex-col gap-3">
@@ -46,11 +42,65 @@ export function DashboardProgresPage() {
                         </h2>
                         <ProgressRekap />
                     </section>
+
+                    <PenilaianSection
+                        data={penilaian}
+                        isLoading={penilaianLoading}
+                        isError={penilaianError}
+                    />
                 </div>
             </Main>
         </>
     )
 }
+
+type PenilaianRow = Omit<PenilaianOrang, 'role'> & { roles: PenilaianOrang['role'][] }
+
+/** Kategori dari skor total, sama dengan aturan di server. */
+function kategoriDari(total: number | null): string {
+    if (total == null) return 'Belum dinilai'
+    if (total >= 85) return 'Sangat baik'
+    if (total >= 70) return 'Baik'
+    if (total >= 55) return 'Cukup'
+    return 'Perlu perhatian'
+}
+
+/** Rata-rata berbobot jumlah paket, melewati nilai kosong. */
+function rataBerbobot(items: { jumlah: number; nilai: number | null }[]): number | null {
+    const ada = items.filter((i) => i.nilai != null)
+    const bobot = ada.reduce((sum, i) => sum + i.jumlah, 0)
+    if (bobot === 0) return null
+    return ada.reduce((sum, i) => sum + (i.nilai as number) * i.jumlah, 0) / bobot
+}
+
+/** Gabungkan baris dengan nama yang sama menjadi satu baris. */
+function gabungPerNama(list: PenilaianOrang[], kodes: PenilaianParameter['kode'][]): PenilaianRow[] {
+    const groups = new Map<string, PenilaianOrang[]>()
+    for (const o of list) {
+        const key = (o.nama || '').trim().toLowerCase()
+        groups.set(key, [...(groups.get(key) ?? []), o])
+    }
+    const rows: PenilaianRow[] = []
+    for (const items of groups.values()) {
+        const jumlah = items.reduce((sum, o) => sum + o.jumlah_paket, 0)
+        const total = rataBerbobot(items.map((o) => ({ jumlah: o.jumlah_paket, nilai: o.total })))
+        const breakdown = Object.fromEntries(
+            kodes.map((k) => [k, rataBerbobot(items.map((o) => ({ jumlah: o.jumlah_paket, nilai: o.breakdown[k] })))]),
+        ) as PenilaianOrang['breakdown']
+        rows.push({
+            user_id: items[0].user_id,
+            nama: items[0].nama,
+            roles: [...new Set(items.map((o) => o.role))],
+            jumlah_paket: jumlah,
+            total,
+            kategori: kategoriDari(total),
+            breakdown,
+        })
+    }
+    return rows.sort((a, b) => (b.total ?? -1) - (a.total ?? -1) || b.jumlah_paket - a.jumlah_paket)
+}
+
+type RoleFilter = PenilaianOrang['role']
 
 function PenilaianSection({
     data,
@@ -61,12 +111,30 @@ function PenilaianSection({
     isLoading: boolean
     isError: boolean
 }) {
+    const [role, setRole] = useState<RoleFilter>('pengawas')
     const params = data?.parameter ?? []
+    const kodes = params.map((p) => p.kode)
+    const rows = useMemo(
+        () => gabungPerNama((data?.pengawas ?? []).filter((o) => o.role === role), kodes),
+        // kodes berasal dari data.parameter; cukup bergantung pada data dan role
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [data, role],
+    )
     return (
         <section aria-labelledby="penilaian-pengawas" className="flex flex-col gap-3">
-            <h2 id="penilaian-pengawas" className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                <Medal className="h-4 w-4" /> Penilaian pengawas
-            </h2>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+                <h2 id="penilaian-pengawas" className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                    <Medal className="h-4 w-4" /> Penilaian pengawas
+                </h2>
+                <div className="flex gap-1" role="group" aria-label="Filter peran">
+                    <Button size="sm" variant={role === 'pengawas' ? 'default' : 'outline'} onClick={() => setRole('pengawas')} aria-pressed={role === 'pengawas'}>
+                        Pengawas
+                    </Button>
+                    <Button size="sm" variant={role === 'konsultan_pengawas' ? 'default' : 'outline'} onClick={() => setRole('konsultan_pengawas')} aria-pressed={role === 'konsultan_pengawas'}>
+                        Konsultan pengawas
+                    </Button>
+                </div>
+            </div>
             <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                 {params.map((p) => (
                     <span key={p.kode} className="rounded-full border px-2.5 py-1">
@@ -85,7 +153,6 @@ function PenilaianSection({
                         <tr>
                             <th scope="col" className="px-3 py-2 font-medium">#</th>
                             <th scope="col" className="px-3 py-2 font-medium">Nama</th>
-                            <th scope="col" className="px-3 py-2 font-medium">Peran</th>
                             <th scope="col" className="px-3 py-2 text-right font-medium">Paket</th>
                             <th scope="col" className="px-3 py-2 text-right font-medium">Skor</th>
                             <th scope="col" className="px-3 py-2 font-medium">Kategori</th>
@@ -97,22 +164,21 @@ function PenilaianSection({
                     <tbody>
                         {isLoading ? (
                             <tr>
-                                <td colSpan={7 + params.length} className="p-3">
+                                <td colSpan={5 + params.length} className="p-3">
                                     <Skeleton className="h-6 w-full" />
                                 </td>
                             </tr>
-                        ) : (data?.pengawas.length ?? 0) === 0 ? (
+                        ) : rows.length === 0 ? (
                             <tr>
-                                <td colSpan={7 + params.length} className="p-6 text-center text-muted-foreground">
-                                    Belum ada pengawas yang ditugaskan.
+                                <td colSpan={5 + params.length} className="p-6 text-center text-muted-foreground">
+                                    Belum ada {role === 'pengawas' ? 'pengawas' : 'konsultan pengawas'} yang ditugaskan.
                                 </td>
                             </tr>
                         ) : (
-                            data?.pengawas.map((o, i) => (
-                                <tr key={`${o.user_id}-${o.role}`} className="border-t">
+                            rows.map((o, i) => (
+                                <tr key={o.user_id} className="border-t">
                                     <td className="px-3 py-2 tabular-nums text-muted-foreground">{i + 1}</td>
                                     <td className="px-3 py-2">{o.nama || '—'}</td>
-                                    <td className="px-3 py-2">{o.role === 'pengawas' ? 'Pengawas' : 'Konsultan pengawas'}</td>
                                     <td className="px-3 py-2 text-right tabular-nums">{formatNumber(o.jumlah_paket)}</td>
                                     <td className="px-3 py-2 text-right font-semibold tabular-nums">{pct(o.total)}</td>
                                     <td className="px-3 py-2">{o.kategori}</td>
