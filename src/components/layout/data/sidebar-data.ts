@@ -30,6 +30,7 @@ import {
     UserCheck,
     UserCog,
     Wallet,
+    Gauge,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -55,6 +56,12 @@ export const sidebarData: SidebarData = {
                     title: 'Dashboard',
                     url: '/dashboard',
                     icon: LayoutDashboard,
+                    menuKey: 'dashboard',
+                },
+                {
+                    title: 'Progres Pekerjaan',
+                    url: '/dashboard/progres',
+                    icon: Gauge,
                     menuKey: 'dashboard',
                 },
                 {

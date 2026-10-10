@@ -109,6 +109,7 @@ import { Route as AuthenticatedFotoNewRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDesaNewRouteImport } from './routes/_authenticated/desa/new'
 import { Route as AuthenticatedDesaIdRouteImport } from './routes/_authenticated/desa/$id'
 import { Route as AuthenticatedDashboardV2RouteImport } from './routes/_authenticated/dashboard/v2'
+import { Route as AuthenticatedDashboardProgresRouteImport } from './routes/_authenticated/dashboard/progres'
 import { Route as AuthenticatedBerkasNewRouteImport } from './routes/_authenticated/berkas/new'
 import { Route as AuthenticatedBerkasMediaRouteImport } from './routes/_authenticated/berkas/media'
 import { Route as AuthenticatedSipdRenjaIdSubBlIndexRouteImport } from './routes/_authenticated/sipd-renja/$idSubBl/index'
@@ -697,6 +698,12 @@ const AuthenticatedDashboardV2Route =
     path: '/v2',
     getParentRoute: () => AuthenticatedDashboardRoute,
   } as any)
+const AuthenticatedDashboardProgresRoute =
+  AuthenticatedDashboardProgresRouteImport.update({
+    id: '/progres',
+    path: '/progres',
+    getParentRoute: () => AuthenticatedDashboardRoute,
+  } as any)
 const AuthenticatedBerkasNewRoute = AuthenticatedBerkasNewRouteImport.update({
   id: '/berkas/new',
   path: '/berkas/new',
@@ -889,6 +896,7 @@ export interface FileRoutesByFullPath {
   '/publikasi/': typeof PublikasiIndexRoute
   '/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
+  '/dashboard/progres': typeof AuthenticatedDashboardProgresRoute
   '/dashboard/v2': typeof AuthenticatedDashboardV2Route
   '/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
   '/desa/new': typeof AuthenticatedDesaNewRoute
@@ -1015,6 +1023,7 @@ export interface FileRoutesByTo {
   '/publikasi': typeof PublikasiIndexRoute
   '/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
+  '/dashboard/progres': typeof AuthenticatedDashboardProgresRoute
   '/dashboard/v2': typeof AuthenticatedDashboardV2Route
   '/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
   '/desa/new': typeof AuthenticatedDesaNewRoute
@@ -1145,6 +1154,7 @@ export interface FileRoutesById {
   '/publikasi/': typeof PublikasiIndexRoute
   '/_authenticated/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
+  '/_authenticated/dashboard/progres': typeof AuthenticatedDashboardProgresRoute
   '/_authenticated/dashboard/v2': typeof AuthenticatedDashboardV2Route
   '/_authenticated/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
   '/_authenticated/desa/new': typeof AuthenticatedDesaNewRoute
@@ -1275,6 +1285,7 @@ export interface FileRouteTypes {
     | '/publikasi/'
     | '/berkas/media'
     | '/berkas/new'
+    | '/dashboard/progres'
     | '/dashboard/v2'
     | '/desa/$id'
     | '/desa/new'
@@ -1401,6 +1412,7 @@ export interface FileRouteTypes {
     | '/publikasi'
     | '/berkas/media'
     | '/berkas/new'
+    | '/dashboard/progres'
     | '/dashboard/v2'
     | '/desa/$id'
     | '/desa/new'
@@ -1530,6 +1542,7 @@ export interface FileRouteTypes {
     | '/publikasi/'
     | '/_authenticated/berkas/media'
     | '/_authenticated/berkas/new'
+    | '/_authenticated/dashboard/progres'
     | '/_authenticated/dashboard/v2'
     | '/_authenticated/desa/$id'
     | '/_authenticated/desa/new'
@@ -2351,6 +2364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardV2RouteImport
       parentRoute: typeof AuthenticatedDashboardRoute
     }
+    '/_authenticated/dashboard/progres': {
+      id: '/_authenticated/dashboard/progres'
+      path: '/progres'
+      fullPath: '/dashboard/progres'
+      preLoaderRoute: typeof AuthenticatedDashboardProgresRouteImport
+      parentRoute: typeof AuthenticatedDashboardRoute
+    }
     '/_authenticated/berkas/new': {
       id: '/_authenticated/berkas/new'
       path: '/berkas/new'
@@ -2544,11 +2564,13 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedDashboardRouteChildren {
+  AuthenticatedDashboardProgresRoute: typeof AuthenticatedDashboardProgresRoute
   AuthenticatedDashboardV2Route: typeof AuthenticatedDashboardV2Route
 }
 
 const AuthenticatedDashboardRouteChildren: AuthenticatedDashboardRouteChildren =
   {
+    AuthenticatedDashboardProgresRoute: AuthenticatedDashboardProgresRoute,
     AuthenticatedDashboardV2Route: AuthenticatedDashboardV2Route,
   }
 
