@@ -14,7 +14,7 @@ const DashboardProgresPage = lazy(() =>
     ),
 )
 
-export const Route = createFileRoute('/_authenticated/dashboard/progres')({
+export const Route = createFileRoute('/_authenticated/dashboard_/progres')({
     component: () => (
         <ProtectedRoute requiredPath="/pekerjaan" requiredMethod="GET">
             <RouteSuspense label="Memuat Progres Pekerjaan...">
