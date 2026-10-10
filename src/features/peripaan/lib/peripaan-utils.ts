@@ -1,3 +1,5 @@
+import type { FeatureCollection } from 'geojson'
+
 // Utilitas geodesi untuk editor peta perpipaan
 
 /** Jarak haversine dua koordinat (meter) */
@@ -56,4 +58,45 @@ export const PATH_COLORS = ['#eab308', '#22c55e', '#06b6d4', '#ef4444', '#a855f7
 
 export function colorFor(index: number): string {
     return PATH_COLORS[index % PATH_COLORS.length]
+}
+
+/** Role yang boleh menghapus berkas peta peripaan (sama dengan batas di server). */
+export const PERIPAAN_DELETE_ROLES = ['admin', 'operator'] as const
+
+export function canDeletePeripaan(roles: readonly string[] | null | undefined): boolean {
+    return (roles ?? []).some((r) => (PERIPAAN_DELETE_ROLES as readonly string[]).includes(r))
+}
+
+/**
+ * Batas kotak (south-west, north-east) dari seluruh koordinat GeoJSON.
+ * Mengembalikan null bila tidak ada koordinat valid, sehingga `fitBounds` tidak dipanggil dengan batas kosong.
+ */
+export function geoBounds(fc: FeatureCollection | null | undefined): [[number, number], [number, number]] | null {
+    let minLat = Infinity
+    let maxLat = -Infinity
+    let minLng = Infinity
+    let maxLng = -Infinity
+    const visit = (node: unknown) => {
+        if (!Array.isArray(node)) return
+        if (node.length >= 2 && typeof node[0] === 'number' && typeof node[1] === 'number') {
+            const [lng, lat] = node
+            if (Number.isFinite(lat) && Number.isFinite(lng)) {
+                minLat = Math.min(minLat, lat)
+                maxLat = Math.max(maxLat, lat)
+                minLng = Math.min(minLng, lng)
+                maxLng = Math.max(maxLng, lng)
+            }
+            return
+        }
+        node.forEach(visit)
+    }
+    for (const f of fc?.features ?? []) {
+        const g = f.geometry
+        if (g && 'coordinates' in g) visit(g.coordinates)
+    }
+    if (!Number.isFinite(minLat) || !Number.isFinite(minLng)) return null
+    return [
+        [minLat, minLng],
+        [maxLat, maxLng],
+    ]
 }

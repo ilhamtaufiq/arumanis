@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueries, useQuery, useQueryClient } from '@tanstack/react-query'
 import { MapContainer, TileLayer, Polyline, Polygon, CircleMarker, Tooltip, useMap, useMapEvents } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
@@ -36,10 +36,11 @@ import { Main } from '@/components/layout/main'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { getElevations } from '../services/ElevationService'
-import { parseKmzFile, parseKmlFile } from '../services/KmzParser'
-import { createPeripaan, getPeripaanList, deletePeripaan, type PeripaanItem } from '../api/peripaan'
+import { createPeripaan, getPeripaan, getPeripaanList, deletePeripaan, type PeripaanItem } from '../api/peripaan'
 import {
+    canDeletePeripaan,
     formatDistance,
+    geoBounds,
     min,
     max,
     median,
@@ -47,6 +48,7 @@ import {
     colorFor,
     pathLength,
 } from '../lib/peripaan-utils'
+import { useAuthStore } from '@/stores/auth-stores'
 
 type Basemap = 'esri' | 'osm'
 type DrawMode = null | 'path' | 'polygon' | 'marker'
@@ -374,14 +376,32 @@ export default function PeripaanPage() {
 
     const routes = useMemo(() => routesData ?? [], [routesData])
 
+    // Daftar tidak memuat GeoJSON. Detail tiap berkas diambil terpisah dan di-cache per id.
+    const detailQueries = useQueries({
+        queries: routes.map((route) => ({
+            queryKey: ['peripaan-detail', route.id],
+            queryFn: () => getPeripaan(route.id),
+            staleTime: 5 * 60_000,
+        })),
+    })
+    const geoById = useMemo(() => {
+        const map = new Map<number, PeripaanItem['geojson']>()
+        routes.forEach((route, i) => map.set(route.id, detailQueries[i]?.data?.geojson ?? null))
+        return map
+    }, [routes, detailQueries])
+
+    const { auth } = useAuthStore()
+    const canDelete = canDeletePeripaan(auth.user?.roles)
+
     // semua fitur dari semua route, dengan routeId
     const allFeatures = useMemo(
         () =>
             routes.flatMap((route) => {
-                if (!route.geojson) return []
-                return extractFeatures(route.geojson).map((f) => ({ ...f, id: `${route.id}-${f.id}`, routeId: route.id, routeNama: route.nama }))
+                const geojson = geoById.get(route.id)
+                if (!geojson) return []
+                return extractFeatures(geojson).map((f) => ({ ...f, id: `${route.id}-${f.id}`, routeId: route.id, routeNama: route.nama }))
             }),
-        [routes],
+        [routes, geoById],
     )
 
     const selectedFeature = useMemo(
@@ -392,19 +412,18 @@ export default function PeripaanPage() {
     const invalidate = () => queryClient.invalidateQueries({ queryKey: ['peripaan-list'] })
 
     const uploadMutation = useMutation({
-        mutationFn: async (file: File) => {
-            const geojson =
-                file.name.toLowerCase().endsWith('.kmz') ? await parseKmzFile(file) : await parseKmlFile(file)
-            return createPeripaan({
+        // Berkas dikirim apa adanya; server yang mengubahnya menjadi GeoJSON.
+        mutationFn: (file: File) =>
+            createPeripaan({
                 file,
                 nama: file.name.replace(/\.(kmz|kml)$/i, ''),
-                geojson,
-            })
-        },
+            }),
         onSuccess: (created) => {
             toast.success(`File "${created.nama}" berhasil diunggah`)
+            queryClient.setQueryData(['peripaan-detail', created.id], created)
             invalidate()
-            if (created.geojson) setFitBounds(L.geoJSON(created.geojson).getBounds())
+            const b = geoBounds(created.geojson)
+            if (b) setFitBounds(L.latLngBounds(b[0], b[1]))
         },
         onError: (error: Error) => toast.error(error.message || 'Gagal mengunggah file'),
     })
@@ -435,10 +454,13 @@ export default function PeripaanPage() {
         })
     }, [])
 
-    const handleFocusFile = useCallback((route: PeripaanItem) => {
-        if (!route.geojson) return
-        setFitBounds(L.geoJSON(route.geojson).getBounds())
-    }, [])
+    const handleFocusFile = useCallback(
+        (route: PeripaanItem) => {
+            const b = geoBounds(geoById.get(route.id))
+            if (b) setFitBounds(L.latLngBounds(b[0], b[1]))
+        },
+        [geoById],
+    )
 
     const handleFocusFeature = useCallback((f: (typeof allFeatures)[number]) => {
         const latlngs = f.kind === 'polygon' ? f.ring : f.coords
@@ -745,9 +767,11 @@ export default function PeripaanPage() {
                                                 <button type="button" title={isHidden ? 'Tampilkan' : 'Sembunyikan'} className="rounded-md p-1.5 text-muted-foreground hover:bg-muted" onClick={() => handleToggleFile(route.id)}>
                                                     {isHidden ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                                                 </button>
-                                                <button type="button" title="Hapus" className="rounded-md p-1.5 text-muted-foreground hover:bg-red-500/10 hover:text-red-600" onClick={() => handleDeleteFile(route)}>
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
+                                                {canDelete ? (
+                                                    <button type="button" title="Hapus" className="rounded-md p-1.5 text-muted-foreground hover:bg-red-500/10 hover:text-red-600" onClick={() => handleDeleteFile(route)}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                ) : null}
                                             </div>
                                             {isOpen ? (
                                                 <div className="ml-6 space-y-0.5 border-l pl-2">
