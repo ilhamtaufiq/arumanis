@@ -7,35 +7,20 @@ import { Heading } from '@/components/ui/heading'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import ProgressRekap from '@/features/progress/components/ProgressRekap'
-import { getProgresMvp, type ProgresPerPengawas } from '../api/dashboard'
+import { getPenilaianPengawas, type PenilaianOrang, type PenilaianParameter } from '../api/dashboard'
 import { formatNumber } from '../lib/format'
 
 const pct = (v: number | null | undefined) => (v == null ? '—' : `${Number(v).toFixed(1)}%`)
 
-type RoleKey = ProgresPerPengawas['role']
-
-/** Urutkan peringkat: progres tertinggi di atas, lalu jumlah paket terbanyak. Progres kosong di bawah. */
-function rankFor(list: ProgresPerPengawas[], role: RoleKey) {
-    return list
-        .filter((o) => o.role === role)
-        .sort((a, b) => {
-            const av = a.rata_progres ?? -1
-            const bv = b.rata_progres ?? -1
-            return bv - av || b.jumlah_pekerjaan - a.jumlah_pekerjaan
-        })
-}
-
 /** Halaman progres pekerjaan: peringkat pengawasan di atas, lalu rekap progres paket. */
 export function DashboardProgresPage() {
     const { tahunAnggaran } = useAppSettingsValues()
-    const { data: mvp, isLoading: mvpLoading } = useQuery({
-        queryKey: ['progres-pengawas-rank', tahunAnggaran],
-        queryFn: () => getProgresMvp(tahunAnggaran),
+    const { data: penilaianRes, isLoading: penilaianLoading, isError: penilaianError } = useQuery({
+        queryKey: ['penilaian-pengawas', tahunAnggaran],
+        queryFn: () => getPenilaianPengawas(tahunAnggaran),
         staleTime: 60_000,
     })
-    const kpi = mvp?.data
-    const rankPengawas = kpi ? rankFor(kpi.per_pengawas, 'pengawas') : []
-    const rankKonsultan = kpi ? rankFor(kpi.per_pengawas, 'konsultan_pengawas') : []
+    const penilaian = penilaianRes?.data
 
     return (
         <>
@@ -48,20 +33,11 @@ export function DashboardProgresPage() {
                         description={`TA ${tahunAnggaran} · Peringkat pengawasan dan rekap progres estimasi per paket. Gunakan filter Status untuk menyertakan paket dibatalkan.`}
                     />
 
-                    <section aria-labelledby="peringkat-pengawas" className="flex flex-col gap-3">
-                        <h2 id="peringkat-pengawas" className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
-                            <Medal className="h-4 w-4" /> Peringkat pengawasan
-                        </h2>
-                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-                            <RankingCard title="Pengawas" kpi={kpi?.pengawas.pengawas} ranking={rankPengawas} isLoading={mvpLoading} />
-                            <RankingCard
-                                title="Konsultan pengawas"
-                                kpi={kpi?.pengawas.konsultan_pengawas}
-                                ranking={rankKonsultan}
-                                isLoading={mvpLoading}
-                            />
-                        </div>
-                    </section>
+                    <PenilaianSection
+                        data={penilaian}
+                        isLoading={penilaianLoading}
+                        isError={penilaianError}
+                    />
 
                     <section aria-labelledby="rekap-paket" className="flex flex-col gap-3">
                         <h2 id="rekap-paket" className="text-sm font-semibold text-muted-foreground">
@@ -75,62 +51,79 @@ export function DashboardProgresPage() {
     )
 }
 
-type PengawasKpiView = {
-    aktif: number
-    pekerjaan_diawasi: number
-    belum_diawasi: number
-    rata_progres: number | null
-}
-
-function RankingCard({
-    title,
-    kpi,
-    ranking,
+function PenilaianSection({
+    data,
     isLoading,
+    isError,
 }: {
-    title: string
-    kpi: PengawasKpiView | undefined
-    ranking: ProgresPerPengawas[]
+    data: { parameter: PenilaianParameter[]; pengawas: PenilaianOrang[] } | undefined
     isLoading: boolean
+    isError: boolean
 }) {
+    const params = data?.parameter ?? []
     return (
-        <div className="flex flex-col gap-3 rounded-xl border bg-card p-4">
-            <div className="flex items-baseline justify-between">
-                <h3 className="font-semibold">{title}</h3>
-                <span className="text-xs text-muted-foreground">{formatNumber(kpi?.aktif ?? 0)} aktif</span>
+        <section aria-labelledby="penilaian-pengawas" className="flex flex-col gap-3">
+            <h2 id="penilaian-pengawas" className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+                <Medal className="h-4 w-4" /> Penilaian pengawas
+            </h2>
+            <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                {params.map((p) => (
+                    <span key={p.kode} className="rounded-full border px-2.5 py-1">
+                        {p.nama} · bobot {p.bobot}
+                    </span>
+                ))}
             </div>
-            <dl className="grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-lg bg-muted/40 p-2">
-                    <dt className="text-[11px] text-muted-foreground">Paket diawasi</dt>
-                    <dd className="text-base font-semibold tabular-nums">{formatNumber(kpi?.pekerjaan_diawasi ?? 0)}</dd>
-                </div>
-                <div className="rounded-lg bg-muted/40 p-2">
-                    <dt className="text-[11px] text-muted-foreground">Belum diawasi</dt>
-                    <dd className="text-base font-semibold tabular-nums">{formatNumber(kpi?.belum_diawasi ?? 0)}</dd>
-                </div>
-                <div className="rounded-lg bg-muted/40 p-2">
-                    <dt className="text-[11px] text-muted-foreground">Rata progres</dt>
-                    <dd className="text-base font-semibold tabular-nums">{pct(kpi?.rata_progres)}</dd>
-                </div>
-            </dl>
-            {isLoading ? (
-                <Skeleton className="h-24 w-full" />
-            ) : ranking.length === 0 ? (
-                <p className="py-4 text-center text-sm text-muted-foreground">Belum ada penugasan.</p>
-            ) : (
-                <ol className="flex flex-col divide-y text-sm">
-                    {ranking.slice(0, 10).map((o, i) => (
-                        <li key={o.user_id} className="flex items-center gap-3 py-2">
-                            <span className={`w-6 text-center font-semibold tabular-nums ${i < 3 ? 'text-amber-600' : 'text-muted-foreground'}`}>
-                                {i + 1}
-                            </span>
-                            <span className="min-w-0 flex-1 truncate">{o.nama || '—'}</span>
-                            <span className="text-xs text-muted-foreground tabular-nums">{formatNumber(o.jumlah_pekerjaan)} paket</span>
-                            <span className="w-16 text-right font-semibold tabular-nums">{pct(o.rata_progres)}</span>
-                        </li>
-                    ))}
-                </ol>
-            )}
-        </div>
+            {isError ? (
+                <p className="rounded-lg border border-red-500/20 bg-red-500/[0.04] p-4 text-sm text-red-600">
+                    Penilaian belum bisa dimuat.
+                </p>
+            ) : null}
+            <div className="overflow-x-auto rounded-xl border bg-card">
+                <table className="w-full text-sm">
+                    <thead className="bg-muted/50 text-left text-xs text-muted-foreground">
+                        <tr>
+                            <th scope="col" className="px-3 py-2 font-medium">#</th>
+                            <th scope="col" className="px-3 py-2 font-medium">Nama</th>
+                            <th scope="col" className="px-3 py-2 font-medium">Peran</th>
+                            <th scope="col" className="px-3 py-2 text-right font-medium">Paket</th>
+                            <th scope="col" className="px-3 py-2 text-right font-medium">Skor</th>
+                            <th scope="col" className="px-3 py-2 font-medium">Kategori</th>
+                            {params.map((p) => (
+                                <th key={p.kode} scope="col" className="px-3 py-2 text-right font-medium">{p.nama}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {isLoading ? (
+                            <tr>
+                                <td colSpan={7 + params.length} className="p-3">
+                                    <Skeleton className="h-6 w-full" />
+                                </td>
+                            </tr>
+                        ) : (data?.pengawas.length ?? 0) === 0 ? (
+                            <tr>
+                                <td colSpan={7 + params.length} className="p-6 text-center text-muted-foreground">
+                                    Belum ada pengawas yang ditugaskan.
+                                </td>
+                            </tr>
+                        ) : (
+                            data?.pengawas.map((o, i) => (
+                                <tr key={`${o.user_id}-${o.role}`} className="border-t">
+                                    <td className="px-3 py-2 tabular-nums text-muted-foreground">{i + 1}</td>
+                                    <td className="px-3 py-2">{o.nama || '—'}</td>
+                                    <td className="px-3 py-2">{o.role === 'pengawas' ? 'Pengawas' : 'Konsultan pengawas'}</td>
+                                    <td className="px-3 py-2 text-right tabular-nums">{formatNumber(o.jumlah_paket)}</td>
+                                    <td className="px-3 py-2 text-right font-semibold tabular-nums">{pct(o.total)}</td>
+                                    <td className="px-3 py-2">{o.kategori}</td>
+                                    {params.map((p) => (
+                                        <td key={p.kode} className="px-3 py-2 text-right tabular-nums">{pct(o.breakdown[p.kode])}</td>
+                                    ))}
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+        </section>
     )
 }

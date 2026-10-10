@@ -91,3 +91,31 @@ export const getProgresMvp = async (year?: string) => {
     });
     return response.data;
 };
+
+export interface PenilaianParameter {
+    kode: 'fisik' | 'keuangan' | 'waktu' | 'dokumentasi' | 'berkas' | 'frekuensi'
+    nama: string
+    bobot: number
+}
+
+export interface PenilaianOrang {
+    user_id: number
+    nama: string
+    role: 'pengawas' | 'konsultan_pengawas'
+    jumlah_paket: number
+    total: number | null
+    kategori: string
+    breakdown: Record<PenilaianParameter['kode'], number | null>
+}
+
+export interface PenilaianPengawas {
+    parameter: PenilaianParameter[]
+    pengawas: PenilaianOrang[]
+}
+
+export const getPenilaianPengawas = async (year?: string) => {
+    const response = await api.get<{ data: PenilaianPengawas }>('/dashboard/penilaian-pengawas', {
+        params: { tahun: year },
+    });
+    return response.data;
+};
