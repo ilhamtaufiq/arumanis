@@ -26,7 +26,6 @@ import {
     Recycle,
     RefreshCw,
     Shield,
-    TrendingUp,
     UserCheck,
     UserCog,
     Wallet,
@@ -62,7 +61,7 @@ export const sidebarData: SidebarData = {
                     title: 'Progres Pekerjaan',
                     url: '/dashboard/progres',
                     icon: Gauge,
-                    menuKey: 'dashboard',
+                    menuKey: 'pekerjaan',
                 },
                 {
                     title: 'Fisik dan Keuangan',
@@ -93,12 +92,6 @@ export const sidebarData: SidebarData = {
                     url: '/data-quality',
                     icon: ListChecks,
                     menuKey: 'dashboard',
-                },
-                {
-                    title: 'Rekap Progress',
-                    url: '/progress_rekap',
-                    icon: TrendingUp,
-                    menuKey: 'pekerjaan',
                 },
                 {
                     title: 'Buat Laporan',

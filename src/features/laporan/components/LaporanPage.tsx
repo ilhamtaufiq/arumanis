@@ -184,7 +184,7 @@ export function LaporanPage() {
                                         PDF
                                     </Button>
                                     <Button variant='outline' size='sm' asChild>
-                                        <Link to='/progress_rekap'>
+                                        <Link to='/dashboard/progres'>
                                             Halaman penuh
                                             <ArrowRight />
                                         </Link>
