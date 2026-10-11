@@ -19,7 +19,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 },
                 hero: {
                     eyebrow: 'Portal Infrastruktur Air Minum dan Sanitasi',
-                    titleLine: 'Air bersih dan sanitasi yang',
+                    titleLine: 'Air Minum dan Sanitasi yang',
                     words: ['melindungi', 'menjangkau', 'menyehatkan', 'berkelanjutan'],
                     description:
                         'Kolaborasi pemerintah, operator, dan mitra untuk memperluas akses air minum dan sanitasi yang layak, aman, dan berkelanjutan di Kabupaten Cianjur.',
@@ -445,7 +445,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 },
                 hero: {
                     eyebrow: 'Drinking Water and Sanitation Infrastructure Portal',
-                    titleLine: 'Clean water and sanitation that',
+                    titleLine: 'Drinking water and sanitation that',
                     words: ['protects', 'reaches', 'safeguards health', 'lasts'],
                     description:
                         'Collaboration between government, operators, and partners to expand access to decent, safe, and sustainable drinking water and sanitation in Cianjur Regency.',
