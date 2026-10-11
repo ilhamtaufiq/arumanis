@@ -48,7 +48,6 @@ export type PublicMessages = {
             menu: string
         }
         hero: {
-            tagline: string
             title: string
             description: string
             ctaAchievements: string
@@ -70,6 +69,7 @@ export type PublicMessages = {
             items: Array<{ title: string; desc: string; cta: string; href: string }>
         }
         about: {
+            label: string
             title: string
             description: string
             cards: Array<{ label: string; text: string }>

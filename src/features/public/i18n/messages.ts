@@ -19,12 +19,12 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 },
                 hero: {
                     eyebrow: 'Portal Infrastruktur Air Minum dan Sanitasi',
-                    titleLine: 'Layanan dasar',
-                    words: ['melayani', 'menjaga', 'mengalir', 'bertumbuh'],
+                    titleLine: 'Air bersih dan sanitasi yang',
+                    words: ['melindungi', 'menjangkau', 'menyehatkan', 'berkelanjutan'],
                     description:
-                        'Platform kolaborasi pemerintah untuk memperluas akses air minum dan sanitasi yang layak, aman, dan berkelanjutan di Kabupaten Cianjur.',
+                        'Kolaborasi pemerintah, operator, dan mitra untuk memperluas akses air minum dan sanitasi yang layak, aman, dan berkelanjutan di Kabupaten Cianjur.',
                     ctaProgram: 'Kenali program kami',
-                    ctaPublications: 'Publikasi',
+                    ctaPublications: 'Lihat publikasi',
                 },
                 collab: {
                     label: 'Untuk kolaborator',
@@ -60,10 +60,9 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 menu: 'Menu',
             },
             hero: {
-                tagline: 'Cuaca Hari Ini',
                 title: 'Air Minum dan Sanitasi.',
                 description:
-                    'Integrasi - Kolaborasi - Intervensi. Wujudkan transformasi digital di Kabupaten Cianjur lewat kolaborasi bersama kami di Bidang Air Minum dan Sanitasi.',
+                    'Integrasi data, kolaborasi lintas pihak, dan intervensi yang tepat sasaran. Bersama Bidang Air Minum dan Sanitasi, kami mendorong layanan air minum dan sanitasi yang lebih merata di Kabupaten Cianjur.',
                 ctaAchievements: 'Lihat Capaian SPM',
                 ctaPublications: 'Lihat Publikasi',
                 stats: {
@@ -141,7 +140,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
             },
             instagram: {
                 label: 'Kegiatan kami terbaru',
-                title: 'Kegiatan kami terbaru.',
+                title: 'Cerita dari lapangan.',
                 description:
                     'Cuplikan unggahan terbaru Bidang Air Minum dan Sanitasi. Klik postingan untuk melihat detail; video dapat diputar langsung.',
                 loading: 'Memuat galeri Instagram...',
@@ -446,12 +445,12 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 },
                 hero: {
                     eyebrow: 'Drinking Water and Sanitation Infrastructure Portal',
-                    titleLine: 'Basic services',
-                    words: ['serving', 'protecting', 'flowing', 'growing'],
+                    titleLine: 'Clean water and sanitation that',
+                    words: ['protects', 'reaches', 'safeguards health', 'lasts'],
                     description:
-                        'A government collaboration platform to expand access to decent, safe, and sustainable drinking water and sanitation in Cianjur Regency.',
+                        'Collaboration between government, operators, and partners to expand access to decent, safe, and sustainable drinking water and sanitation in Cianjur Regency.',
                     ctaProgram: 'Explore our program',
-                    ctaPublications: 'Publications',
+                    ctaPublications: 'View publications',
                 },
                 collab: {
                     label: 'For collaborators',
@@ -487,10 +486,9 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 menu: 'Menu',
             },
             hero: {
-                tagline: 'Today\'s Weather',
                 title: 'Air Minum dan Sanitasi.',
                 description:
-                    'Integration - Collaboration - Intervention. Realize digital transformation in Cianjur Regency through collaboration with us at the Air Minum dan Sanitasi Division.',
+                    'Data integration, cross-party collaboration, and well-targeted intervention. Together with the Drinking Water and Sanitation Division, we drive more equitable drinking water and sanitation services in Cianjur Regency.',
                 ctaAchievements: 'View SPM Achievements',
                 ctaPublications: 'View Publications',
                 stats: {
@@ -568,7 +566,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
             },
             instagram: {
                 label: 'Our latest activity',
-                title: 'Our latest activity.',
+                title: 'Stories from the field.',
                 description:
                     'Latest posts from the Drinking Water & Sanitation Division. Click a post for details; videos play right here.',
                 loading: 'Loading Instagram gallery...',
