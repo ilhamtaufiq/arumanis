@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, ExternalLink, Plus, RefreshCw } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ExternalLink, FileDown, Plus, RefreshCw, Settings2 } from 'lucide-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -19,6 +19,8 @@ import type { JurnalEntry, JurnalFoto } from '../types'
 import JurnalFormDialog from './JurnalFormDialog'
 import JurnalList from './JurnalList'
 import JurnalSummaryCards from './JurnalSummaryCards'
+import ExportPptxDialog from './ExportPptxDialog'
+import RhkSettingsDialog from './RhkSettingsDialog'
 
 function currentPeriod() {
     const now = new Date()
@@ -30,6 +32,8 @@ export default function JurnalKegiatanPage() {
     const [formOpen, setFormOpen] = useState(false)
     const [editing, setEditing] = useState<JurnalEntry | null>(null)
     const [deleting, setDeleting] = useState<JurnalEntry | null>(null)
+    const [rhkOpen, setRhkOpen] = useState(false)
+    const [exportOpen, setExportOpen] = useState(false)
     const [preview, setPreview] = useState<{ photos: JurnalFoto[]; index: number } | null>(null)
 
     const { data, isLoading, isError, error, isFetching, refetch } = useJurnalList(period)
@@ -107,10 +111,20 @@ export default function JurnalKegiatanPage() {
                             </Button>
                         </div>
 
-                        <Button onClick={openCreate} className="w-full sm:w-auto">
-                            <Plus className="h-4 w-4" />
-                            Tambah Kegiatan
-                        </Button>
+                        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                            <Button variant="outline" onClick={() => setRhkOpen(true)}>
+                                <Settings2 className="h-4 w-4" />
+                                Atur RHK
+                            </Button>
+                            <Button variant="outline" onClick={() => setExportOpen(true)}>
+                                <FileDown className="h-4 w-4" />
+                                Export PPTX
+                            </Button>
+                            <Button onClick={openCreate} className="col-span-2 sm:col-span-1">
+                                <Plus className="h-4 w-4" />
+                                Tambah Kegiatan
+                            </Button>
+                        </div>
                     </div>
 
                     <JurnalSummaryCards ringkasan={data?.ringkasan} isLoading={isLoading} />
@@ -158,6 +172,24 @@ export default function JurnalKegiatanPage() {
                     open={formOpen}
                     onOpenChange={setFormOpen}
                     entry={editing}
+                    onOpenRhkSettings={() => setRhkOpen(true)}
+                />
+            )}
+
+            {rhkOpen && (
+                <RhkSettingsDialog open={rhkOpen} onOpenChange={setRhkOpen} tahun={period.tahun} />
+            )}
+
+            {exportOpen && (
+                <ExportPptxDialog
+                    open={exportOpen}
+                    onOpenChange={setExportOpen}
+                    tahun={period.tahun}
+                    bulan={period.bulan}
+                    onOpenRhkSettings={() => {
+                        setExportOpen(false)
+                        setRhkOpen(true)
+                    }}
                 />
             )}
 

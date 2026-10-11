@@ -9,6 +9,8 @@ type RequestOptions = {
     params?: Record<string, string | number | undefined>
     headers?: Record<string, string>
     responseType?: 'json' | 'blob'
+    /** Dipanggil saat respons sukses sebelum body dibaca, mis. untuk membaca Content-Disposition. */
+    onResponse?: (response: Response) => void
 }
 
 async function request<T>(
@@ -82,6 +84,7 @@ async function request<T>(
             throw new ApiError(errorMessage, response.status, errorData)
         }
 
+        options.onResponse?.(response)
         return await response.blob() as unknown as T
     }
 
