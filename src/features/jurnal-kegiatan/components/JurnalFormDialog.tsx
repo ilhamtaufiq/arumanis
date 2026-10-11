@@ -177,7 +177,7 @@ export default function JurnalFormDialog({ open, onOpenChange, entry, onOpenRhkS
                 <DialogHeader>
                     <DialogTitle>{isEdit ? 'Ubah Kegiatan' : 'Tambah Kegiatan'}</DialogTitle>
                     <DialogDescription>
-                        Catat kegiatan harian beserta RHK, output, dan foto bukti.
+                        Catat kegiatan harian beserta RHK dan output.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -298,7 +298,7 @@ export default function JurnalFormDialog({ open, onOpenChange, entry, onOpenRhkS
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="jurnal-foto">Foto bukti (opsional)</Label>
+                        <Label htmlFor="jurnal-foto">Foto kegiatan (lampiran jurnal, opsional)</Label>
 
                         {current && current.foto.length > 0 && (
                             <ul className="flex flex-wrap gap-2">
@@ -338,7 +338,7 @@ export default function JurnalFormDialog({ open, onOpenChange, entry, onOpenRhkS
                             className="cursor-pointer"
                         />
                         <p className="text-xs text-muted-foreground">
-                            JPG atau PNG, maks. {formatBytesMb(FOTO_MAX_BYTES)} per berkas. Sisa {Math.max(0, FOTO_MAX_COUNT - totalFoto)} dari {FOTO_MAX_COUNT} foto.
+                            Lampiran jurnal di laporan. Bukti per RHK diunggah di Foto Bukti RHK. JPG/PNG, maks. {formatBytesMb(FOTO_MAX_BYTES)} per berkas. Sisa {Math.max(0, FOTO_MAX_COUNT - totalFoto)} dari {FOTO_MAX_COUNT}.
                         </p>
 
                         {pendingFiles.length > 0 && (

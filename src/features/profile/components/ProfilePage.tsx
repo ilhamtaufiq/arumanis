@@ -9,6 +9,7 @@ import type { AuditLog } from '@/features/audit-logs/types'
 import type { User } from '@/features/users/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { normalizeOptionalText, toFormText } from '../lib/profile-fields'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UserAvatar } from '@/components/shared/UserAvatar'
@@ -23,6 +24,8 @@ import {
     Mail,
     IdCard,
     Briefcase,
+    Building2,
+    Award,
     CalendarDays,
     Eye,
     EyeOff,
@@ -62,6 +65,8 @@ export default function ProfilePage() {
         email: '',
         nip: '',
         jabatan: '',
+        unit_kerja: '',
+        pangkat_golongan: '',
         gender: '' as UserGender | '',
         password: '',
     })
@@ -80,6 +85,8 @@ export default function ProfilePage() {
             email: fetchedUser.email || '',
             nip: fetchedUser.nip || '',
             jabatan: fetchedUser.jabatan || '',
+            unit_kerja: toFormText(fetchedUser.unit_kerja),
+            pangkat_golongan: toFormText(fetchedUser.pangkat_golongan),
             gender: fetchedUser.gender || '',
             password: '',
         })
@@ -216,12 +223,14 @@ export default function ProfilePage() {
 
         try {
             setIsSaving(true)
-            const { password, ...rest } = formData
+            const { password, unit_kerja, pangkat_golongan, ...rest } = formData
             const nextGender = formData.gender || null
 
             const payload: Partial<UserFormData> = {
                 ...rest,
                 gender: nextGender,
+                unit_kerja: normalizeOptionalText(unit_kerja),
+                pangkat_golongan: normalizeOptionalText(pangkat_golongan),
                 ...(password ? { password } : {}),
             }
 
@@ -503,6 +512,40 @@ export default function ProfilePage() {
                                             placeholder="Jabatan"
                                         />
                                     </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="unit_kerja" className="flex items-center gap-2">
+                                            <Building2 className="h-4 w-4" />
+                                            Unit Kerja
+                                        </Label>
+                                        <Input
+                                            id="unit_kerja"
+                                            name="unit_kerja"
+                                            value={formData.unit_kerja}
+                                            onChange={handleChange}
+                                            maxLength={255}
+                                            placeholder="mis. Dinas Pekerjaan Umum"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="pangkat_golongan" className="flex items-center gap-2">
+                                            <Award className="h-4 w-4" />
+                                            Pangkat/Golongan
+                                        </Label>
+                                        <Input
+                                            id="pangkat_golongan"
+                                            name="pangkat_golongan"
+                                            value={formData.pangkat_golongan}
+                                            onChange={handleChange}
+                                            maxLength={255}
+                                            placeholder="mis. Penata Muda Tk. I / III/b"
+                                        />
+                                    </div>
+                                    <p className="text-xs text-muted-foreground md:col-span-2">
+                                        Unit kerja dan pangkat/golongan dipakai di laporan SKP.
+                                    </p>
                                 </div>
 
                                 <div className="space-y-2">
