@@ -114,10 +114,13 @@ export function formatBytesMb(bytes: number): string {
 export function validateFotoSelection(
     files: File[],
     sudahAda: number,
+    options: { maxCount?: number; batasLabel?: string } = {},
 ): { accepted: File[]; messages: string[] } {
+    const maxCount = options.maxCount ?? FOTO_MAX_COUNT
+    const batasLabel = options.batasLabel ?? 'per kegiatan'
     const messages: string[] = []
     const valid: File[] = []
-    let slotTersisa = Math.max(0, FOTO_MAX_COUNT - sudahAda)
+    let slotTersisa = Math.max(0, maxCount - sudahAda)
 
     for (const file of files) {
         if (!(FOTO_ACCEPT_TYPES as readonly string[]).includes(file.type)) {
@@ -129,7 +132,7 @@ export function validateFotoSelection(
             continue
         }
         if (slotTersisa <= 0) {
-            messages.push(`Maksimal ${FOTO_MAX_COUNT} foto per kegiatan. "${file.name}" tidak ditambahkan.`)
+            messages.push(`Maksimal ${maxCount} foto ${batasLabel}. "${file.name}" tidak ditambahkan.`)
             continue
         }
         slotTersisa -= 1

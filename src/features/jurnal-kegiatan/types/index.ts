@@ -71,6 +71,20 @@ export interface JurnalRhk {
     rencana: number[]
 }
 
+export interface JurnalBuktiRhk {
+    rhk: number
+    foto: JurnalFoto[]
+}
+
+export interface JurnalBuktiListResponse {
+    data: JurnalBuktiRhk[]
+}
+
+export interface JurnalBuktiParams {
+    tahun: number
+    bulan: number
+}
+
 export interface JurnalRhkListResponse {
     data: JurnalRhk[]
 }

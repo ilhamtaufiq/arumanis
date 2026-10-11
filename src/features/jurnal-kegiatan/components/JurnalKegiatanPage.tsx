@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, ExternalLink, FileDown, Plus, RefreshCw, Settings2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileDown, Plus, RefreshCw, Settings2 } from 'lucide-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getApiErrorMessage } from '@/lib/api-error-message'
 import { useDeleteJurnal, useJurnalList } from '../hooks/useJurnalKegiatan'
@@ -15,11 +14,13 @@ import {
     shiftMonth,
     sortJurnalNewestFirst,
 } from '../lib/jurnal-helpers'
-import type { JurnalEntry, JurnalFoto } from '../types'
+import type { JurnalEntry } from '../types'
 import JurnalFormDialog from './JurnalFormDialog'
 import JurnalList from './JurnalList'
 import JurnalSummaryCards from './JurnalSummaryCards'
 import ExportPptxDialog from './ExportPptxDialog'
+import FotoPreviewDialog, { type FotoPreviewState } from './FotoPreviewDialog'
+import JurnalBuktiSection from './JurnalBuktiSection'
 import RhkSettingsDialog from './RhkSettingsDialog'
 
 function currentPeriod() {
@@ -34,7 +35,7 @@ export default function JurnalKegiatanPage() {
     const [deleting, setDeleting] = useState<JurnalEntry | null>(null)
     const [rhkOpen, setRhkOpen] = useState(false)
     const [exportOpen, setExportOpen] = useState(false)
-    const [preview, setPreview] = useState<{ photos: JurnalFoto[]; index: number } | null>(null)
+    const [preview, setPreview] = useState<FotoPreviewState | null>(null)
 
     const { data, isLoading, isError, error, isFetching, refetch } = useJurnalList(period)
     const deleteMutation = useDeleteJurnal()
@@ -164,6 +165,12 @@ export default function JurnalKegiatanPage() {
                             )}
                         </CardContent>
                     </Card>
+
+                    <JurnalBuktiSection
+                        tahun={period.tahun}
+                        bulan={period.bulan}
+                        onOpenRhkSettings={() => setRhkOpen(true)}
+                    />
                 </div>
             </Main>
 
@@ -193,47 +200,11 @@ export default function JurnalKegiatanPage() {
                 />
             )}
 
-            <Dialog open={preview !== null} onOpenChange={(open) => { if (!open) setPreview(null) }}>
-                <DialogContent className="sm:max-w-3xl">
-                    {preview && (
-                        <>
-                            <DialogHeader>
-                                <DialogTitle>Foto {preview.index + 1} dari {preview.photos.length}</DialogTitle>
-                                <DialogDescription>Pratinjau foto bukti kegiatan</DialogDescription>
-                            </DialogHeader>
-                            <img
-                                src={preview.photos[preview.index].url}
-                                alt={`Foto ${preview.index + 1}`}
-                                className="max-h-[70vh] w-full rounded-md object-contain"
-                            />
-                            <div className="flex items-center justify-between gap-2">
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setPreview((p) => p && { ...p, index: (p.index - 1 + p.photos.length) % p.photos.length })}
-                                        disabled={preview.photos.length < 2}
-                                    >
-                                        Sebelumnya
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        onClick={() => setPreview((p) => p && { ...p, index: (p.index + 1) % p.photos.length })}
-                                        disabled={preview.photos.length < 2}
-                                    >
-                                        Berikutnya
-                                    </Button>
-                                </div>
-                                <Button variant="ghost" asChild>
-                                    <a href={preview.photos[preview.index].url} target="_blank" rel="noopener noreferrer">
-                                        <ExternalLink className="h-4 w-4" />
-                                        Buka di tab baru
-                                    </a>
-                                </Button>
-                            </div>
-                        </>
-                    )}
-                </DialogContent>
-            </Dialog>
+            <FotoPreviewDialog
+                preview={preview}
+                onChange={setPreview}
+                onClose={() => setPreview(null)}
+            />
 
             <ConfirmDialog
                 open={deleting !== null}
@@ -243,7 +214,7 @@ export default function JurnalKegiatanPage() {
                 title="Hapus kegiatan ini?"
                 desc={
                     deleting
-                        ? `Kegiatan tanggal ${formatTanggal(deleting.tanggal)} dan ${deleting.foto?.length ?? 0} foto bukti akan dihapus permanen.`
+                        ? `Kegiatan tanggal ${formatTanggal(deleting.tanggal)} dan ${deleting.foto?.length ?? 0} foto kegiatan akan dihapus permanen.`
                         : ''
                 }
                 confirmText="Hapus"

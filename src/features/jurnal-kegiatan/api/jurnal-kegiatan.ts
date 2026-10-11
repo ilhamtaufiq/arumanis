@@ -1,5 +1,8 @@
 import api from '@/lib/api-client'
 import type {
+    JurnalBuktiListResponse,
+    JurnalBuktiParams,
+    JurnalBuktiRhk,
     JurnalEntry,
     JurnalExportParams,
     JurnalListResponse,
@@ -62,4 +65,23 @@ export const exportJurnalPptx = async (params: JurnalExportParams) => {
         },
     })
     return { blob, disposition: meta.disposition }
+}
+
+export const getJurnalBukti = async (params: JurnalBuktiParams) => {
+    return api.get<JurnalBuktiListResponse>('/skp/bukti', {
+        params: { tahun: params.tahun, bulan: params.bulan },
+    })
+}
+
+/** Unggah foto bukti per RHK per bulan (multipart, key "foto[]"). */
+export const uploadJurnalBukti = async (params: JurnalBuktiParams & { rhk: number }, files: File[]) => {
+    const body = new FormData()
+    files.forEach((file) => body.append('foto[]', file))
+    return api.post<{ data: JurnalBuktiRhk }>('/skp/bukti', body, {
+        params: { tahun: params.tahun, bulan: params.bulan, rhk: params.rhk },
+    })
+}
+
+export const deleteJurnalBukti = async (mediaId: number) => {
+    await api.delete<void>(`/skp/bukti/foto/${mediaId}`)
 }

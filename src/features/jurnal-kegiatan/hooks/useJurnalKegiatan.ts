@@ -6,15 +6,18 @@ import { downloadBlob, filenameFromDisposition } from '@/lib/download-file'
 import {
     createJurnal,
     deleteJurnal,
+    deleteJurnalBukti,
+    getJurnalBukti,
     deleteJurnalFoto,
     exportJurnalPptx,
     getJurnalList,
     getJurnalRhk,
     saveJurnalRhk,
     updateJurnal,
+    uploadJurnalBukti,
     uploadJurnalFoto,
 } from '../api/jurnal-kegiatan'
-import type { JurnalExportParams, JurnalParams, JurnalPayload, JurnalRhk } from '../types'
+import type { JurnalBuktiParams, JurnalExportParams, JurnalParams, JurnalPayload, JurnalRhk } from '../types'
 
 export const jurnalKeys = {
     all: ['jurnal-kegiatan'] as const,
@@ -145,6 +148,49 @@ export function useExportJurnalPptx() {
         },
         onError: (error) => {
             if (shouldToast(error)) toast.error(getApiErrorMessage(error, 'Gagal mengekspor laporan'))
+        },
+    })
+}
+
+export const jurnalBuktiKeys = {
+    all: ['jurnal-kegiatan-bukti'] as const,
+    byPeriod: (tahun: number, bulan: number) => [...jurnalBuktiKeys.all, tahun, bulan] as const,
+}
+
+export function useJurnalBukti(params: JurnalBuktiParams) {
+    return useQuery({
+        queryKey: jurnalBuktiKeys.byPeriod(params.tahun, params.bulan),
+        queryFn: async () => (await getJurnalBukti(params)).data,
+        placeholderData: keepPreviousData,
+    })
+}
+
+export function useUploadJurnalBukti() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: ({ tahun, bulan, rhk, files }: JurnalBuktiParams & { rhk: number; files: File[] }) =>
+            uploadJurnalBukti({ tahun, bulan, rhk }, files),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: jurnalBuktiKeys.all })
+        },
+        onError: (error) => {
+            if (shouldToast(error)) toast.error(getApiErrorMessage(error, 'Gagal mengunggah foto bukti'))
+        },
+    })
+}
+
+export function useDeleteJurnalBukti() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: (mediaId: number) => deleteJurnalBukti(mediaId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: jurnalBuktiKeys.all })
+            toast.success('Foto bukti dihapus')
+        },
+        onError: (error) => {
+            toast.error(getApiErrorMessage(error, 'Gagal menghapus foto bukti'))
         },
     })
 }
