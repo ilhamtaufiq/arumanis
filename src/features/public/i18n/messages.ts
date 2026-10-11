@@ -19,12 +19,12 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 },
                 hero: {
                     eyebrow: 'Portal Infrastruktur Air Minum dan Sanitasi',
-                    titleLine: 'Layanan dasar',
-                    words: ['melayani', 'menjaga', 'mengalir', 'bertumbuh'],
+                    titleLine: 'Air bersih dan sanitasi yang',
+                    words: ['melindungi', 'menjangkau', 'menyehatkan', 'berkelanjutan'],
                     description:
-                        'Platform kolaborasi pemerintah untuk memperluas akses air minum dan sanitasi yang layak, aman, dan berkelanjutan di Kabupaten Cianjur.',
+                        'Kolaborasi pemerintah, operator, dan mitra untuk memperluas akses air minum dan sanitasi yang layak, aman, dan berkelanjutan di Kabupaten Cianjur.',
                     ctaProgram: 'Kenali program kami',
-                    ctaPublications: 'Publikasi',
+                    ctaPublications: 'Lihat publikasi',
                 },
                 collab: {
                     label: 'Untuk kolaborator',
@@ -63,7 +63,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 tagline: 'Cuaca Hari Ini',
                 title: 'Air Minum dan Sanitasi.',
                 description:
-                    'Integrasi - Kolaborasi - Intervensi. Wujudkan transformasi digital di Kabupaten Cianjur lewat kolaborasi bersama kami di Bidang Air Minum dan Sanitasi.',
+                    'Integrasi data, kolaborasi lintas pihak, dan intervensi yang tepat sasaran. Bersama Bidang Air Minum dan Sanitasi, kami mendorong layanan air minum dan sanitasi yang lebih merata di Kabupaten Cianjur.',
                 ctaAchievements: 'Lihat Capaian SPM',
                 ctaPublications: 'Lihat Publikasi',
                 stats: {
@@ -141,7 +141,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
             },
             instagram: {
                 label: 'Kegiatan kami terbaru',
-                title: 'Kegiatan kami terbaru.',
+                title: 'Cerita dari lapangan.',
                 description:
                     'Cuplikan unggahan terbaru Bidang Air Minum dan Sanitasi. Klik postingan untuk melihat detail; video dapat diputar langsung.',
                 loading: 'Memuat galeri Instagram...',
