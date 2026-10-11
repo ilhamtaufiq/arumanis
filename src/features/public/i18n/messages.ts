@@ -60,7 +60,6 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 menu: 'Menu',
             },
             hero: {
-                tagline: 'Cuaca Hari Ini',
                 title: 'Air Minum dan Sanitasi.',
                 description:
                     'Integrasi data, kolaborasi lintas pihak, dan intervensi yang tepat sasaran. Bersama Bidang Air Minum dan Sanitasi, kami mendorong layanan air minum dan sanitasi yang lebih merata di Kabupaten Cianjur.',
@@ -487,7 +486,6 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 menu: 'Menu',
             },
             hero: {
-                tagline: 'Today\'s Weather',
                 title: 'Air Minum dan Sanitasi.',
                 description:
                     'Data integration, cross-party collaboration, and well-targeted intervention. Together with the Drinking Water and Sanitation Division, we drive more equitable drinking water and sanitation services in Cianjur Regency.',
