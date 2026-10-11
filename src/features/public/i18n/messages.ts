@@ -446,12 +446,12 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 },
                 hero: {
                     eyebrow: 'Drinking Water and Sanitation Infrastructure Portal',
-                    titleLine: 'Basic services',
-                    words: ['serving', 'protecting', 'flowing', 'growing'],
+                    titleLine: 'Clean water and sanitation that',
+                    words: ['protects', 'reaches', 'safeguards health', 'lasts'],
                     description:
-                        'A government collaboration platform to expand access to decent, safe, and sustainable drinking water and sanitation in Cianjur Regency.',
+                        'Collaboration between government, operators, and partners to expand access to decent, safe, and sustainable drinking water and sanitation in Cianjur Regency.',
                     ctaProgram: 'Explore our program',
-                    ctaPublications: 'Publications',
+                    ctaPublications: 'View publications',
                 },
                 collab: {
                     label: 'For collaborators',
@@ -490,7 +490,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
                 tagline: 'Today\'s Weather',
                 title: 'Air Minum dan Sanitasi.',
                 description:
-                    'Integration - Collaboration - Intervention. Realize digital transformation in Cianjur Regency through collaboration with us at the Air Minum dan Sanitasi Division.',
+                    'Data integration, cross-party collaboration, and well-targeted intervention. Together with the Drinking Water and Sanitation Division, we drive more equitable drinking water and sanitation services in Cianjur Regency.',
                 ctaAchievements: 'View SPM Achievements',
                 ctaPublications: 'View Publications',
                 stats: {
@@ -568,7 +568,7 @@ export const publicMessages: Record<PublicLocale, PublicMessages> = {
             },
             instagram: {
                 label: 'Our latest activity',
-                title: 'Our latest activity.',
+                title: 'Stories from the field.',
                 description:
                     'Latest posts from the Drinking Water & Sanitation Division. Click a post for details; videos play right here.',
                 loading: 'Loading Instagram gallery...',
