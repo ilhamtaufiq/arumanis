@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/auth-stores'
 import { updateMyProfile, uploadMyAvatar, deleteMyAvatar } from '@/features/users/api'
 import type { UserFormData } from '@/features/users/types'
-import { useUserDetail, userKeys } from '@/features/users/hooks/useUsers'
+import { userKeys } from '@/features/users/hooks/useUsers'
+import { getCurrentUser } from '@/features/auth/api'
 import { useAuditLogsList } from '@/features/audit-logs/hooks/useAuditLogs'
 import type { AuditLog } from '@/features/audit-logs/types'
 import type { User } from '@/features/users/types'
@@ -59,7 +60,12 @@ export default function ProfilePage() {
     const [confirmPassword, setConfirmPassword] = useState('')
     const [isAvatarDialogOpen, setIsAvatarDialogOpen] = useState(false)
     const [userData, setUserData] = useState<User | null>(null)
-    const { data: fetchedUser, isLoading } = useUserDetail(auth.user?.id ?? 0, !!auth.user?.id)
+    // Data diri sendiri dari /me: endpoint /users/{id} hanya untuk admin, sehingga user biasa mendapat 403.
+    const { data: fetchedUser, isLoading } = useQuery({
+        queryKey: userKeys.detail(auth.user?.id ?? 0),
+        queryFn: getCurrentUser,
+        enabled: !!auth.user?.id,
+    })
     const [formData, setFormData] = useState({
         name: '',
         email: '',
