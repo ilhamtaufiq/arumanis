@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -13,15 +13,18 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { ApiError } from '@/lib/api-client'
 import { getApiErrorMessage } from '@/lib/api-error-message'
 import {
     useCreateJurnal,
     useDeleteJurnalFoto,
+    useJurnalRhk,
     useUpdateJurnal,
     useUploadJurnalFoto,
 } from '../hooks/useJurnalKegiatan'
+import { rhkOptionLabel } from '../lib/rhk-helpers'
 import {
     emptyJurnalFormValues,
     FOTO_ACCEPT_ATTR,
@@ -31,8 +34,6 @@ import {
     formatBytesMb,
     fotoErrorMessage,
     fotoThumbSrc,
-    RHK_MAX,
-    RHK_MIN,
     toIsoDate,
     toJurnalFormValues,
     toJurnalPayload,
@@ -45,6 +46,8 @@ interface JurnalFormDialogProps {
     onOpenChange: (open: boolean) => void
     /** null berarti mode tambah. */
     entry: JurnalEntry | null
+    /** Membuka dialog pengaturan RHK dari halaman. */
+    onOpenRhkSettings: () => void
 }
 
 function FieldError({ message }: { message?: string }) {
@@ -52,7 +55,7 @@ function FieldError({ message }: { message?: string }) {
     return <p className="mt-1 text-xs font-medium text-destructive">{message}</p>
 }
 
-export default function JurnalFormDialog({ open, onOpenChange, entry }: JurnalFormDialogProps) {
+export default function JurnalFormDialog({ open, onOpenChange, entry, onOpenRhkSettings }: JurnalFormDialogProps) {
     // Entri tersimpan. Diisi dari prop saat dibuka, lalu diperbarui setelah POST, PUT, atau perubahan foto.
     const [current, setCurrent] = useState<JurnalEntry | null>(entry)
     const [pendingFiles, setPendingFiles] = useState<File[]>([])
@@ -82,6 +85,10 @@ export default function JurnalFormDialog({ open, onOpenChange, entry }: JurnalFo
     }, [open, entry, form])
 
     const errors = form.formState.errors
+    const tanggalValue = form.watch('tanggal')
+    const tahunTanggal = Number(tanggalValue?.slice(0, 4)) || new Date().getFullYear()
+    const rhkQuery = useJurnalRhk(tahunTanggal, open)
+    const rhkList = rhkQuery.data ?? []
     const existingCount = current?.foto.length ?? 0
     const totalFoto = existingCount + pendingFiles.length
 
@@ -188,24 +195,42 @@ export default function JurnalFormDialog({ open, onOpenChange, entry }: JurnalFo
                         </div>
                         <div>
                             <Label htmlFor="jurnal-rhk">RHK (opsional)</Label>
-                            <Input
-                                id="jurnal-rhk"
-                                type="number"
-                                inputMode="numeric"
-                                min={RHK_MIN}
-                                max={RHK_MAX}
-                                step={1}
-                                placeholder={`${RHK_MIN}-${RHK_MAX}`}
-                                aria-invalid={!!errors.rhk}
-                                {...form.register('rhk', {
-                                    validate: (value) => {
-                                        if (value.trim() === '') return true
-                                        const n = Number(value)
-                                        return (Number.isInteger(n) && n >= RHK_MIN && n <= RHK_MAX)
-                                            || `RHK harus bilangan bulat ${RHK_MIN}-${RHK_MAX}`
-                                    },
-                                })}
+                            <Controller
+                                name="rhk"
+                                control={form.control}
+                                render={({ field }) => {
+                                    const current = field.value
+                                    const knownNos = new Set(rhkList.map((item) => String(item.no)))
+                                    const orphan = current !== '' && !knownNos.has(current) ? current : null
+                                    return (
+                                        <Select
+                                            value={current === '' ? 'none' : current}
+                                            onValueChange={(value) => field.onChange(value === 'none' ? '' : value)}
+                                        >
+                                            <SelectTrigger id="jurnal-rhk" className="w-full" aria-invalid={!!errors.rhk}>
+                                                <SelectValue placeholder="Pilih RHK" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="none">–</SelectItem>
+                                                {rhkList.map((item) => (
+                                                    <SelectItem key={item.no} value={String(item.no)}>
+                                                        {rhkOptionLabel(item)}
+                                                    </SelectItem>
+                                                ))}
+                                                {orphan && <SelectItem value={orphan}>RHK {orphan}</SelectItem>}
+                                            </SelectContent>
+                                        </Select>
+                                    )
+                                }}
                             />
+                            {!rhkQuery.isLoading && rhkList.length === 0 && (
+                                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                                    <span>Atur RHK dulu untuk tahun {tahunTanggal}.</span>
+                                    <Button type="button" variant="link" size="sm" className="h-auto p-0" onClick={onOpenRhkSettings}>
+                                        Atur RHK
+                                    </Button>
+                                </div>
+                            )}
                             <FieldError message={errors.rhk?.message} />
                         </div>
                     </div>
