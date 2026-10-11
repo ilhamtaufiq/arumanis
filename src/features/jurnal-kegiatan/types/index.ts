@@ -95,3 +95,13 @@ export interface JurnalExportParams {
     feedback?: string
     strategi?: string
 }
+
+export interface JurnalAtasan {
+    nama: string
+    nip: string
+    pangkat: string
+    jabatan: string
+    unit: string
+}
+
+export type JurnalAtasanField = keyof JurnalAtasan

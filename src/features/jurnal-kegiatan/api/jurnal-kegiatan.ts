@@ -1,6 +1,7 @@
 import api from '@/lib/api-client'
 import type {
     JurnalBuktiListResponse,
+    JurnalAtasan,
     JurnalBuktiParams,
     JurnalBuktiRhk,
     JurnalEntry,
@@ -84,4 +85,12 @@ export const uploadJurnalBukti = async (params: JurnalBuktiParams & { rhk: numbe
 
 export const deleteJurnalBukti = async (mediaId: number) => {
     await api.delete<void>(`/skp/bukti/foto/${mediaId}`)
+}
+
+export const getJurnalAtasan = async () => {
+    return api.get<{ data: JurnalAtasan }>('/skp/atasan')
+}
+
+export const saveJurnalAtasan = async (payload: JurnalAtasan) => {
+    return api.put<{ data: JurnalAtasan }>('/skp/atasan', payload)
 }
