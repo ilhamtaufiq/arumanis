@@ -46,6 +46,8 @@ interface JurnalFormDialogProps {
     onOpenChange: (open: boolean) => void
     /** null berarti mode tambah. */
     entry: JurnalEntry | null
+    /** Tanggal awal untuk mode tambah (YYYY-MM-DD). Default: hari ini. */
+    defaultTanggal?: string
     /** Membuka dialog pengaturan RHK dari halaman. */
     onOpenRhkSettings: () => void
 }
@@ -55,7 +57,8 @@ function FieldError({ message }: { message?: string }) {
     return <p className="mt-1 text-xs font-medium text-destructive">{message}</p>
 }
 
-export default function JurnalFormDialog({ open, onOpenChange, entry, onOpenRhkSettings }: JurnalFormDialogProps) {
+export default function JurnalFormDialog({ open, onOpenChange, entry, onOpenRhkSettings, defaultTanggal }: JurnalFormDialogProps) {
+    const tanggalAwal = defaultTanggal ?? toIsoDate(new Date())
     // Entri tersimpan. Diisi dari prop saat dibuka, lalu diperbarui setelah POST, PUT, atau perubahan foto.
     const [current, setCurrent] = useState<JurnalEntry | null>(entry)
     const [pendingFiles, setPendingFiles] = useState<File[]>([])
@@ -65,7 +68,7 @@ export default function JurnalFormDialog({ open, onOpenChange, entry, onOpenRhkS
 
     const isEdit = current !== null
     const form = useForm<JurnalFormValues>({
-        defaultValues: emptyJurnalFormValues(toIsoDate(new Date())),
+        defaultValues: emptyJurnalFormValues(tanggalAwal),
     })
     const createMutation = useCreateJurnal()
     const updateMutation = useUpdateJurnal()
@@ -76,13 +79,13 @@ export default function JurnalFormDialog({ open, onOpenChange, entry, onOpenRhkS
 
     useEffect(() => {
         if (open) {
-            form.reset(entry ? toJurnalFormValues(entry) : emptyJurnalFormValues(toIsoDate(new Date())))
+            form.reset(entry ? toJurnalFormValues(entry) : emptyJurnalFormValues(tanggalAwal))
             setCurrent(entry)
             setPendingFiles([])
             setFotoNotices([])
             setFotoError(null)
         }
-    }, [open, entry, form])
+    }, [open, entry, form, tanggalAwal])
 
     const errors = form.formState.errors
     const tanggalValue = form.watch('tanggal')
