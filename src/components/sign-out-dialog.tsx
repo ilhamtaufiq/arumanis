@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { useAuthStore } from '@/stores/auth-stores'
 import { logout } from '@/features/auth/api'
 import { ConfirmDialog } from '@/components/confirm-dialog'
@@ -13,6 +14,7 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
     const navigate = useNavigate()
     const location = useLocation()
     const { auth } = useAuthStore()
+    const queryClient = useQueryClient()
     const [isSigningOut, setIsSigningOut] = useState(false)
 
     const handleSignOut = async () => {
@@ -23,6 +25,8 @@ export function SignOutDialog({ open, onOpenChange }: SignOutDialogProps) {
             // Tetap bersihkan state lokal meski request gagal
         } finally {
             auth.reset()
+            // Buang cache data user yang keluar agar tidak tampil untuk user berikutnya.
+            queryClient.clear()
             setIsSigningOut(false)
             onOpenChange(false)
             const currentPath = location.href

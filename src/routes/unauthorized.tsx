@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { ShieldAlert, ArrowLeft, Home, RefreshCw, LogOut } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import Grainient from '@/components/ui/Grainient'
@@ -16,6 +17,7 @@ function UnauthorizedPage() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { auth } = useAuthStore()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
@@ -48,6 +50,8 @@ function UnauthorizedPage() {
       // Tetap bersihkan state lokal meski request gagal
     }
     auth.reset()
+    // Buang cache data user yang keluar agar tidak tampil untuk user berikutnya.
+    queryClient.clear()
     navigate({ to: '/sign-in', replace: true })
   }
 
