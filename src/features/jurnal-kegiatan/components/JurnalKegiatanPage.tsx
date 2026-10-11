@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, FileDown, Plus, RefreshCw, Settings2, UserCheck } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, FileDown, List, Plus, RefreshCw, Settings2, UserCheck } from 'lucide-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -11,11 +11,14 @@ import { useDeleteJurnal, useJurnalList } from '../hooks/useJurnalKegiatan'
 import {
     formatTanggal,
     MONTH_NAMES_ID,
+    periodKey,
     shiftMonth,
     sortJurnalNewestFirst,
 } from '../lib/jurnal-helpers'
+import { type JurnalView } from '../lib/calendar-helpers'
 import type { JurnalEntry } from '../types'
 import JurnalFormDialog from './JurnalFormDialog'
+import JurnalCalendar, { JurnalDayHeader } from './JurnalCalendar'
 import JurnalList from './JurnalList'
 import JurnalSummaryCards from './JurnalSummaryCards'
 import ExportPptxDialog from './ExportPptxDialog'
@@ -23,6 +26,25 @@ import FotoPreviewDialog, { type FotoPreviewState } from './FotoPreviewDialog'
 import JurnalBuktiSection from './JurnalBuktiSection'
 import PejabatPenilaiDialog from './PejabatPenilaiDialog'
 import RhkSettingsDialog from './RhkSettingsDialog'
+
+const VIEW_STORAGE_KEY = 'jurnal-kegiatan:view'
+
+/** Pilihan tampilan terakhir. Gagal membaca storage (mode privat, diblokir) berarti default Daftar. */
+function readViewPref(): JurnalView {
+    try {
+        return window.localStorage.getItem(VIEW_STORAGE_KEY) === 'calendar' ? 'calendar' : 'list'
+    } catch {
+        return 'list'
+    }
+}
+
+function writeViewPref(view: JurnalView) {
+    try {
+        window.localStorage.setItem(VIEW_STORAGE_KEY, view)
+    } catch {
+        // Penyimpanan tidak tersedia; pilihan hanya berlaku untuk sesi ini.
+    }
+}
 
 function currentPeriod() {
     const now = new Date()
@@ -38,16 +60,31 @@ export default function JurnalKegiatanPage() {
     const [exportOpen, setExportOpen] = useState(false)
     const [atasanOpen, setAtasanOpen] = useState(false)
     const [preview, setPreview] = useState<FotoPreviewState | null>(null)
+    const [view, setView] = useState<JurnalView>(readViewPref)
+    const [selectedIso, setSelectedIso] = useState<string | null>(null)
+    const [formDefaultTanggal, setFormDefaultTanggal] = useState<string | null>(null)
 
     const { data, isLoading, isError, error, isFetching, refetch } = useJurnalList(period)
     const deleteMutation = useDeleteJurnal()
 
     const entries = useMemo(() => sortJurnalNewestFirst(data?.data ?? []), [data])
 
-    const openCreate = () => {
+    const openCreate = (tanggal?: string) => {
         setEditing(null)
+        setFormDefaultTanggal(tanggal ?? null)
         setFormOpen(true)
     }
+
+    const changeView = (next: JurnalView) => {
+        setView(next)
+        writeViewPref(next)
+    }
+
+    // Panel tanggal hanya tampil bila tanggal terpilih masih berada di bulan yang sedang dilihat.
+    const panelIso = selectedIso && selectedIso.startsWith(periodKey(period.tahun, period.bulan)) ? selectedIso : null
+    const dayEntries = panelIso
+        ? entries.filter((entry) => entry.tanggal === panelIso).sort((a, b) => a.id - b.id)
+        : []
 
     const openEdit = (entry: JurnalEntry) => {
         setEditing(entry)
@@ -127,7 +164,7 @@ export default function JurnalKegiatanPage() {
                                 <UserCheck className="h-4 w-4" />
                                 Pejabat Penilai
                             </Button>
-                            <Button onClick={openCreate} className="col-span-2 sm:col-span-1">
+                            <Button onClick={() => openCreate()} className="col-span-2 sm:col-span-1">
                                 <Plus className="h-4 w-4" />
                                 Tambah Kegiatan
                             </Button>
@@ -135,6 +172,29 @@ export default function JurnalKegiatanPage() {
                     </div>
 
                     <JurnalSummaryCards ringkasan={data?.ringkasan} isLoading={isLoading} />
+
+                    <div className="flex justify-end">
+                        <div role="group" aria-label="Tampilan kegiatan" className="inline-flex gap-1">
+                            <Button
+                                size="sm"
+                                variant={view === 'list' ? 'default' : 'outline'}
+                                aria-pressed={view === 'list'}
+                                onClick={() => changeView('list')}
+                            >
+                                <List className="h-4 w-4" />
+                                Daftar
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant={view === 'calendar' ? 'default' : 'outline'}
+                                aria-pressed={view === 'calendar'}
+                                onClick={() => changeView('calendar')}
+                            >
+                                <CalendarDays className="h-4 w-4" />
+                                Kalender
+                            </Button>
+                        </div>
+                    </div>
 
                     <Card>
                         <CardHeader>
@@ -159,6 +219,41 @@ export default function JurnalKegiatanPage() {
                                     <Button variant="outline" onClick={() => refetch()}>
                                         Coba lagi
                                     </Button>
+                                </div>
+                            ) : view === 'calendar' ? (
+                                <div className="space-y-4">
+                                    <JurnalCalendar
+                                        tahun={period.tahun}
+                                        bulan={period.bulan}
+                                        entries={entries}
+                                        selectedIso={panelIso}
+                                        onSelectDate={(iso) => {
+                                            setSelectedIso(iso)
+                                            openCreate(iso)
+                                        }}
+                                    />
+                                    {panelIso ? (
+                                        <div className="space-y-3 border-t pt-4">
+                                            <JurnalDayHeader iso={panelIso} entries={dayEntries} onAdd={(iso) => openCreate(iso)} />
+                                            {dayEntries.length > 0 ? (
+                                                <JurnalList
+                                                    entries={dayEntries}
+                                                    isLoading={false}
+                                                    onEdit={openEdit}
+                                                    onDelete={setDeleting}
+                                                    onPreview={(photos, index) => setPreview({ photos, index })}
+                                                />
+                                            ) : (
+                                                <p className="py-4 text-center text-sm text-muted-foreground">
+                                                    Belum ada kegiatan pada tanggal ini.
+                                                </p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-center text-sm text-muted-foreground">
+                                            Pilih tanggal di kalender untuk melihat kegiatan pada tanggal itu.
+                                        </p>
+                                    )}
                                 </div>
                             ) : (
                                 <JurnalList
@@ -185,6 +280,7 @@ export default function JurnalKegiatanPage() {
                     open={formOpen}
                     onOpenChange={setFormOpen}
                     entry={editing}
+                    defaultTanggal={formDefaultTanggal ?? undefined}
                     onOpenRhkSettings={() => setRhkOpen(true)}
                 />
             )}
