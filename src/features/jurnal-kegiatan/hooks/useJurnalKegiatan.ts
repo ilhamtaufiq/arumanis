@@ -2,8 +2,19 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import { toast } from 'sonner'
 import { ApiError } from '@/lib/api-client'
 import { getApiErrorMessage } from '@/lib/api-error-message'
-import { createJurnal, deleteJurnal, deleteJurnalFoto, getJurnalList, updateJurnal, uploadJurnalFoto } from '../api/jurnal-kegiatan'
-import type { JurnalParams, JurnalPayload } from '../types'
+import { downloadBlob, filenameFromDisposition } from '@/lib/download-file'
+import {
+    createJurnal,
+    deleteJurnal,
+    deleteJurnalFoto,
+    exportJurnalPptx,
+    getJurnalList,
+    getJurnalRhk,
+    saveJurnalRhk,
+    updateJurnal,
+    uploadJurnalFoto,
+} from '../api/jurnal-kegiatan'
+import type { JurnalExportParams, JurnalParams, JurnalPayload, JurnalRhk } from '../types'
 
 export const jurnalKeys = {
     all: ['jurnal-kegiatan'] as const,
@@ -93,6 +104,47 @@ export function useDeleteJurnalFoto() {
         },
         onError: (error) => {
             toast.error(getApiErrorMessage(error, 'Gagal menghapus foto'))
+        },
+    })
+}
+
+export const jurnalRhkKeys = {
+    all: ['jurnal-kegiatan-rhk'] as const,
+    byTahun: (tahun: number) => [...jurnalRhkKeys.all, tahun] as const,
+}
+
+export function useJurnalRhk(tahun: number, enabled = true) {
+    return useQuery({
+        queryKey: jurnalRhkKeys.byTahun(tahun),
+        queryFn: async () => (await getJurnalRhk(tahun)).data,
+        enabled,
+    })
+}
+
+export function useSaveJurnalRhk(tahun: number) {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: (items: JurnalRhk[]) => saveJurnalRhk(tahun, items),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: jurnalRhkKeys.all })
+            toast.success('Pengaturan RHK disimpan')
+        },
+        onError: (error) => {
+            if (shouldToast(error)) toast.error(getApiErrorMessage(error, 'Gagal menyimpan RHK'))
+        },
+    })
+}
+
+export function useExportJurnalPptx() {
+    return useMutation({
+        mutationFn: (params: JurnalExportParams) => exportJurnalPptx(params),
+        onSuccess: ({ blob, disposition }) => {
+            downloadBlob(blob, filenameFromDisposition(disposition, 'laporan-skp.pptx'))
+            toast.success('Laporan PPTX berhasil diunduh')
+        },
+        onError: (error) => {
+            if (shouldToast(error)) toast.error(getApiErrorMessage(error, 'Gagal mengekspor laporan'))
         },
     })
 }

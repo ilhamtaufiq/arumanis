@@ -61,3 +61,23 @@ export interface JurnalFormValues {
 }
 
 export type JurnalField = keyof JurnalFormValues
+
+export interface JurnalRhk {
+    no: number
+    rhk: string
+    target: number
+    satuan: string
+    /** 12 angka, indeks 0 = Januari. */
+    rencana: number[]
+}
+
+export interface JurnalRhkListResponse {
+    data: JurnalRhk[]
+}
+
+export interface JurnalExportParams {
+    tahun: number
+    bulan: number
+    feedback?: string
+    strategi?: string
+}
