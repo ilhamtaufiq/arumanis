@@ -6,6 +6,8 @@ import { downloadBlob, filenameFromDisposition } from '@/lib/download-file'
 import {
     createJurnal,
     deleteJurnal,
+    getJurnalAtasan,
+    saveJurnalAtasan,
     deleteJurnalBukti,
     getJurnalBukti,
     deleteJurnalFoto,
@@ -17,7 +19,7 @@ import {
     uploadJurnalBukti,
     uploadJurnalFoto,
 } from '../api/jurnal-kegiatan'
-import type { JurnalBuktiParams, JurnalExportParams, JurnalParams, JurnalPayload, JurnalRhk } from '../types'
+import type { JurnalAtasan, JurnalBuktiParams, JurnalExportParams, JurnalParams, JurnalPayload, JurnalRhk } from '../types'
 
 export const jurnalKeys = {
     all: ['jurnal-kegiatan'] as const,
@@ -191,6 +193,33 @@ export function useDeleteJurnalBukti() {
         },
         onError: (error) => {
             toast.error(getApiErrorMessage(error, 'Gagal menghapus foto bukti'))
+        },
+    })
+}
+
+export const jurnalAtasanKeys = {
+    all: ['jurnal-kegiatan-atasan'] as const,
+}
+
+export function useJurnalAtasan(enabled = true) {
+    return useQuery({
+        queryKey: jurnalAtasanKeys.all,
+        queryFn: async () => (await getJurnalAtasan()).data,
+        enabled,
+    })
+}
+
+export function useSaveJurnalAtasan() {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+        mutationFn: (payload: JurnalAtasan) => saveJurnalAtasan(payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: jurnalAtasanKeys.all })
+            toast.success('Pejabat Penilai disimpan')
+        },
+        onError: (error) => {
+            if (shouldToast(error)) toast.error(getApiErrorMessage(error, 'Gagal menyimpan Pejabat Penilai'))
         },
     })
 }

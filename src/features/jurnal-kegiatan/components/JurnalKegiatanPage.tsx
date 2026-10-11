@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, FileDown, Plus, RefreshCw, Settings2 } from 'lucide-react'
+import { ChevronLeft, ChevronRight, FileDown, Plus, RefreshCw, Settings2, UserCheck } from 'lucide-react'
 import { ConfirmDialog } from '@/components/confirm-dialog'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -21,6 +21,7 @@ import JurnalSummaryCards from './JurnalSummaryCards'
 import ExportPptxDialog from './ExportPptxDialog'
 import FotoPreviewDialog, { type FotoPreviewState } from './FotoPreviewDialog'
 import JurnalBuktiSection from './JurnalBuktiSection'
+import PejabatPenilaiDialog from './PejabatPenilaiDialog'
 import RhkSettingsDialog from './RhkSettingsDialog'
 
 function currentPeriod() {
@@ -35,6 +36,7 @@ export default function JurnalKegiatanPage() {
     const [deleting, setDeleting] = useState<JurnalEntry | null>(null)
     const [rhkOpen, setRhkOpen] = useState(false)
     const [exportOpen, setExportOpen] = useState(false)
+    const [atasanOpen, setAtasanOpen] = useState(false)
     const [preview, setPreview] = useState<FotoPreviewState | null>(null)
 
     const { data, isLoading, isError, error, isFetching, refetch } = useJurnalList(period)
@@ -121,6 +123,10 @@ export default function JurnalKegiatanPage() {
                                 <FileDown className="h-4 w-4" />
                                 Export PPTX
                             </Button>
+                            <Button variant="outline" onClick={() => setAtasanOpen(true)} className="col-span-2 sm:col-span-1">
+                                <UserCheck className="h-4 w-4" />
+                                Pejabat Penilai
+                            </Button>
                             <Button onClick={openCreate} className="col-span-2 sm:col-span-1">
                                 <Plus className="h-4 w-4" />
                                 Tambah Kegiatan
@@ -182,6 +188,8 @@ export default function JurnalKegiatanPage() {
                     onOpenRhkSettings={() => setRhkOpen(true)}
                 />
             )}
+
+            {atasanOpen && <PejabatPenilaiDialog open={atasanOpen} onOpenChange={setAtasanOpen} />}
 
             {rhkOpen && (
                 <RhkSettingsDialog open={rhkOpen} onOpenChange={setRhkOpen} tahun={period.tahun} />

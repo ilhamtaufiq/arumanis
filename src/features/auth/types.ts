@@ -6,6 +6,8 @@ export interface User {
     email: string;
     avatar: string | null;
     gender?: UserGender | null;
+    unit_kerja?: string | null;
+    pangkat_golongan?: string | null;
     email_verified_at: string | null;
     roles: string[];
     permissions: string[];
