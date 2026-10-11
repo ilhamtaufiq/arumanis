@@ -13,6 +13,8 @@ export interface User {
     gender?: UserGender | null;
     nip?: string;
     jabatan?: string;
+    unit_kerja?: string | null;
+    pangkat_golongan?: string | null;
     roles: Role[];
     permissions: Permission[];
     is_protected_from_deletion?: boolean;
@@ -28,6 +30,8 @@ export interface UserFormData {
     gender?: UserGender | null;
     nip?: string;
     jabatan?: string;
+    unit_kerja?: string | null;
+    pangkat_golongan?: string | null;
     roles?: string[]; // Role names
     permissions?: string[]; // Permission names
 }
