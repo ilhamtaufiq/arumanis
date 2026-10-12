@@ -12,6 +12,11 @@ import {
     shiftMonth,
     sortJurnalNewestFirst,
     toJurnalPayload,
+    daysInMonth,
+    formatTanggalPanjang,
+    groupByTanggal,
+    rhkLegend,
+    rhkTone,
 } from './jurnal-helpers'
 
 const entry = (id: number, tanggal: string): JurnalEntry => ({
@@ -138,3 +143,43 @@ describe('fotoErrorMessage', () => {
         expect(fotoErrorMessage({ kegiatan: ['x'] })).toBeNull()
     })
 })
+
+describe('tampilan jurnal', () => {
+    it('format tanggal panjang dalam bahasa Indonesia tanpa pergeseran zona waktu', () => {
+        expect(formatTanggalPanjang('2026-10-05')).toBe('Senin, 5 Oktober 2026')
+        expect(formatTanggalPanjang('2026-10-05T00:00:00.000000Z')).toBe('Senin, 5 Oktober 2026')
+    })
+
+    it('menghitung hari dalam bulan termasuk tahun kabisat', () => {
+        expect(daysInMonth(2026, 10)).toBe(31)
+        expect(daysInMonth(2026, 2)).toBe(28)
+        expect(daysInMonth(2024, 2)).toBe(29)
+    })
+
+    it('mengelompokkan kegiatan per tanggal dengan urutan input', () => {
+        const groups = groupByTanggal([
+            entry(3, '2026-10-06'),
+            entry(2, '2026-10-05'),
+            entry(1, '2026-10-05'),
+        ])
+        expect(groups.map((g) => g.tanggal)).toEqual(['2026-10-06', '2026-10-05'])
+        expect(groups[1].items.map((e) => e.id)).toEqual([2, 1])
+    })
+
+    it('warna RHK konsisten dan berulang setiap enam RHK', () => {
+        expect(rhkTone(1)).toEqual(rhkTone(7))
+        expect(rhkTone(1)).not.toEqual(rhkTone(2))
+        expect(rhkTone(null).dot).toContain('muted')
+    })
+
+    it('legenda RHK unik dan terurut naik', () => {
+        const rows = [
+            { ...entry(1, '2026-10-05'), rhk: 3 },
+            { ...entry(2, '2026-10-05'), rhk: 1 },
+            { ...entry(3, '2026-10-06'), rhk: 3 },
+            entry(4, '2026-10-06'),
+        ]
+        expect(rhkLegend(rows)).toEqual([1, 3])
+    })
+})
+
