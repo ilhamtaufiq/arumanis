@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
     emptyInformasiForm,
+    ISI_MAX_CHARS,
+    isiToHtml,
+    isiToTeks,
     rentangTampil,
+    ringkasan,
     statusTampil,
     validasiInformasiForm,
 } from './informasi-helpers'
@@ -51,5 +55,43 @@ describe('validasiInformasiForm', () => {
     })
     it('lolos untuk isian yang benar', () => {
         expect(validasiInformasiForm({ ...emptyInformasiForm(), judul: 'Judul', isi: 'Isi' })).toEqual({})
+    })
+})
+
+describe('isiToHtml', () => {
+    it('mengembalikan HTML dari editor apa adanya', () => {
+        expect(isiToHtml('<p>Halo <strong>dunia</strong></p>')).toBe('<p>Halo <strong>dunia</strong></p>')
+    })
+    it('mengubah teks biasa menjadi paragraf dan menjaga baris baru', () => {
+        expect(isiToHtml('Baris satu\nBaris dua\n\nParagraf baru')).toBe(
+            '<p>Baris satu<br>Baris dua</p><p>Paragraf baru</p>',
+        )
+    })
+    it('meng-escape karakter khusus pada teks biasa', () => {
+        expect(isiToHtml('a < b & c')).toBe('<p>a &lt; b &amp; c</p>')
+    })
+})
+
+describe('isiToTeks dan ringkasan', () => {
+    it('membuang tag dan merapikan spasi', () => {
+        expect(isiToTeks('<p>Halo</p><p>dunia&nbsp;ini</p>')).toBe('Halo dunia ini')
+    })
+    it('memotong ringkasan dan menambah elipsis', () => {
+        expect(ringkasan('abcdefghij', 5)).toBe('abcde…')
+    })
+})
+
+describe('validasi isi HTML', () => {
+    it('menganggap paragraf kosong dari editor sebagai isi kosong', () => {
+        const errors = validasiInformasiForm({ ...emptyInformasiForm(), judul: 'Judul', isi: '<p></p>' })
+        expect(errors.isi).toBeDefined()
+    })
+    it('menolak isi melebihi batas karakter', () => {
+        const errors = validasiInformasiForm({
+            ...emptyInformasiForm(),
+            judul: 'Judul',
+            isi: '<p>' + 'x'.repeat(ISI_MAX_CHARS) + '</p>',
+        })
+        expect(errors.isi).toBeDefined()
     })
 })

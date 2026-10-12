@@ -107,6 +107,8 @@ import { Route as AuthenticatedKontrakNewRouteImport } from './routes/_authentic
 import { Route as AuthenticatedKegiatanNewRouteImport } from './routes/_authenticated/kegiatan/new'
 import { Route as AuthenticatedKegiatanRoleNewRouteImport } from './routes/_authenticated/kegiatan-role/new'
 import { Route as AuthenticatedKecamatanNewRouteImport } from './routes/_authenticated/kecamatan/new'
+import { Route as AuthenticatedInformasiTambahRouteImport } from './routes/_authenticated/informasi/tambah'
+import { Route as AuthenticatedInformasiIdRouteImport } from './routes/_authenticated/informasi/$id'
 import { Route as AuthenticatedFotoNewRouteImport } from './routes/_authenticated/foto/new'
 import { Route as AuthenticatedDesaNewRouteImport } from './routes/_authenticated/desa/new'
 import { Route as AuthenticatedDesaIdRouteImport } from './routes/_authenticated/desa/$id'
@@ -134,6 +136,7 @@ import { Route as AuthenticatedKontrakIdEditRouteImport } from './routes/_authen
 import { Route as AuthenticatedKegiatanIdEditRouteImport } from './routes/_authenticated/kegiatan/$id.edit'
 import { Route as AuthenticatedKegiatanRoleIdEditRouteImport } from './routes/_authenticated/kegiatan-role/$id.edit'
 import { Route as AuthenticatedKecamatanIdEditRouteImport } from './routes/_authenticated/kecamatan/$id.edit'
+import { Route as AuthenticatedInformasiIdEditRouteImport } from './routes/_authenticated/informasi/$id.edit'
 import { Route as AuthenticatedFotoIdEditRouteImport } from './routes/_authenticated/foto/$id.edit'
 import { Route as AuthenticatedDocumentsOnlyofficeMediaIdRouteImport } from './routes/_authenticated/documents/onlyoffice/$mediaId'
 import { Route as AuthenticatedDesaIdEditRouteImport } from './routes/_authenticated/desa/$id.edit'
@@ -691,6 +694,18 @@ const AuthenticatedKecamatanNewRoute =
     path: '/kecamatan/new',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedInformasiTambahRoute =
+  AuthenticatedInformasiTambahRouteImport.update({
+    id: '/informasi/tambah',
+    path: '/informasi/tambah',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedInformasiIdRoute =
+  AuthenticatedInformasiIdRouteImport.update({
+    id: '/informasi/$id',
+    path: '/informasi/$id',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedFotoNewRoute = AuthenticatedFotoNewRouteImport.update({
   id: '/foto/new',
   path: '/foto/new',
@@ -849,6 +864,12 @@ const AuthenticatedKecamatanIdEditRoute =
     path: '/kecamatan/$id/edit',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedInformasiIdEditRoute =
+  AuthenticatedInformasiIdEditRouteImport.update({
+    id: '/edit',
+    path: '/edit',
+    getParentRoute: () => AuthenticatedInformasiIdRoute,
+  } as any)
 const AuthenticatedFotoIdEditRoute = AuthenticatedFotoIdEditRouteImport.update({
   id: '/foto/$id/edit',
   path: '/foto/$id/edit',
@@ -915,6 +936,8 @@ export interface FileRoutesByFullPath {
   '/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
   '/desa/new': typeof AuthenticatedDesaNewRoute
   '/foto/new': typeof AuthenticatedFotoNewRoute
+  '/informasi/$id': typeof AuthenticatedInformasiIdRouteWithChildren
+  '/informasi/tambah': typeof AuthenticatedInformasiTambahRoute
   '/kecamatan/new': typeof AuthenticatedKecamatanNewRoute
   '/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
@@ -987,6 +1010,7 @@ export interface FileRoutesByFullPath {
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   '/foto/$id/edit': typeof AuthenticatedFotoIdEditRoute
+  '/informasi/$id/edit': typeof AuthenticatedInformasiIdEditRoute
   '/kecamatan/$id/edit': typeof AuthenticatedKecamatanIdEditRoute
   '/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
   '/kegiatan/$id/edit': typeof AuthenticatedKegiatanIdEditRoute
@@ -1044,6 +1068,8 @@ export interface FileRoutesByTo {
   '/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
   '/desa/new': typeof AuthenticatedDesaNewRoute
   '/foto/new': typeof AuthenticatedFotoNewRoute
+  '/informasi/$id': typeof AuthenticatedInformasiIdRouteWithChildren
+  '/informasi/tambah': typeof AuthenticatedInformasiTambahRoute
   '/kecamatan/new': typeof AuthenticatedKecamatanNewRoute
   '/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
@@ -1116,6 +1142,7 @@ export interface FileRoutesByTo {
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   '/foto/$id/edit': typeof AuthenticatedFotoIdEditRoute
+  '/informasi/$id/edit': typeof AuthenticatedInformasiIdEditRoute
   '/kecamatan/$id/edit': typeof AuthenticatedKecamatanIdEditRoute
   '/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
   '/kegiatan/$id/edit': typeof AuthenticatedKegiatanIdEditRoute
@@ -1177,6 +1204,8 @@ export interface FileRoutesById {
   '/_authenticated/desa/$id': typeof AuthenticatedDesaIdRouteWithChildren
   '/_authenticated/desa/new': typeof AuthenticatedDesaNewRoute
   '/_authenticated/foto/new': typeof AuthenticatedFotoNewRoute
+  '/_authenticated/informasi/$id': typeof AuthenticatedInformasiIdRouteWithChildren
+  '/_authenticated/informasi/tambah': typeof AuthenticatedInformasiTambahRoute
   '/_authenticated/kecamatan/new': typeof AuthenticatedKecamatanNewRoute
   '/_authenticated/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/_authenticated/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
@@ -1249,6 +1278,7 @@ export interface FileRoutesById {
   '/_authenticated/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/_authenticated/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
   '/_authenticated/foto/$id/edit': typeof AuthenticatedFotoIdEditRoute
+  '/_authenticated/informasi/$id/edit': typeof AuthenticatedInformasiIdEditRoute
   '/_authenticated/kecamatan/$id/edit': typeof AuthenticatedKecamatanIdEditRoute
   '/_authenticated/kegiatan-role/$id/edit': typeof AuthenticatedKegiatanRoleIdEditRoute
   '/_authenticated/kegiatan/$id/edit': typeof AuthenticatedKegiatanIdEditRoute
@@ -1310,6 +1340,8 @@ export interface FileRouteTypes {
     | '/desa/$id'
     | '/desa/new'
     | '/foto/new'
+    | '/informasi/$id'
+    | '/informasi/tambah'
     | '/kecamatan/new'
     | '/kegiatan-role/new'
     | '/kegiatan/new'
@@ -1382,6 +1414,7 @@ export interface FileRouteTypes {
     | '/desa/$id/edit'
     | '/documents/onlyoffice/$mediaId'
     | '/foto/$id/edit'
+    | '/informasi/$id/edit'
     | '/kecamatan/$id/edit'
     | '/kegiatan-role/$id/edit'
     | '/kegiatan/$id/edit'
@@ -1439,6 +1472,8 @@ export interface FileRouteTypes {
     | '/desa/$id'
     | '/desa/new'
     | '/foto/new'
+    | '/informasi/$id'
+    | '/informasi/tambah'
     | '/kecamatan/new'
     | '/kegiatan-role/new'
     | '/kegiatan/new'
@@ -1511,6 +1546,7 @@ export interface FileRouteTypes {
     | '/desa/$id/edit'
     | '/documents/onlyoffice/$mediaId'
     | '/foto/$id/edit'
+    | '/informasi/$id/edit'
     | '/kecamatan/$id/edit'
     | '/kegiatan-role/$id/edit'
     | '/kegiatan/$id/edit'
@@ -1571,6 +1607,8 @@ export interface FileRouteTypes {
     | '/_authenticated/desa/$id'
     | '/_authenticated/desa/new'
     | '/_authenticated/foto/new'
+    | '/_authenticated/informasi/$id'
+    | '/_authenticated/informasi/tambah'
     | '/_authenticated/kecamatan/new'
     | '/_authenticated/kegiatan-role/new'
     | '/_authenticated/kegiatan/new'
@@ -1643,6 +1681,7 @@ export interface FileRouteTypes {
     | '/_authenticated/desa/$id/edit'
     | '/_authenticated/documents/onlyoffice/$mediaId'
     | '/_authenticated/foto/$id/edit'
+    | '/_authenticated/informasi/$id/edit'
     | '/_authenticated/kecamatan/$id/edit'
     | '/_authenticated/kegiatan-role/$id/edit'
     | '/_authenticated/kegiatan/$id/edit'
@@ -2376,6 +2415,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKecamatanNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/informasi/tambah': {
+      id: '/_authenticated/informasi/tambah'
+      path: '/informasi/tambah'
+      fullPath: '/informasi/tambah'
+      preLoaderRoute: typeof AuthenticatedInformasiTambahRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/informasi/$id': {
+      id: '/_authenticated/informasi/$id'
+      path: '/informasi/$id'
+      fullPath: '/informasi/$id'
+      preLoaderRoute: typeof AuthenticatedInformasiIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/foto/new': {
       id: '/_authenticated/foto/new'
       path: '/foto/new'
@@ -2565,6 +2618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKecamatanIdEditRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/informasi/$id/edit': {
+      id: '/_authenticated/informasi/$id/edit'
+      path: '/edit'
+      fullPath: '/informasi/$id/edit'
+      preLoaderRoute: typeof AuthenticatedInformasiIdEditRouteImport
+      parentRoute: typeof AuthenticatedInformasiIdRoute
+    }
     '/_authenticated/foto/$id/edit': {
       id: '/_authenticated/foto/$id/edit'
       path: '/foto/$id/edit'
@@ -2655,6 +2715,20 @@ const AuthenticatedDesaIdRouteChildren: AuthenticatedDesaIdRouteChildren = {
 const AuthenticatedDesaIdRouteWithChildren =
   AuthenticatedDesaIdRoute._addFileChildren(AuthenticatedDesaIdRouteChildren)
 
+interface AuthenticatedInformasiIdRouteChildren {
+  AuthenticatedInformasiIdEditRoute: typeof AuthenticatedInformasiIdEditRoute
+}
+
+const AuthenticatedInformasiIdRouteChildren: AuthenticatedInformasiIdRouteChildren =
+  {
+    AuthenticatedInformasiIdEditRoute: AuthenticatedInformasiIdEditRoute,
+  }
+
+const AuthenticatedInformasiIdRouteWithChildren =
+  AuthenticatedInformasiIdRoute._addFileChildren(
+    AuthenticatedInformasiIdRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedChecklistRoute: typeof AuthenticatedChecklistRoute
@@ -2672,6 +2746,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDesaIdRoute: typeof AuthenticatedDesaIdRouteWithChildren
   AuthenticatedDesaNewRoute: typeof AuthenticatedDesaNewRoute
   AuthenticatedFotoNewRoute: typeof AuthenticatedFotoNewRoute
+  AuthenticatedInformasiIdRoute: typeof AuthenticatedInformasiIdRouteWithChildren
+  AuthenticatedInformasiTambahRoute: typeof AuthenticatedInformasiTambahRoute
   AuthenticatedKecamatanNewRoute: typeof AuthenticatedKecamatanNewRoute
   AuthenticatedKegiatanRoleNewRoute: typeof AuthenticatedKegiatanRoleNewRoute
   AuthenticatedKegiatanNewRoute: typeof AuthenticatedKegiatanNewRoute
@@ -2778,6 +2854,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDesaIdRoute: AuthenticatedDesaIdRouteWithChildren,
   AuthenticatedDesaNewRoute: AuthenticatedDesaNewRoute,
   AuthenticatedFotoNewRoute: AuthenticatedFotoNewRoute,
+  AuthenticatedInformasiIdRoute: AuthenticatedInformasiIdRouteWithChildren,
+  AuthenticatedInformasiTambahRoute: AuthenticatedInformasiTambahRoute,
   AuthenticatedKecamatanNewRoute: AuthenticatedKecamatanNewRoute,
   AuthenticatedKegiatanRoleNewRoute: AuthenticatedKegiatanRoleNewRoute,
   AuthenticatedKegiatanNewRoute: AuthenticatedKegiatanNewRoute,
