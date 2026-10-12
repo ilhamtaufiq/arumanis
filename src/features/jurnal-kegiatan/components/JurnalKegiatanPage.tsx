@@ -27,14 +27,15 @@ import JurnalBuktiSection from './JurnalBuktiSection'
 import PejabatPenilaiDialog from './PejabatPenilaiDialog'
 import RhkSettingsDialog from './RhkSettingsDialog'
 
-const VIEW_STORAGE_KEY = 'jurnal-kegiatan:view'
+// Kunci versi 2: pilihan lama (default Daftar) tidak ikut terbaca, sehingga kalender menjadi default.
+const VIEW_STORAGE_KEY = 'jurnal-kegiatan:view:v2'
 
-/** Pilihan tampilan terakhir. Gagal membaca storage (mode privat, diblokir) berarti default Daftar. */
+/** Pilihan tampilan terakhir. Default Kalender. Gagal membaca storage (mode privat, diblokir) juga Kalender. */
 function readViewPref(): JurnalView {
     try {
-        return window.localStorage.getItem(VIEW_STORAGE_KEY) === 'calendar' ? 'calendar' : 'list'
+        return window.localStorage.getItem(VIEW_STORAGE_KEY) === 'list' ? 'list' : 'calendar'
     } catch {
-        return 'list'
+        return 'calendar'
     }
 }
 
@@ -164,7 +165,7 @@ export default function JurnalKegiatanPage() {
                                 <UserCheck className="h-4 w-4" />
                                 Pejabat Penilai
                             </Button>
-                            <Button onClick={() => openCreate()} className="col-span-2 sm:col-span-1">
+                            <Button onClick={() => openCreate(panelIso ?? undefined)} className="col-span-2 sm:col-span-1">
                                 <Plus className="h-4 w-4" />
                                 Tambah Kegiatan
                             </Button>
@@ -227,10 +228,7 @@ export default function JurnalKegiatanPage() {
                                         bulan={period.bulan}
                                         entries={entries}
                                         selectedIso={panelIso}
-                                        onSelectDate={(iso) => {
-                                            setSelectedIso(iso)
-                                            openCreate(iso)
-                                        }}
+                                        onSelectDate={(iso) => setSelectedIso(iso)}
                                     />
                                     {panelIso ? (
                                         <div className="space-y-3 border-t pt-4">
