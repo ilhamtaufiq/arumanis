@@ -26,8 +26,6 @@ type DocumentPreviewModalProps = {
     imageBadge?: string
     imageCoordinate?: string | null
     onDocumentSaved?: () => void
-    /** Prefer OnlyOffice for PDF when mediaId is available (default true). */
-    preferOnlyOfficeForPdf?: boolean
 }
 
 export function DocumentPreviewModal({
@@ -40,9 +38,9 @@ export function DocumentPreviewModal({
     imageBadge,
     imageCoordinate,
     onDocumentSaved,
-    preferOnlyOfficeForPdf = true,
 }: DocumentPreviewModalProps) {
-    const [pdfEngine, setPdfEngine] = useState<'onlyoffice' | 'iframe'>('onlyoffice')
+    // PDF dibuka di viewer browser (ringan, tanpa Document Server). ONLYOFFICE lewat tombol.
+    const [pdfEngine, setPdfEngine] = useState<'onlyoffice' | 'iframe'>('iframe')
 
     if (!isOpen || !url) {
         return null
@@ -72,12 +70,8 @@ export function DocumentPreviewModal({
         )
     }
 
-    // Office docs + PDF (optional) via OnlyOffice modal embed
-    if (
-        onlyOfficeReady &&
-        mediaId &&
-        (!isPdf || (preferOnlyOfficeForPdf && pdfEngine === 'onlyoffice'))
-    ) {
+    // Dokumen Office selalu lewat ONLYOFFICE (butuh mode edit). PDF hanya bila diminta.
+    if (onlyOfficeReady && mediaId && (!isPdf || pdfEngine === 'onlyoffice')) {
         return (
             <OnlyOfficePreviewModal
                 isOpen={isOpen}
@@ -109,14 +103,14 @@ export function DocumentPreviewModal({
                                 <Badge variant="outline" className="text-[10px]">
                                     PDF · browser
                                 </Badge>
-                                {mediaId && preferOnlyOfficeForPdf && (
+                                {mediaId && (
                                     <Button
                                         variant="link"
                                         size="sm"
                                         className="h-auto p-0 text-xs"
                                         onClick={() => setPdfEngine('onlyoffice')}
                                     >
-                                        Gunakan ONLYOFFICE
+                                        Buka di ONLYOFFICE
                                     </Button>
                                 )}
                             </div>
