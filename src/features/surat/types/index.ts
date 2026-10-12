@@ -4,6 +4,13 @@ export interface SuratJenis {
     id: number
     name: string
     code: string
+    format_template?: string | null
+}
+
+export interface SuratJenisBaru {
+    name: string
+    code: string
+    format_template?: string | null
 }
 
 export interface Surat {

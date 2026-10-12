@@ -16,6 +16,8 @@ import { SearchableSelect } from '@/components/ui/searchable-select'
 import { Textarea } from '@/components/ui/textarea'
 import { getDocumentTypes, getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
 import { getApiErrorMessage } from '@/lib/api-error-message'
+import { useQueryClient } from '@tanstack/react-query'
+import { createSuratJenis } from '../api'
 import { useCreateSurat, useSuratPratinjau, useUpdateSurat } from '../hooks/useSurat'
 import type { Surat, SuratFormData } from '../types'
 
@@ -28,6 +30,8 @@ interface SuratFormDialogProps {
 }
 
 const hariIni = () => new Date().toISOString().slice(0, 10)
+
+const TEMPLATE_JENIS_BARU = '{sequence}/{code}-AMIS/{month}/{year}'
 
 function formAwal(surat: Surat | null, defaultTahun: number) {
     if (surat) {
@@ -51,6 +55,34 @@ export function SuratFormDialog({ open, onOpenChange, surat, defaultTahun }: Sur
     const createMutation = useCreateSurat()
     const updateMutation = useUpdateSurat()
     const busy = createMutation.isPending || updateMutation.isPending
+
+    const queryClient = useQueryClient()
+    const [jenisBaruOpen, setJenisBaruOpen] = useState(false)
+    const [jenisBaru, setJenisBaru] = useState({ name: '', code: '', template: TEMPLATE_JENIS_BARU })
+    const [jenisBaruMenyimpan, setJenisBaruMenyimpan] = useState(false)
+
+    const simpanJenisBaru = async () => {
+        if (!jenisBaru.name.trim() || !jenisBaru.code.trim()) {
+            return toast.error('Isi nama dan kode jenis surat')
+        }
+        setJenisBaruMenyimpan(true)
+        try {
+            const hasil = await createSuratJenis({
+                name: jenisBaru.name.trim(),
+                code: jenisBaru.code.trim(),
+                format_template: jenisBaru.template.trim() || null,
+            })
+            await queryClient.invalidateQueries({ queryKey: ['document-types'] })
+            setForm((f) => ({ ...f, typeId: String(hasil.data.data.id) }))
+            setJenisBaru({ name: '', code: '', template: TEMPLATE_JENIS_BARU })
+            setJenisBaruOpen(false)
+            toast.success(`Jenis ${hasil.data.data.name} ditambahkan`)
+        } catch (error) {
+            toast.error(getApiErrorMessage(error, 'Gagal menambah jenis surat'))
+        } finally {
+            setJenisBaruMenyimpan(false)
+        }
+    }
 
     // Isi ulang setiap kali dialog dibuka untuk data yang berbeda.
     useEffect(() => {
@@ -137,6 +169,57 @@ export function SuratFormDialog({ open, onOpenChange, surat, defaultTahun }: Sur
                             searchPlaceholder="Cari jenis surat..."
                             emptyMessage="Jenis surat tidak ditemukan."
                         />
+                        {!jenisBaruOpen ? (
+                            <Button type="button" variant="link" size="sm" className="h-auto p-0" onClick={() => setJenisBaruOpen(true)}>
+                                + Jenis surat belum ada? Tambah jenis baru
+                            </Button>
+                        ) : (
+                            <div className="space-y-3 rounded-md border p-3">
+                                <p className="text-sm font-medium">Jenis surat baru</p>
+                                <div className="grid gap-3 sm:grid-cols-2">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="jenis-nama">Nama</Label>
+                                        <Input
+                                            id="jenis-nama"
+                                            value={jenisBaru.name}
+                                            maxLength={255}
+                                            placeholder="Contoh: Surat Tugas"
+                                            onChange={(e) => setJenisBaru((j) => ({ ...j, name: e.target.value }))}
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="jenis-kode">Kode</Label>
+                                        <Input
+                                            id="jenis-kode"
+                                            value={jenisBaru.code}
+                                            maxLength={50}
+                                            placeholder="Contoh: ST"
+                                            onChange={(e) => setJenisBaru((j) => ({ ...j, code: e.target.value }))}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="jenis-template">Template nomor</Label>
+                                    <Input
+                                        id="jenis-template"
+                                        value={jenisBaru.template}
+                                        maxLength={255}
+                                        onChange={(e) => setJenisBaru((j) => ({ ...j, template: e.target.value }))}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        Token: {'{sequence}'}, {'{code}'}, {'{month}'}, {'{year}'}, {'{day}'}. Kosongkan untuk template bawaan.
+                                    </p>
+                                </div>
+                                <div className="flex justify-end gap-2">
+                                    <Button type="button" variant="outline" size="sm" onClick={() => setJenisBaruOpen(false)} disabled={jenisBaruMenyimpan}>
+                                        Batal
+                                    </Button>
+                                    <Button type="button" size="sm" onClick={simpanJenisBaru} disabled={jenisBaruMenyimpan}>
+                                        {jenisBaruMenyimpan ? 'Menyimpan…' : 'Simpan jenis'}
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2">
