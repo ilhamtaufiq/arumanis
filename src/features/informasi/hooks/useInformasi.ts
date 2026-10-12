@@ -1,10 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createInformasi, deleteInformasi, getInformasiList, updateInformasi } from '../api'
+import { createInformasi, deleteInformasi, getInformasiDetail, getInformasiList, updateInformasi } from '../api'
 import type { InformasiFormData, InformasiKategori } from '../types'
 
 export const informasiKeys = {
     all: ['informasi'] as const,
     list: (kategori: InformasiKategori | undefined) => [...informasiKeys.all, 'list', kategori ?? 'semua'] as const,
+    detail: (id: number) => [...informasiKeys.all, 'detail', id] as const,
+}
+
+export function useInformasiDetail(id: number) {
+    return useQuery({
+        queryKey: informasiKeys.detail(id),
+        queryFn: () => getInformasiDetail(id),
+    })
 }
 
 export function useInformasiList(kategori: InformasiKategori | undefined) {
