@@ -58,9 +58,10 @@ export function buildMonthGrid(
 export function dayPreview(
     entries: ReadonlyArray<JurnalEntry>,
     limit = CALENDAR_PREVIEW_LINES,
-): { lines: { key: number; text: string }[]; remaining: number } {
+): { lines: { key: number; rhk: number | null; text: string }[]; remaining: number } {
     const lines = entries.slice(0, limit).map((entry) => ({
         key: entry.id,
+        rhk: entry.rhk,
         text: `${entry.rhk !== null ? `RHK ${entry.rhk}` : '–'} · ${entry.kegiatan}`,
     }))
     return { lines, remaining: Math.max(0, entries.length - limit) }

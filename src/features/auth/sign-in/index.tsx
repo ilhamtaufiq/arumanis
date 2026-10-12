@@ -1,12 +1,12 @@
 import { useEffect, useRef } from 'react'
-import { useSearch } from '@tanstack/react-router'
+import { useNavigate, useSearch } from '@tanstack/react-router'
 import { BookOpenText } from 'lucide-react'
 import { AuthLayout } from '../auth-layout'
 import { UserAuthForm } from './components/user-auth-form'
 import { Button } from '@/components/ui/button'
 import { usePageSeo } from '@/hooks/use-page-seo'
 import { redirectToExternalAppWithHandoff, redirectToPengawasWithHandoff } from '@/lib/auth-handoff'
-import { isExternalRedirectUrl } from '@/lib/post-login-redirect'
+import { isExternalRedirectUrl, resolvePostLoginPath } from '@/lib/post-login-redirect'
 import { useAuthStore } from '@/stores/auth-stores'
 
 export function SignIn() {
@@ -20,6 +20,8 @@ export function SignIn() {
     // tanpa minta login ulang. (Tanpa ini: worker lempar ke sini, user balik
     // manual ke worker, dilempar lagi — loop tanpa callback.)
     const isSessionActive = useAuthStore((state) => state.auth.isSessionActive)
+    const user = useAuthStore((state) => state.auth.user)
+    const navigate = useNavigate()
     const handoffFired = useRef(false)
     useEffect(() => {
         if (!isSessionActive || !redirect || handoffFired.current) {
@@ -33,6 +35,13 @@ export function SignIn() {
             void redirectToExternalAppWithHandoff(redirect)
         }
     }, [isSessionActive, redirect])
+
+    // Sudah login dan bukan handoff ke app lain: form login tidak relevan, arahkan ke halaman tujuan.
+    useEffect(() => {
+        if (!isSessionActive) return
+        if (redirect?.startsWith('/pengawasan') || (redirect && isExternalRedirectUrl(redirect))) return
+        navigate({ to: resolvePostLoginPath(user?.roles, redirect), replace: true })
+    }, [isSessionActive, redirect, user?.roles, navigate])
 
     return (
         <AuthLayout>

@@ -1,3 +1,6 @@
+import { format } from 'date-fns'
+import { id as idLocale } from 'date-fns/locale'
+
 import type { JurnalEntry, JurnalFormValues, JurnalPayload } from '../types'
 
 export const MONTH_NAMES_ID = [
@@ -147,4 +150,70 @@ export function fotoErrorMessage(errors: Record<string, string[] | string | unde
     const raw = errors?.foto
     const message = Array.isArray(raw) ? raw[0] : raw
     return message || null
+}
+
+/** "Senin, 5 Oktober 2026" dari YYYY-MM-DD, dihitung tanpa melewati zona waktu. */
+export function formatTanggalPanjang(iso: string): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso.slice(0, 10))
+    if (!match) return iso
+    const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]))
+    return format(date, 'EEEE, d MMMM yyyy', { locale: idLocale })
+}
+
+/** Jumlah hari dalam bulan (bulan 1-12). */
+export function daysInMonth(tahun: number, bulan: number): number {
+    return new Date(tahun, bulan, 0).getDate()
+}
+
+/** Kelompok kegiatan per tanggal, urutan mengikuti urutan input (sudah terbaru di atas). */
+export function groupByTanggal(entries: JurnalEntry[]): { tanggal: string; items: JurnalEntry[] }[] {
+    const groups: { tanggal: string; items: JurnalEntry[] }[] = []
+    for (const entry of entries) {
+        const last = groups[groups.length - 1]
+        if (last && last.tanggal === entry.tanggal) {
+            last.items.push(entry)
+        } else {
+            groups.push({ tanggal: entry.tanggal, items: [entry] })
+        }
+    }
+    return groups
+}
+
+export interface RhkTone {
+    /** Titik atau strip penanda. */
+    dot: string
+    /** Label RHK (badge). */
+    badge: string
+    /** Batang proporsi di ringkasan. */
+    bar: string
+}
+
+const NEUTRAL_TONE: RhkTone = {
+    dot: 'bg-muted-foreground/40',
+    badge: 'bg-muted text-muted-foreground',
+    bar: 'bg-muted-foreground/40',
+}
+
+/** Enam warna berulang, sama di daftar, kalender, dan ringkasan. Kelas ditulis penuh agar terdeteksi Tailwind. */
+const RHK_TONES: RhkTone[] = [
+    { dot: 'bg-sky-500', badge: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200', bar: 'bg-sky-500' },
+    { dot: 'bg-emerald-500', badge: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200', bar: 'bg-emerald-500' },
+    { dot: 'bg-amber-500', badge: 'bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200', bar: 'bg-amber-500' },
+    { dot: 'bg-violet-500', badge: 'bg-violet-100 text-violet-800 dark:bg-violet-950 dark:text-violet-200', bar: 'bg-violet-500' },
+    { dot: 'bg-rose-500', badge: 'bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-200', bar: 'bg-rose-500' },
+    { dot: 'bg-teal-500', badge: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-200', bar: 'bg-teal-500' },
+]
+
+export function rhkTone(rhk: number | null): RhkTone {
+    if (rhk === null || rhk < 1) return NEUTRAL_TONE
+    return RHK_TONES[(rhk - 1) % RHK_TONES.length]
+}
+
+/** Daftar RHK unik yang muncul pada entri, urut naik. Dipakai sebagai legenda kalender. */
+export function rhkLegend(entries: JurnalEntry[]): number[] {
+    const set = new Set<number>()
+    for (const entry of entries) {
+        if (entry.rhk !== null && entry.rhk >= 1) set.add(entry.rhk)
+    }
+    return [...set].sort((a, b) => a - b)
 }

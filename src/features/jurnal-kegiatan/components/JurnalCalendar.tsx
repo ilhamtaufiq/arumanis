@@ -10,7 +10,7 @@ import {
     dayPreview,
     type CalendarCell,
 } from '../lib/calendar-helpers'
-import { formatTanggal } from '../lib/jurnal-helpers'
+import { formatTanggal, rhkLegend, rhkTone } from '../lib/jurnal-helpers'
 import type { JurnalEntry } from '../types'
 
 interface JurnalCalendarProps {
@@ -23,6 +23,7 @@ interface JurnalCalendarProps {
 
 export default function JurnalCalendar({ tahun, bulan, entries, selectedIso, onSelectDate }: JurnalCalendarProps) {
     const cells = useMemo(() => buildMonthGrid(tahun, bulan, entries), [tahun, bulan, entries])
+    const legend = useMemo(() => rhkLegend(entries), [entries])
 
     return (
         <div className="min-w-0 space-y-2">
@@ -41,6 +42,16 @@ export default function JurnalCalendar({ tahun, bulan, entries, selectedIso, onS
                     />
                 ))}
             </div>
+            {legend.length > 0 && (
+                <ul className="flex flex-wrap gap-x-4 gap-y-1 pt-1 text-xs text-muted-foreground" aria-label="Legenda RHK">
+                    {legend.map((rhk) => (
+                        <li key={rhk} className="flex items-center gap-1.5">
+                            <span className={cn('h-2.5 w-2.5 rounded-full', rhkTone(rhk).dot)} aria-hidden />
+                            RHK {rhk}
+                        </li>
+                    ))}
+                </ul>
+            )}
         </div>
     )
 }
@@ -79,8 +90,9 @@ function CalendarDay({ cell, selected, onSelect }: { cell: CalendarCell; selecte
             </span>
             {cell.inMonth &&
                 preview.lines.map((line) => (
-                    <span key={line.key} className="truncate text-[11px] leading-tight">
-                        {line.text}
+                    <span key={line.key} className="flex min-w-0 items-center gap-1 text-[11px] leading-tight">
+                        <span className={cn('h-2 w-2 shrink-0 rounded-full', rhkTone(line.rhk).dot)} aria-hidden />
+                        <span className="truncate">{line.text}</span>
                     </span>
                 ))}
             {cell.inMonth && preview.remaining > 0 && (
