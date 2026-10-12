@@ -76,6 +76,7 @@ import { Route as AuthenticatedKegiatanIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedKegiatanRoleIndexRouteImport } from './routes/_authenticated/kegiatan-role/index'
 import { Route as AuthenticatedKecamatanIndexRouteImport } from './routes/_authenticated/kecamatan/index'
 import { Route as AuthenticatedKanbanIndexRouteImport } from './routes/_authenticated/kanban/index'
+import { Route as AuthenticatedInformasiIndexRouteImport } from './routes/_authenticated/informasi/index'
 import { Route as AuthenticatedFotoIndexRouteImport } from './routes/_authenticated/foto/index'
 import { Route as AuthenticatedDesaIndexRouteImport } from './routes/_authenticated/desa/index'
 import { Route as AuthenticatedDataQualityIndexRouteImport } from './routes/_authenticated/data-quality/index'
@@ -510,6 +511,12 @@ const AuthenticatedKanbanIndexRoute =
     path: '/kanban/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedInformasiIndexRoute =
+  AuthenticatedInformasiIndexRouteImport.update({
+    id: '/informasi/',
+    path: '/informasi/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedFotoIndexRoute = AuthenticatedFotoIndexRouteImport.update({
   id: '/foto/',
   path: '/foto/',
@@ -938,6 +945,7 @@ export interface FileRoutesByFullPath {
   '/data-quality/': typeof AuthenticatedDataQualityIndexRoute
   '/desa/': typeof AuthenticatedDesaIndexRoute
   '/foto/': typeof AuthenticatedFotoIndexRoute
+  '/informasi/': typeof AuthenticatedInformasiIndexRoute
   '/kanban/': typeof AuthenticatedKanbanIndexRoute
   '/kecamatan/': typeof AuthenticatedKecamatanIndexRoute
   '/kegiatan-role/': typeof AuthenticatedKegiatanRoleIndexRoute
@@ -1066,6 +1074,7 @@ export interface FileRoutesByTo {
   '/data-quality': typeof AuthenticatedDataQualityIndexRoute
   '/desa': typeof AuthenticatedDesaIndexRoute
   '/foto': typeof AuthenticatedFotoIndexRoute
+  '/informasi': typeof AuthenticatedInformasiIndexRoute
   '/kanban': typeof AuthenticatedKanbanIndexRoute
   '/kecamatan': typeof AuthenticatedKecamatanIndexRoute
   '/kegiatan-role': typeof AuthenticatedKegiatanRoleIndexRoute
@@ -1198,6 +1207,7 @@ export interface FileRoutesById {
   '/_authenticated/data-quality/': typeof AuthenticatedDataQualityIndexRoute
   '/_authenticated/desa/': typeof AuthenticatedDesaIndexRoute
   '/_authenticated/foto/': typeof AuthenticatedFotoIndexRoute
+  '/_authenticated/informasi/': typeof AuthenticatedInformasiIndexRoute
   '/_authenticated/kanban/': typeof AuthenticatedKanbanIndexRoute
   '/_authenticated/kecamatan/': typeof AuthenticatedKecamatanIndexRoute
   '/_authenticated/kegiatan-role/': typeof AuthenticatedKegiatanRoleIndexRoute
@@ -1330,6 +1340,7 @@ export interface FileRouteTypes {
     | '/data-quality/'
     | '/desa/'
     | '/foto/'
+    | '/informasi/'
     | '/kanban/'
     | '/kecamatan/'
     | '/kegiatan-role/'
@@ -1458,6 +1469,7 @@ export interface FileRouteTypes {
     | '/data-quality'
     | '/desa'
     | '/foto'
+    | '/informasi'
     | '/kanban'
     | '/kecamatan'
     | '/kegiatan-role'
@@ -1589,6 +1601,7 @@ export interface FileRouteTypes {
     | '/_authenticated/data-quality/'
     | '/_authenticated/desa/'
     | '/_authenticated/foto/'
+    | '/_authenticated/informasi/'
     | '/_authenticated/kanban/'
     | '/_authenticated/kecamatan/'
     | '/_authenticated/kegiatan-role/'
@@ -2146,6 +2159,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedKanbanIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/informasi/': {
+      id: '/_authenticated/informasi/'
+      path: '/informasi'
+      fullPath: '/informasi/'
+      preLoaderRoute: typeof AuthenticatedInformasiIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/foto/': {
       id: '/_authenticated/foto/'
       path: '/foto'
@@ -2678,6 +2698,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDataQualityIndexRoute: typeof AuthenticatedDataQualityIndexRoute
   AuthenticatedDesaIndexRoute: typeof AuthenticatedDesaIndexRoute
   AuthenticatedFotoIndexRoute: typeof AuthenticatedFotoIndexRoute
+  AuthenticatedInformasiIndexRoute: typeof AuthenticatedInformasiIndexRoute
   AuthenticatedKanbanIndexRoute: typeof AuthenticatedKanbanIndexRoute
   AuthenticatedKecamatanIndexRoute: typeof AuthenticatedKecamatanIndexRoute
   AuthenticatedKegiatanRoleIndexRoute: typeof AuthenticatedKegiatanRoleIndexRoute
@@ -2787,6 +2808,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDataQualityIndexRoute: AuthenticatedDataQualityIndexRoute,
   AuthenticatedDesaIndexRoute: AuthenticatedDesaIndexRoute,
   AuthenticatedFotoIndexRoute: AuthenticatedFotoIndexRoute,
+  AuthenticatedInformasiIndexRoute: AuthenticatedInformasiIndexRoute,
   AuthenticatedKanbanIndexRoute: AuthenticatedKanbanIndexRoute,
   AuthenticatedKecamatanIndexRoute: AuthenticatedKecamatanIndexRoute,
   AuthenticatedKegiatanRoleIndexRoute: AuthenticatedKegiatanRoleIndexRoute,

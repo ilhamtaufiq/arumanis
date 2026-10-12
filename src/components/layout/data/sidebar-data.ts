@@ -12,6 +12,7 @@ import {
     FileSearch,
     FileSpreadsheet,
     Hash,
+    Megaphone,
     FileText,
     HardDrive,
     History as HistoryIcon,
@@ -100,6 +101,12 @@ export const sidebarData: SidebarData = {
                     url: '/buat-laporan',
                     icon: FileSpreadsheet,
                     menuKey: 'pekerjaan',
+                },
+                {
+                    title: 'Informasi Arumanis',
+                    url: '/informasi',
+                    icon: Megaphone,
+                    menuKey: 'dashboard',
                 },
                 {
                     title: 'Penomoran Surat',
