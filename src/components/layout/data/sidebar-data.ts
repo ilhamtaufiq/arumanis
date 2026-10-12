@@ -11,6 +11,7 @@ import {
     Droplets,
     FileSearch,
     FileSpreadsheet,
+    Hash,
     FileText,
     HardDrive,
     History as HistoryIcon,
@@ -99,6 +100,12 @@ export const sidebarData: SidebarData = {
                     url: '/buat-laporan',
                     icon: FileSpreadsheet,
                     menuKey: 'pekerjaan',
+                },
+                {
+                    title: 'Penomoran Surat',
+                    url: '/penomoran-surat',
+                    icon: Hash,
+                    menuKey: 'dashboard',
                 },
                 {
                     title: 'Analisa RAB',
