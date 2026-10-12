@@ -205,7 +205,6 @@ export default function FotoForm() {
         document.addEventListener('paste', onPaste);
         return () => document.removeEventListener('paste', onPaste);
         // applyFile hanya memanggil setState yang stabil.
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     // Tombol "Tempel dari clipboard": membaca gambar lewat Clipboard API (butuh izin browser).
