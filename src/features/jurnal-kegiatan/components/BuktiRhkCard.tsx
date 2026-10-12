@@ -1,11 +1,12 @@
-import { useRef, useState, type ChangeEvent } from 'react'
-import { ImageIcon, Trash2, Upload, X } from 'lucide-react'
+import { useRef, useState, type ChangeEvent, type ClipboardEvent } from 'react'
+import { Clipboard, ImageIcon, Trash2, Upload, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { ApiError } from '@/lib/api-client'
 import { getApiErrorMessage } from '@/lib/api-error-message'
 import { useDeleteJurnalBukti, useUploadJurnalBukti } from '../hooks/useJurnalKegiatan'
+import { bacaGambarClipboard, gambarDariPaste, isPasteDiKolomTeks } from '../lib/clipboard-helpers'
 import { FOTO_ACCEPT_ATTR, FOTO_MAX_BYTES, fotoErrorMessage, fotoThumbSrc, formatBytesMb } from '../lib/jurnal-helpers'
 import { firstErrorMessage } from '../lib/rhk-helpers'
 import { BUKTI_MAX_COUNT, sisaSlotBukti, validateBuktiSelection, type BuktiCard as BuktiCardData } from '../lib/bukti-helpers'
@@ -44,9 +45,7 @@ export default function BuktiRhkCard({ card, tahun, bulan, monthLabel, onPreview
     const title = card.orphan ? card.rhk : `RHK ${card.no}`
     const subtitle = card.orphan ? null : card.rhk
 
-    const handlePick = async (event: ChangeEvent<HTMLInputElement>) => {
-        const picked = Array.from(event.target.files ?? [])
-        event.target.value = ''
+    const uploadFiles = async (picked: File[]) => {
         const { accepted, messages } = validateBuktiSelection(picked, count)
         setNotices(messages)
         setCardError(null)
@@ -62,6 +61,38 @@ export default function BuktiRhkCard({ card, tahun, bulan, monthLabel, onPreview
         }
     }
 
+    const handlePick = (event: ChangeEvent<HTMLInputElement>) => {
+        const picked = Array.from(event.target.files ?? [])
+        event.target.value = ''
+        void uploadFiles(picked)
+    }
+
+    // Tombol "Tempel dari clipboard", dan Ctrl+V saat fokus ada di dalam kartu.
+    const handleTempelClipboard = async () => {
+        let gambar: File | null
+        try {
+            gambar = await bacaGambarClipboard()
+        } catch {
+            setNotices([])
+            setCardError('Gagal membaca clipboard. Izinkan akses clipboard atau tekan Ctrl+V.')
+            return
+        }
+        if (!gambar) {
+            setNotices([])
+            setCardError('Clipboard tidak berisi gambar.')
+            return
+        }
+        await uploadFiles([gambar])
+    }
+
+    const handlePaste = (event: ClipboardEvent<HTMLDivElement>) => {
+        if (isPasteDiKolomTeks(event.nativeEvent)) return
+        const gambar = gambarDariPaste(event.nativeEvent)
+        if (!gambar) return
+        event.preventDefault()
+        void uploadFiles([gambar])
+    }
+
     const handleDelete = async (mediaId: number) => {
         setBusy(true)
         setCardError(null)
@@ -75,7 +106,7 @@ export default function BuktiRhkCard({ card, tahun, bulan, monthLabel, onPreview
     }
 
     return (
-        <Card className="flex flex-col">
+        <Card className="flex flex-col" onPaste={handlePaste}>
             <CardHeader>
                 <CardTitle className="text-base">
                     {title}
@@ -159,6 +190,17 @@ export default function BuktiRhkCard({ card, tahun, bulan, monthLabel, onPreview
                     >
                         <Upload className="h-4 w-4" />
                         {busy ? 'Mengunggah...' : 'Tambah foto'}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="w-full"
+                        disabled={busy || sisa === 0}
+                        onClick={handleTempelClipboard}
+                    >
+                        <Clipboard className="h-4 w-4" />
+                        Tempel dari clipboard
                     </Button>
                     <p className="text-xs text-muted-foreground">
                         JPG atau PNG, maks. {formatBytesMb(FOTO_MAX_BYTES)} per berkas. Sisa {sisa} slot.
