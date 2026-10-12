@@ -91,7 +91,7 @@ export function SuratFormDialog({ open, onOpenChange, surat, defaultTahun }: Sur
 
     const { data: jenisList = [] } = useQuery({
         queryKey: ['document-types'],
-        queryFn: async () => (await getDocumentTypes()).data,
+        queryFn: getDocumentTypes,
         enabled: open,
         staleTime: 5 * 60_000,
     })
