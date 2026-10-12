@@ -18,7 +18,7 @@ import {
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Upload, MapPin, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, ClipboardPaste, Save, Upload, MapPin, AlertTriangle } from 'lucide-react';
 import PageContainer from '@/components/layout/page-container';
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearch } from '@tanstack/react-router';
@@ -51,6 +51,13 @@ function resolveUnitIndexFromFoto(foto: {
     }
     const match = String(foto.keterangan || '').match(/\|?\s*Unit\s+(\d+)/i);
     return match?.[1] || '';
+}
+
+/** Nama berkas untuk screenshot dari clipboard: `screenshot-<waktu>.<ekstensi>`, dengan ekstensi dari tipe MIME. */
+function namaScreenshot(berkas: Blob, tipe: string): File {
+    const ekstensi = tipe === 'image/jpeg' ? 'jpg' : tipe === 'image/webp' ? 'webp' : 'png';
+    const waktu = new Date().toISOString().replace(/[:.]/g, '-');
+    return new File([berkas], `screenshot-${waktu}.${ekstensi}`, { type: tipe || 'image/png' });
 }
 
 export default function FotoForm() {
@@ -153,25 +160,74 @@ export default function FotoForm() {
         }
     }, [komponenId, selectedOutput?.penerima_is_optional, searchParams, isEdit]);
 
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const selectedFile = e.target.files[0];
-            setFile(selectedFile);
-            setPreviewUrl(URL.createObjectURL(selectedFile));
+    /** Memasang berkas sebagai foto yang akan diunggah. Screenshot dari clipboard tidak punya EXIF, jadi dilewati. */
+    const applyFile = async (selectedFile: File, dariClipboard = false) => {
+        setFile(selectedFile);
+        setPreviewUrl(URL.createObjectURL(selectedFile));
+        if (dariClipboard) {
+            toast.success('Screenshot dari clipboard siap diunggah');
+            return;
+        }
 
-            const extractionToast = toast.loading('Mencoba mengekstrak koordinat dari foto...');
-            try {
-                const coords = await extractFormattedCoordinates(selectedFile);
-                if (coords) {
-                    setKoordinat(coords);
-                    toast.success('Koordinat berhasil diekstrak dari foto', { id: extractionToast });
-                } else {
-                    toast.info('Tidak ada koordinat yang ditemukan pada foto.', { id: extractionToast });
-                }
-            } catch (err) {
-                console.error('Extraction failed:', err);
-                toast.error('Gagal mengekstrak koordinat', { id: extractionToast });
+        const extractionToast = toast.loading('Mencoba mengekstrak koordinat dari foto...');
+        try {
+            const coords = await extractFormattedCoordinates(selectedFile);
+            if (coords) {
+                setKoordinat(coords);
+                toast.success('Koordinat berhasil diekstrak dari foto', { id: extractionToast });
+            } else {
+                toast.info('Tidak ada koordinat yang ditemukan pada foto.', { id: extractionToast });
             }
+        } catch (err) {
+            console.error('Extraction failed:', err);
+            toast.error('Gagal mengekstrak koordinat', { id: extractionToast });
+        }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        if (selectedFile) void applyFile(selectedFile);
+    };
+
+    // Ctrl+V / Cmd+V di mana saja di halaman. Paste di kolom teks tetap teks biasa.
+    useEffect(() => {
+        const onPaste = (event: ClipboardEvent) => {
+            const target = event.target as HTMLElement | null;
+            if (target && (target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))) {
+                return;
+            }
+            const items = Array.from(event.clipboardData?.items ?? []);
+            const gambar = items.find((item) => item.kind === 'file' && item.type.startsWith('image/'))?.getAsFile();
+            if (!gambar) return;
+            event.preventDefault();
+            void applyFile(namaScreenshot(gambar, gambar.type), true);
+        };
+        document.addEventListener('paste', onPaste);
+        return () => document.removeEventListener('paste', onPaste);
+        // applyFile hanya memanggil setState yang stabil.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Tombol "Tempel dari clipboard": membaca gambar lewat Clipboard API (butuh izin browser).
+    const handleTempelClipboard = async () => {
+        if (!navigator.clipboard?.read) {
+            toast.info('Browser ini tidak bisa membaca clipboard. Tekan Ctrl+V di halaman ini.');
+            return;
+        }
+        try {
+            const items = await navigator.clipboard.read();
+            for (const item of items) {
+                const tipe = item.types.find((t) => t.startsWith('image/'));
+                if (tipe) {
+                    const blob = await item.getType(tipe);
+                    await applyFile(namaScreenshot(blob, tipe), true);
+                    return;
+                }
+            }
+            toast.info('Clipboard tidak berisi gambar.');
+        } catch (err) {
+            console.error('Clipboard read failed:', err);
+            toast.error('Gagal membaca clipboard. Izinkan akses clipboard atau tekan Ctrl+V.');
         }
     };
 
@@ -448,6 +504,16 @@ export default function FotoForm() {
                                             onChange={handleFileChange}
                                         />
                                     </label>
+                                </div>
+                                <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                                    <p className="text-xs text-muted-foreground">
+                                        Atau tempel screenshot dengan <kbd className="rounded border px-1">Ctrl</kbd>+<kbd className="rounded border px-1">V</kbd>
+                                        {' '}(<kbd className="rounded border px-1">Cmd</kbd>+<kbd className="rounded border px-1">V</kbd> di Mac).
+                                    </p>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleTempelClipboard}>
+                                        <ClipboardPaste className="mr-2 h-4 w-4" />
+                                        Tempel dari clipboard
+                                    </Button>
                                 </div>
                             </div>
 
