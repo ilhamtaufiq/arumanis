@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Controller, useForm } from 'react-hook-form'
-import { Trash2, X } from 'lucide-react'
+import { Clipboard, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -24,6 +24,7 @@ import {
     useUpdateJurnal,
     useUploadJurnalFoto,
 } from '../hooks/useJurnalKegiatan'
+import { bacaGambarClipboard, gambarDariPaste, isPasteDiKolomTeks } from '../lib/clipboard-helpers'
 import { rhkOptionLabel } from '../lib/rhk-helpers'
 import {
     emptyJurnalFormValues,
@@ -95,13 +96,48 @@ export default function JurnalFormDialog({ open, onOpenChange, entry, onOpenRhkS
     const existingCount = current?.foto.length ?? 0
     const totalFoto = existingCount + pendingFiles.length
 
-    const handlePickFiles = (event: ChangeEvent<HTMLInputElement>) => {
-        const picked = Array.from(event.target.files ?? [])
+    const addFiles = (picked: File[]) => {
         const { accepted, messages } = validateFotoSelection(picked, totalFoto)
         setPendingFiles((prev) => [...prev, ...accepted])
         setFotoNotices(messages)
         setFotoError(null)
+    }
+
+    const handlePickFiles = (event: ChangeEvent<HTMLInputElement>) => {
+        const picked = Array.from(event.target.files ?? [])
         event.target.value = ''
+        addFiles(picked)
+    }
+
+    // Ctrl+V / Cmd+V selama dialog terbuka. Paste di kolom teks tetap teks biasa.
+    // Ref dipakai agar listener selalu membaca jumlah foto terbaru tanpa didaftar ulang.
+    const addFilesRef = useRef(addFiles)
+    addFilesRef.current = addFiles
+    useEffect(() => {
+        if (!open) return
+        const onPaste = (event: ClipboardEvent) => {
+            if (isPasteDiKolomTeks(event)) return
+            const gambar = gambarDariPaste(event)
+            if (!gambar) return
+            event.preventDefault()
+            addFilesRef.current([gambar])
+        }
+        document.addEventListener('paste', onPaste)
+        return () => document.removeEventListener('paste', onPaste)
+    }, [open])
+
+    // Tombol "Tempel dari clipboard": membaca gambar lewat Clipboard API.
+    const handleTempelClipboard = async () => {
+        try {
+            const gambar = await bacaGambarClipboard()
+            if (gambar) {
+                addFiles([gambar])
+            } else {
+                toast.info('Clipboard tidak berisi gambar.')
+            }
+        } catch {
+            toast.error('Gagal membaca clipboard. Izinkan akses clipboard atau tekan Ctrl+V.')
+        }
     }
 
     const removePending = (index: number) => {
@@ -340,6 +376,17 @@ export default function JurnalFormDialog({ open, onOpenChange, entry, onOpenRhkS
                             aria-invalid={!!fotoError}
                             className="cursor-pointer"
                         />
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="w-full"
+                            onClick={handleTempelClipboard}
+                            disabled={isBusy || totalFoto >= FOTO_MAX_COUNT}
+                        >
+                            <Clipboard className="h-4 w-4" />
+                            Tempel dari clipboard
+                        </Button>
                         <p className="text-xs text-muted-foreground">
                             Lampiran jurnal di laporan. Bukti per RHK diunggah di Foto Bukti RHK. JPG/PNG, maks. {formatBytesMb(FOTO_MAX_BYTES)} per berkas. Sisa {Math.max(0, FOTO_MAX_COUNT - totalFoto)} dari {FOTO_MAX_COUNT}.
                         </p>
