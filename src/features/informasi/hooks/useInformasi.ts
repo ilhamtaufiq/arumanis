@@ -10,7 +10,7 @@ export const informasiKeys = {
 export function useInformasiList(kategori: InformasiKategori | undefined) {
     return useQuery({
         queryKey: informasiKeys.list(kategori),
-        queryFn: async () => (await getInformasiList({ kategori })).data,
+        queryFn: () => getInformasiList({ kategori }),
         placeholderData: (previous) => previous,
     })
 }
