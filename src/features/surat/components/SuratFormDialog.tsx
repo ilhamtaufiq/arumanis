@@ -73,10 +73,10 @@ export function SuratFormDialog({ open, onOpenChange, surat, defaultTahun }: Sur
                 format_template: jenisBaru.template.trim() || null,
             })
             await queryClient.invalidateQueries({ queryKey: ['document-types'] })
-            setForm((f) => ({ ...f, typeId: String(hasil.data.data.id) }))
+            setForm((f) => ({ ...f, typeId: String(hasil.data.id) }))
             setJenisBaru({ name: '', code: '', template: TEMPLATE_JENIS_BARU })
             setJenisBaruOpen(false)
-            toast.success(`Jenis ${hasil.data.data.name} ditambahkan`)
+            toast.success(`Jenis ${hasil.data.name} ditambahkan`)
         } catch (error) {
             toast.error(getApiErrorMessage(error, 'Gagal menambah jenis surat'))
         } finally {
@@ -140,7 +140,7 @@ export function SuratFormDialog({ open, onOpenChange, surat, defaultTahun }: Sur
                 toast.success('Surat diperbarui')
             } else {
                 const hasil = await createMutation.mutateAsync(data)
-                toast.success(`Surat ${hasil.data.data.nomor} dibuat`)
+                toast.success(`Surat ${hasil.data.nomor} dibuat`)
             }
             onOpenChange(false)
         } catch (error) {
