@@ -739,7 +739,11 @@ export default function MediaLibrary() {
                                             variant={filter === value ? 'secondary' : 'ghost'}
                                             size="sm"
                                             className="h-8 rounded-md text-xs"
-                                            onClick={() => navigateSearch({ type: value === 'all' ? undefined : value })}
+                                            onClick={() =>
+                                                value === 'images'
+                                                    ? void navigate({ to: '/foto' })
+                                                    : navigateSearch({ type: value === 'all' ? undefined : value })
+                                            }
                                         >
                                             {label}
                                         </Button>
