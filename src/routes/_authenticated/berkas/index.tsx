@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router'
 import { lazy, useCallback } from 'react'
 import { z } from 'zod'
 import { ProtectedRoute } from '@/components/ProtectedRoute'
@@ -24,6 +24,10 @@ const berkasSearchSchema = z.object({
 
 export const Route = createFileRoute('/_authenticated/berkas/')({
     validateSearch: berkasSearchSchema,
+    beforeLoad: ({ search }) => {
+        // Foto punya halaman sendiri di /foto.
+        if (search.type === 'images') throw redirect({ to: '/foto' })
+    },
     component: BerkasRoute,
 })
 
