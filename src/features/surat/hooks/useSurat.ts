@@ -12,7 +12,7 @@ export const suratKeys = {
 export function useSuratList(params: SuratListParams) {
     return useQuery({
         queryKey: suratKeys.list(params),
-        queryFn: async () => (await getSuratList(params)).data,
+        queryFn: () => getSuratList(params),
         placeholderData: (previous) => previous,
     })
 }
