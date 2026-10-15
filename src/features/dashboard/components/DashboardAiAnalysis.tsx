@@ -33,6 +33,13 @@ export function DashboardAiAnalysis({ ringkasan }: DashboardAiAnalysisProps) {
                 </Button>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
+                {mutation.isPending && (
+                    <div className="flex items-center gap-3 text-muted-foreground">
+                        {/* Pet: Driplet oleh ibreeze2017, dari Petdex (petdex.dev/pets/driplet). */}
+                        <img src="/animations/driplet-idle.webp" alt="" width={64} height={69} className="shrink-0" />
+                        <span>Sedang membuat analisa…</span>
+                    </div>
+                )}
                 {mutation.isError && (
                     <p role="alert" className="text-destructive">{mutation.error.message}</p>
                 )}
@@ -44,7 +51,7 @@ export function DashboardAiAnalysis({ ringkasan }: DashboardAiAnalysisProps) {
                         <p className="text-xs text-muted-foreground">Model: {mutation.data.model}. Analisa AI bisa keliru, periksa angka sumbernya.</p>
                     </>
                 ) : (
-                    !mutation.isError && (
+                    !mutation.isError && !mutation.isPending && (
                         <p className="text-muted-foreground">
                             Buat ringkasan kondisi, temuan utama, dan rekomendasi dari angka dashboard TA ini.
                         </p>
