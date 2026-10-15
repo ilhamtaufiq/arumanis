@@ -314,6 +314,119 @@ app.post('/bff/ai/test-connection', async (c) => {
   }
 })
 
+const AI_ANALYZE_MAX_CHARS = 12_000
+const AI_ANALYZE_SYSTEM_PROMPT = [
+  'Anda analis progres pembangunan infrastruktur air minum dan sanitasi.',
+  'Tulis analisa singkat dalam Bahasa Indonesia berisi: (1) kondisi umum, (2) 2-3 temuan utama,',
+  '(3) 2-3 rekomendasi tindakan. Gunakan hanya angka dari data yang diberikan dan jangan mengarang data.',
+  'Jika data tidak cukup untuk suatu kesimpulan, katakan demikian.',
+].join(' ')
+
+/** Hanya angka dan teks pendek dari ringkasan dashboard yang dikirim ke model. */
+function sanitizeRingkasanDashboard(raw: unknown) {
+  if (!raw || typeof raw !== 'object') return null
+  const r = raw as Record<string, unknown>
+  const statistikRaw = r.statistik && typeof r.statistik === 'object'
+    ? (r.statistik as Record<string, unknown>)
+    : {}
+  const statistik = Object.fromEntries(
+    Object.entries(statistikRaw)
+      .filter(([, v]) => typeof v === 'number' && Number.isFinite(v))
+      .slice(0, 20),
+  )
+  const perhatian = Array.isArray(r.pekerjaanPerluPerhatian)
+    ? r.pekerjaanPerluPerhatian.slice(0, 10).flatMap((item) => {
+        if (!item || typeof item !== 'object') return []
+        const p = item as Record<string, unknown>
+        const fisik = typeof p.fisik === 'number' && Number.isFinite(p.fisik) ? p.fisik : 0
+        const keuangan = typeof p.keuangan === 'number' && Number.isFinite(p.keuangan) ? p.keuangan : 0
+        return [{ nama: String(p.nama ?? '').slice(0, 200), fisik, keuangan }]
+      })
+    : []
+  return {
+    tahun: String(r.tahun ?? '').slice(0, 4),
+    statistik,
+    pekerjaanPerluPerhatian: perhatian,
+  }
+}
+
+/** `POST /bff/ai/analyze`: analisa dashboard lewat endpoint OpenAI-compatible (`/v1/chat/completions`). Key tetap di server. */
+app.post('/bff/ai/analyze', async (c) => {
+  const token = getCookie(c, SESSION_COOKIE)
+  if (!token) {
+    return c.json({ message: 'Sesi Arumanis tidak ditemukan. Masuk ulang.', code: 'BFF_NO_SESSION' }, 401)
+  }
+
+  const verified = await verifyToken(token)
+  if (!verified.ok) {
+    return c.json({ message: 'Sesi Arumanis tidak valid. Masuk ulang.', code: 'BFF_INVALID_SESSION' }, 401)
+  }
+
+  const baseUrl = (Bun.env.AI_BASE_URL || '').trim().replace(/\/+$/, '')
+  const apiKey = (Bun.env.AI_API_KEY || '').trim()
+  const model = (Bun.env.AI_MODEL || '').trim()
+  if (!baseUrl || !model || !isAllowedAiBaseUrl(baseUrl)) {
+    return c.json({
+      message: 'Analisa AI belum dikonfigurasi. Set AI_BASE_URL dan AI_MODEL di server.',
+      code: 'AI_NOT_CONFIGURED',
+    }, 503)
+  }
+
+  const body = await safeJsonBody(c)
+  const ringkasan = sanitizeRingkasanDashboard(body?.ringkasan)
+  if (!ringkasan) {
+    return c.json({ message: 'Ringkasan dashboard tidak valid.', code: 'AI_BAD_INPUT' }, 400)
+  }
+  const serialized = JSON.stringify(ringkasan)
+  if (serialized.length > AI_ANALYZE_MAX_CHARS) {
+    return c.json({ message: 'Ringkasan dashboard terlalu besar.', code: 'AI_BAD_INPUT' }, 413)
+  }
+
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  }
+  if (apiKey) {
+    headers.Authorization = `Bearer ${apiKey}`
+  }
+
+  try {
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        model,
+        temperature: 0.3,
+        max_tokens: 900,
+        messages: [
+          { role: 'system', content: AI_ANALYZE_SYSTEM_PROMPT },
+          { role: 'user', content: `Data dashboard (JSON):\n${serialized}` },
+        ],
+      }),
+      signal: AbortSignal.timeout(60_000),
+    })
+
+    const payload = await safeParseResponse(response)
+    if (!response.ok) {
+      const message = (payload as { error?: { message?: string }; message?: string } | null)?.error?.message
+        ?? (payload as { message?: string } | null)?.message
+        ?? response.statusText
+      return c.json({ message: `Analisa AI gagal: ${message}`, code: 'AI_UPSTREAM_ERROR' }, 502)
+    }
+
+    const text = (payload as { choices?: Array<{ message?: { content?: unknown } }> } | null)
+      ?.choices?.[0]?.message?.content
+    if (typeof text !== 'string' || !text.trim()) {
+      return c.json({ message: 'Model tidak mengembalikan analisa.', code: 'AI_UPSTREAM_ERROR' }, 502)
+    }
+
+    return c.json({ analisa: text.trim(), model })
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return c.json({ message: `Gagal terhubung ke layanan AI: ${msg}`, code: 'AI_UPSTREAM_ERROR' }, 502)
+  }
+})
+
 app.get('/version.json', (c) => {
   if (!isProd) {
     return c.json({ version: 'dev', buildId: 'dev', builtAt: '' })
