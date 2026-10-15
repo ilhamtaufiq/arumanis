@@ -33,14 +33,11 @@ export function AuthLayout({ children }: AuthLayoutProps) {
             </div>
 
             {/* Kanan: Driplet acak sebagai dekorasi */}
-            <div className='relative hidden min-h-svh items-center justify-center overflow-hidden border-l border-border bg-muted/40 lg:flex'>
-                <div
-                    aria-hidden
-                    className='pointer-events-none absolute bottom-[12%] right-[10%] opacity-90'
-                >
-                    <HeroDriplet reducedMotion={reducedMotion} />
+            <div className='relative hidden min-h-svh flex-col items-center justify-center gap-8 overflow-hidden border-l border-border bg-muted/40 px-10 lg:flex'>
+                <div aria-hidden className='pointer-events-none opacity-90'>
+                    <HeroDriplet reducedMotion={reducedMotion} className='w-[280px] h-auto xl:w-[340px]' />
                 </div>
-                <div className='relative z-10 px-10 text-center'>
+                <div className='relative z-10 text-center'>
                     <p className='font-display text-4xl font-bold tracking-tight text-foreground'>
                         {appName || 'Arumanis'}
                     </p>

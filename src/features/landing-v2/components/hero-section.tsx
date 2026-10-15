@@ -33,12 +33,12 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Driplet acak sebagai dekorasi hero */}
+      {/* Driplet acak sebagai dekorasi hero, di area kosong kanan atas agar tidak menimpa judul atau tombol */}
       <div
         aria-hidden="true"
-        className="absolute right-[-10%] bottom-[8%] sm:right-[4%] sm:bottom-[12%] lg:right-[8%] lg:bottom-[14%] opacity-90 pointer-events-none"
+        className="absolute right-[5%] top-[18%] hidden lg:block opacity-90 pointer-events-none xl:right-[7%]"
       >
-        <HeroDriplet reducedMotion={reducedMotion} />
+        <HeroDriplet reducedMotion={reducedMotion} className="w-[240px] h-auto xl:w-[300px]" />
       </div>
       
       {/* Subtle grid lines */}
