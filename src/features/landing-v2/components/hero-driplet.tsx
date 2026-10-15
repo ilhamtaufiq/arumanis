@@ -6,10 +6,11 @@ const DRIPLET_STATES = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
 interface HeroDripletProps {
   reducedMotion: boolean;
+  className?: string;
 }
 
 /** Driplet dengan state acak per kunjungan. Pengguna dengan reduced motion melihat frame diam. */
-export function HeroDriplet({ reducedMotion }: HeroDripletProps) {
+export function HeroDriplet({ reducedMotion, className = "w-[260px] h-auto sm:w-[340px] lg:w-[400px]" }: HeroDripletProps) {
   const [state] = useState(
     () => DRIPLET_STATES[Math.floor(Math.random() * DRIPLET_STATES.length)]
   );
@@ -25,7 +26,7 @@ export function HeroDriplet({ reducedMotion }: HeroDripletProps) {
       aria-hidden="true"
       width={192}
       height={208}
-      className="w-[260px] h-auto sm:w-[340px] lg:w-[400px] select-none"
+      className={`h-auto select-none ${className}`}
       draggable={false}
     />
   );
