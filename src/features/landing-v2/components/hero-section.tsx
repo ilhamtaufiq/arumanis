@@ -1,5 +1,5 @@
 
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
@@ -7,10 +7,7 @@ import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { usePublicLocale } from "@/features/public/i18n/use-public-locale";
 import { AnchorLink } from "./anchor-link";
 
-// Decorative canvas: load after first paint so it stays off the LCP path
-const AnimatedSphere = lazy(() =>
-  import("./animated-sphere").then((m) => ({ default: m.AnimatedSphere }))
-);
+import { HeroDriplet } from "./hero-driplet";
 
 const heroStats = [
   { value: "32", label: "kecamatan terpantau", company: "KAB. CIANJUR" },
@@ -25,7 +22,6 @@ export function HeroSection() {
   const words = copy.words;
   const reducedMotion = usePrefersReducedMotion();
   const [wordIndex, setWordIndex] = useState(0);
-  const [showSphere, setShowSphere] = useState(false);
 
   useEffect(() => {
     if (reducedMotion) return;
@@ -35,31 +31,14 @@ export function HeroSection() {
     return () => clearInterval(interval);
   }, [reducedMotion, words.length]);
 
-  useEffect(() => {
-    const w = window as Window & {
-      requestIdleCallback?: (cb: () => void) => number;
-      cancelIdleCallback?: (id: number) => void;
-    };
-    if (w.requestIdleCallback) {
-      const id = w.requestIdleCallback(() => setShowSphere(true));
-      return () => w.cancelIdleCallback?.(id);
-    }
-    const id = window.setTimeout(() => setShowSphere(true), 200);
-    return () => window.clearTimeout(id);
-  }, []);
-
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Animated sphere background */}
+      {/* Driplet acak sebagai dekorasi hero */}
       <div
         aria-hidden="true"
-        className="absolute right-[-30%] top-1/2 -translate-y-1/2 w-[420px] h-[420px] sm:right-0 sm:w-[600px] sm:h-[600px] lg:w-[800px] lg:h-[800px] opacity-40 sm:opacity-90 pointer-events-none"
+        className="absolute right-[-10%] bottom-[8%] sm:right-[4%] sm:bottom-[12%] lg:right-[8%] lg:bottom-[14%] opacity-90 pointer-events-none"
       >
-        {showSphere && (
-          <Suspense fallback={null}>
-            <AnimatedSphere />
-          </Suspense>
-        )}
+        <HeroDriplet reducedMotion={reducedMotion} />
       </div>
       
       {/* Subtle grid lines */}
