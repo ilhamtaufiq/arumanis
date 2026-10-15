@@ -34,6 +34,7 @@ import { getDashboardStats } from '../api/dashboard'
 import type { RingkasanDashboardAi } from '../api/ai'
 import { formatCurrency, formatNumber } from '../lib/format'
 import { DashboardAiAnalysis } from './DashboardAiAnalysis'
+import { DashboardTanyaData } from './DashboardTanyaData'
 import { DashboardSpmCharts } from './DashboardSpmCharts'
 import { DashboardStatCard } from './DashboardStatCard'
 
@@ -298,7 +299,12 @@ export function Dashboard() {
                         </section>
                     ) : null}
 
-                    {canViewStats && stats ? <DashboardAiAnalysis ringkasan={ringkasanAi} /> : null}
+                    {canViewStats && stats ? (
+                        <div className="grid gap-6 md:grid-cols-2">
+                            <DashboardAiAnalysis ringkasan={ringkasanAi} />
+                            <DashboardTanyaData tahun={tahunAnggaran} />
+                        </div>
+                    ) : null}
 
                     <DashboardSpmCharts />
 

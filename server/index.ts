@@ -427,6 +427,208 @@ app.post('/bff/ai/analyze', async (c) => {
   }
 })
 
+/** Panggilan chat completion ke AI_BASE_URL. Dipakai bersama oleh fitur AI di BFF. */
+async function panggilModelAi(messages: Array<{ role: string; content: string }>, maxTokens: number): Promise<string> {
+  const baseUrl = (Bun.env.AI_BASE_URL || '').trim().replace(/\/+$/, '')
+  const apiKey = (Bun.env.AI_API_KEY || '').trim()
+  const model = (Bun.env.AI_MODEL || '').trim()
+  if (!baseUrl || !model || !isAllowedAiBaseUrl(baseUrl)) {
+    throw Object.assign(new Error('Fitur AI belum dikonfigurasi.'), { code: 'AI_NOT_CONFIGURED' })
+  }
+  const headers: Record<string, string> = { Accept: 'application/json', 'Content-Type': 'application/json' }
+  if (apiKey) headers.Authorization = `Bearer ${apiKey}`
+
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ model, temperature: 0.1, max_tokens: maxTokens, messages }),
+    signal: AbortSignal.timeout(60_000),
+  })
+  const payload = await safeParseResponse(response)
+  if (!response.ok) {
+    const message = (payload as { error?: { message?: string }; message?: string } | null)?.error?.message
+      ?? (payload as { message?: string } | null)?.message
+      ?? response.statusText
+    throw Object.assign(new Error(`Layanan AI gagal: ${message}`), { code: 'AI_UPSTREAM_ERROR' })
+  }
+  const text = (payload as { choices?: Array<{ message?: { content?: unknown } }> } | null)
+    ?.choices?.[0]?.message?.content
+  if (typeof text !== 'string' || !text.trim()) {
+    throw Object.assign(new Error('Model tidak mengembalikan jawaban.'), { code: 'AI_UPSTREAM_ERROR' })
+  }
+  return text.trim()
+}
+
+/** GET ke API Rust dengan token pengguna, sehingga hak akses mengikuti role yang sudah ada. */
+async function ambilApiUntukPengguna(path: string, token: string): Promise<any> {
+  const response = await fetch(`${API_BASE}${path}`, {
+    headers: { Accept: 'application/json', Authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(15_000),
+  })
+  if (!response.ok) {
+    throw Object.assign(new Error(`Data tidak bisa diambil (HTTP ${response.status}).`), { code: 'DATA_FORBIDDEN_OR_FAILED', status: response.status })
+  }
+  return response.json()
+}
+
+const angkaDalamRentang = (v: unknown, min: number, max: number, fallback: number) => {
+  const n = Number(v)
+  return Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : fallback
+}
+
+/**
+ * Daftar query yang boleh dipilih model. Model tidak menulis SQL atau path bebas.
+ * Setiap tool hanya membaca dari endpoint yang sudah ada.
+ */
+const TANYA_TOOLS: Record<string, {
+  deskripsi: string
+  parameter: string
+  jalankan: (args: Record<string, unknown>, token: string, tahun: string) => Promise<unknown>
+}> = {
+  statistik_dashboard: {
+    deskripsi: 'Ringkasan total kegiatan, pekerjaan aktif, pagu, dan kontrak untuk tahun anggaran.',
+    parameter: '{}',
+    jalankan: async (_args, token, tahun) => {
+      const data = await ambilApiUntukPengguna(`/dashboard/stats?tahun=${encodeURIComponent(tahun)}`, token)
+      return {
+        totalKegiatan: data.totalKegiatan,
+        totalPekerjaan: data.totalPekerjaan,
+        totalPaguPekerjaan: data.totalPaguPekerjaan,
+        totalKontrak: data.totalKontrak,
+        totalNilaiKontrak: data.totalNilaiKontrak,
+      }
+    },
+  },
+  pekerjaan_progres_rendah: {
+    deskripsi: 'Pekerjaan aktif dengan progres fisik di bawah batas, diurutkan dari yang paling rendah (maksimal 20).',
+    parameter: '{"batas": angka 0 sampai 100, default 50}',
+    jalankan: async (args, token, tahun) => {
+      const batas = angkaDalamRentang(args.batas, 0, 100, 50)
+      const data = await ambilApiUntukPengguna(
+        `/pekerjaan?per_page=50&tahun=${encodeURIComponent(tahun)}&status=active&summary=true`,
+        token,
+      )
+      return (data.data ?? [])
+        .map((p: any) => ({
+          id: p.id,
+          nama: String(p.nama_paket ?? '').slice(0, 200),
+          fisik: Number(p.progress_estimasi_fisik ?? 0),
+          keuangan: Number(p.progress_estimasi_keuangan ?? 0),
+        }))
+        .filter((p: { fisik: number }) => p.fisik < batas)
+        .sort((a: { fisik: number }, b: { fisik: number }) => a.fisik - b.fisik)
+        .slice(0, 20)
+    },
+  },
+  pekerjaan_cari: {
+    deskripsi: 'Cari pekerjaan aktif berdasarkan kata dalam nama paket (maksimal 10 hasil).',
+    parameter: '{"kata": teks pencarian}',
+    jalankan: async (args, token, tahun) => {
+      const kata = String(args.kata ?? '').trim().slice(0, 100)
+      if (!kata) return []
+      const data = await ambilApiUntukPengguna(
+        `/pekerjaan?per_page=10&tahun=${encodeURIComponent(tahun)}&status=active&summary=true&search=${encodeURIComponent(kata)}`,
+        token,
+      )
+      return (data.data ?? []).slice(0, 10).map((p: any) => ({
+        id: p.id,
+        nama: String(p.nama_paket ?? '').slice(0, 200),
+        fisik: Number(p.progress_estimasi_fisik ?? 0),
+        keuangan: Number(p.progress_estimasi_keuangan ?? 0),
+      }))
+    },
+  },
+}
+
+/** Ambil JSON dari balasan model, termasuk bila dibungkus pagar kode. */
+function parseJsonDariModel(text: string): Record<string, unknown> | null {
+  const bersih = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim()
+  try {
+    const hasil = JSON.parse(bersih)
+    return hasil && typeof hasil === 'object' ? (hasil as Record<string, unknown>) : null
+  } catch {
+    return null
+  }
+}
+
+/** `POST /bff/ai/tanya`: tanya-jawab data. Model memilih tool, backend menjalankannya, model merangkum hasilnya. */
+app.post('/bff/ai/tanya', async (c) => {
+  const token = getCookie(c, SESSION_COOKIE)
+  if (!token) {
+    return c.json({ message: 'Sesi Arumanis tidak ditemukan. Masuk ulang.', code: 'BFF_NO_SESSION' }, 401)
+  }
+  const verified = await verifyToken(token)
+  if (!verified.ok) {
+    return c.json({ message: 'Sesi Arumanis tidak valid. Masuk ulang.', code: 'BFF_INVALID_SESSION' }, 401)
+  }
+
+  const body = await safeJsonBody(c)
+  const pertanyaan = typeof body?.pertanyaan === 'string' ? body.pertanyaan.trim() : ''
+  const tahun = typeof body?.tahun === 'string' ? body.tahun.trim() : ''
+  if (!pertanyaan || pertanyaan.length > 500) {
+    return c.json({ message: 'Pertanyaan wajib diisi, maksimal 500 karakter.', code: 'AI_BAD_INPUT' }, 400)
+  }
+  if (!/^\d{4}$/.test(tahun)) {
+    return c.json({ message: 'Tahun anggaran tidak valid.', code: 'AI_BAD_INPUT' }, 400)
+  }
+
+  const daftarTool = Object.entries(TANYA_TOOLS)
+    .map(([nama, t]) => `- ${nama}: ${t.deskripsi} Parameter: ${t.parameter}`)
+    .join('\n')
+
+  try {
+    // Langkah 1: model memilih tool. Hanya nama dari daftar yang diterima.
+    const pilihanText = await panggilModelAi([
+      {
+        role: 'system',
+        content: [
+          'Pilih satu tool untuk menjawab pertanyaan pengguna tentang data pembangunan air minum dan sanitasi.',
+          'Balas HANYA dengan JSON tanpa penjelasan lain:',
+          '{"tool": "<nama tool>", "args": {...}} atau {"tool": null, "alasan": "<singkat>"} bila tidak ada tool yang cocok.',
+          'Tools:',
+          daftarTool,
+        ].join('\n'),
+      },
+      { role: 'user', content: pertanyaan },
+    ], 200)
+
+    const pilihan = parseJsonDariModel(pilihanText)
+    const namaTool = typeof pilihan?.tool === 'string' ? pilihan.tool : null
+    if (!namaTool || !TANYA_TOOLS[namaTool]) {
+      return c.json({
+        jawaban: 'Pertanyaan ini belum bisa dijawab dari data yang tersedia. Coba tanyakan tentang ringkasan dashboard, progres pekerjaan, atau mencari pekerjaan dengan nama tertentu.',
+        sumber: null,
+        model: Bun.env.AI_MODEL,
+      })
+    }
+
+    const args = (pilihan?.args && typeof pilihan.args === 'object' ? pilihan.args : {}) as Record<string, unknown>
+    const hasil = await TANYA_TOOLS[namaTool].jalankan(args, token, tahun)
+    const dataText = JSON.stringify(hasil)
+    const jumlahBaris = Array.isArray(hasil) ? hasil.length : null
+    console.info('[AI tanya]', verified.user && (verified.user as { id?: unknown }).id, namaTool, jumlahBaris ?? 'objek')
+
+    // Langkah 2: model merangkum hasil tool. Data dibatasi ukurannya.
+    const jawaban = await panggilModelAi([
+      {
+        role: 'system',
+        content: 'Jawab pertanyaan dalam Bahasa Indonesia HANYA berdasarkan data JSON yang diberikan. Sebut angka persis seperti di data. Jika data tidak menjawab pertanyaan, katakan demikian. Jangan mengarang.',
+      },
+      { role: 'user', content: `Pertanyaan: ${pertanyaan}\n\nData (${namaTool}):\n${dataText.slice(0, 8000)}` },
+    ], 700)
+
+    return c.json({
+      jawaban,
+      sumber: { tool: namaTool, args, jumlah_baris: jumlahBaris },
+      model: Bun.env.AI_MODEL,
+    })
+  } catch (err) {
+    const e = err as { code?: string; message?: string; status?: number }
+    const status = e.code === 'AI_NOT_CONFIGURED' ? 503 : e.code === 'DATA_FORBIDDEN_OR_FAILED' ? (e.status === 403 ? 403 : 502) : 502
+    return c.json({ message: e.message || 'Tanya-jawab gagal.', code: e.code || 'AI_UPSTREAM_ERROR' }, status as any)
+  }
+})
+
 app.get('/version.json', (c) => {
   if (!isProd) {
     return c.json({ version: 'dev', buildId: 'dev', builtAt: '' })
