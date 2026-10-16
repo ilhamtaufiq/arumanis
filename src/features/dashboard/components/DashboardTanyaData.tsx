@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import ReactMarkdown from 'react-markdown'
 import { MessageCircleQuestion } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -32,10 +33,15 @@ export function DashboardTanyaData({ tahun }: DashboardTanyaDataProps) {
     return (
         <Card>
             <CardHeader className="space-y-0 pb-3">
-                <CardTitle className="flex items-center gap-2 text-base">
-                    <MessageCircleQuestion className="h-4 w-4" aria-hidden />
-                    Tanya data
-                </CardTitle>
+                <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="flex items-center gap-2 text-base">
+                        <MessageCircleQuestion className="h-4 w-4" aria-hidden />
+                        Tanya data
+                    </CardTitle>
+                    <Button asChild variant="ghost" size="sm">
+                        <Link to="/asisten-ai">Buka chat</Link>
+                    </Button>
+                </div>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
                 <form

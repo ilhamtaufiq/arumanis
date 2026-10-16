@@ -39,6 +39,7 @@ import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authe
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
+import { Route as AuthenticatedAsistenAiRouteImport } from './routes/_authenticated/asisten-ai'
 import { Route as AuthenticatedUsulanKegiatanIndexRouteImport } from './routes/_authenticated/usulan-kegiatan/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_authenticated/user-pekerjaan/index'
@@ -294,6 +295,11 @@ const AuthenticatedChecklistRoute = AuthenticatedChecklistRouteImport.update({
 const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
   id: '/audit-logs',
   path: '/audit-logs',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAsistenAiRoute = AuthenticatedAsistenAiRouteImport.update({
+  id: '/asisten-ai',
+  path: '/asisten-ai',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedUsulanKegiatanIndexRoute =
@@ -917,6 +923,7 @@ export interface FileRoutesByFullPath {
   '/tools': typeof ToolsRoute
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/asisten-ai': typeof AuthenticatedAsistenAiRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
@@ -1050,6 +1057,7 @@ export interface FileRoutesByTo {
   '/tools': typeof ToolsRoute
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/asisten-ai': typeof AuthenticatedAsistenAiRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/checklist': typeof AuthenticatedChecklistRoute
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
@@ -1185,6 +1193,7 @@ export interface FileRoutesById {
   '/tools': typeof ToolsRoute
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
+  '/_authenticated/asisten-ai': typeof AuthenticatedAsistenAiRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
@@ -1321,6 +1330,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/tujuan-manfaat-hasil'
     | '/unauthorized'
+    | '/asisten-ai'
     | '/audit-logs'
     | '/checklist'
     | '/dashboard'
@@ -1454,6 +1464,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/tujuan-manfaat-hasil'
     | '/unauthorized'
+    | '/asisten-ai'
     | '/audit-logs'
     | '/checklist'
     | '/dashboard'
@@ -1588,6 +1599,7 @@ export interface FileRouteTypes {
     | '/tools'
     | '/tujuan-manfaat-hasil'
     | '/unauthorized'
+    | '/_authenticated/asisten-ai'
     | '/_authenticated/audit-logs'
     | '/_authenticated/checklist'
     | '/_authenticated/dashboard'
@@ -1937,6 +1949,13 @@ declare module '@tanstack/react-router' {
       path: '/audit-logs'
       fullPath: '/audit-logs'
       preLoaderRoute: typeof AuthenticatedAuditLogsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/asisten-ai': {
+      id: '/_authenticated/asisten-ai'
+      path: '/asisten-ai'
+      fullPath: '/asisten-ai'
+      preLoaderRoute: typeof AuthenticatedAsistenAiRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/usulan-kegiatan/': {
@@ -2730,6 +2749,7 @@ const AuthenticatedInformasiIdRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAsistenAiRoute: typeof AuthenticatedAsistenAiRoute
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
   AuthenticatedChecklistRoute: typeof AuthenticatedChecklistRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
@@ -2837,6 +2857,7 @@ interface AuthenticatedRouteChildren {
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAsistenAiRoute: AuthenticatedAsistenAiRoute,
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
   AuthenticatedChecklistRoute: AuthenticatedChecklistRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
