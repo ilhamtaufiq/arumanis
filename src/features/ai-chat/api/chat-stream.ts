@@ -32,9 +32,23 @@ function parseBlok(blok: string): EventChat | null {
     return null
 }
 
-/** Mengirim riwayat chat dan memanggil `onEvent` untuk setiap event SSE dari server. */
+/** Riwayat chat tersimpan di server. Dibaca saat halaman dibuka. */
+export async function ambilRiwayatChat(signal?: AbortSignal): Promise<PesanChat[]> {
+    const response = await fetch(`${API_BASE}/ai/chat/history`, {
+        credentials: 'include',
+        headers: { Accept: 'application/json' },
+        signal,
+    })
+    const payload = (await response.json().catch(() => null)) as { data?: PesanChat[]; message?: string } | null
+    if (!response.ok || !payload?.data) {
+        throw new Error(payload?.message || 'Riwayat chat belum bisa dimuat.')
+    }
+    return payload.data
+}
+
+/** Mengirim satu pertanyaan. Riwayat ada di server, jadi klien hanya mengirim pertanyaan baru. */
 export async function kirimChat(
-    messages: PesanChat[],
+    pertanyaan: string,
     tahun: string,
     onEvent: (ev: EventChat) => void,
     signal?: AbortSignal,
@@ -43,7 +57,7 @@ export async function kirimChat(
         method: 'POST',
         credentials: 'include',
         headers: { Accept: 'text/event-stream', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages, tahun }),
+        body: JSON.stringify({ pertanyaan, tahun }),
         signal,
     })
     if (!response.ok || !response.body) {

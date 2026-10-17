@@ -1,26 +1,47 @@
 import { useEffect, useRef, useState } from 'react'
-import { Plus, Sparkles } from 'lucide-react'
+import { Database, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
-import { kirimChat } from '../api/chat-stream'
+import { ambilRiwayatChat, kirimChat } from '../api/chat-stream'
 import { labelStatus } from '../lib/labels'
 import { ChatBubble, TypingIndicator, type BubbleChat } from './ChatBubble'
 import { Composer } from './Composer'
 import { EmptyState } from './EmptyState'
 
-/** Asisten Data: chat multi-giliran dengan jawaban yang menyebut sumbernya. */
+/**
+ * Asisten Data: satu percakapan yang tersimpan di server. Asisten mengingat percakapan sebelumnya,
+ * jadi riwayat dimuat saat halaman dibuka dan pertanyaan baru hanya dikirim satu per satu.
+ */
 export function AsistenAiPage() {
     const { tahunAnggaran } = useAppSettingsValues()
     const [pesan, setPesan] = useState<BubbleChat[]>([])
+    const [memuat, setMemuat] = useState(true)
+    const [gagalMemuat, setGagalMemuat] = useState<string | null>(null)
     const [teks, setTeks] = useState('')
     const [status, setStatus] = useState<string | null>(null)
     const [sedangKirim, setSedangKirim] = useState(false)
     const abortRef = useRef<AbortController | null>(null)
     const ujungRef = useRef<HTMLDivElement>(null)
+
+    // Riwayat dimuat sekali saat halaman dibuka.
+    useEffect(() => {
+        const controller = new AbortController()
+        ambilRiwayatChat(controller.signal)
+            .then((riwayat) => setPesan(riwayat.map((m) => ({ role: m.role, content: m.content }))))
+            .catch((error) => {
+                if (!controller.signal.aborted) {
+                    setGagalMemuat(error instanceof Error ? error.message : 'Riwayat chat belum bisa dimuat.')
+                }
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setMemuat(false)
+            })
+        return () => controller.abort()
+    }, [])
 
     useEffect(() => () => abortRef.current?.abort(), [])
     useEffect(() => {
@@ -30,21 +51,22 @@ export function AsistenAiPage() {
     const kirim = async (isi: string) => {
         const bersih = isi.trim()
         if (!bersih || sedangKirim) return
-        const riwayat: BubbleChat[] = [...pesan, { role: 'user', content: bersih }]
-        setPesan(riwayat)
+        setPesan((p) => [...p, { role: 'user', content: bersih }])
         setTeks('')
         setSedangKirim(true)
         setStatus('Memproses…')
         const controller = new AbortController()
         abortRef.current = controller
 
+        let berhasil = false
         try {
             await kirimChat(
-                riwayat.map(({ role, content }) => ({ role, content })),
+                bersih,
                 tahunAnggaran,
                 (ev) => {
                     if (ev.type === 'status') setStatus(labelStatus(ev.message))
                     if (ev.type === 'done') {
+                        berhasil = true
                         setPesan((p) => [...p, { role: 'assistant', content: ev.jawaban, sumber: ev.sumber }])
                     }
                     if (ev.type === 'error') toast.error(ev.message)
@@ -56,17 +78,14 @@ export function AsistenAiPage() {
                 toast.error(error instanceof Error ? error.message : 'Chat gagal.')
             }
         } finally {
+            // Bila gagal, pertanyaan dikembalikan ke kolom agar bisa dikirim ulang tanpa mengetik lagi.
+            if (!berhasil && !controller.signal.aborted) {
+                setPesan((p) => (p.at(-1)?.role === 'user' ? p.slice(0, -1) : p))
+                setTeks(bersih)
+            }
             setStatus(null)
             setSedangKirim(false)
         }
-    }
-
-    const chatBaru = () => {
-        abortRef.current?.abort()
-        setPesan([])
-        setTeks('')
-        setStatus(null)
-        setSedangKirim(false)
     }
 
     const adaPesan = pesan.length > 0
@@ -83,21 +102,36 @@ export function AsistenAiPage() {
                             </div>
                             <div className="min-w-0">
                                 <h1 className="truncate text-base font-semibold tracking-tight">Asisten Data</h1>
-                                <p className="truncate text-xs text-muted-foreground">Tanya tentang data pembangunan Arumanis</p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                    Percakapan tersimpan. Asisten mengingat hal yang pernah dibahas.
+                                </p>
                             </div>
                         </div>
-                        <div className="flex shrink-0 items-center gap-2">
-                            <Badge variant="outline" className="hidden sm:inline-flex">TA {tahunAnggaran}</Badge>
-                            <Button type="button" variant="outline" size="sm" onClick={chatBaru} disabled={!adaPesan && !sedangKirim}>
-                                <Plus className="mr-1.5 h-4 w-4" aria-hidden />
-                                Chat baru
-                            </Button>
-                        </div>
+                        <Badge variant="outline" className="shrink-0 gap-1.5">
+                            <Database className="h-3 w-3" aria-hidden />
+                            TA {tahunAnggaran}
+                        </Badge>
                     </header>
 
-                    <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6" aria-live="polite">
+                    <div
+                        className="flex-1 overflow-y-auto px-4 py-6 sm:px-6"
+                        role="log"
+                        aria-live="polite"
+                        aria-busy={memuat || sedangKirim}
+                        aria-label="Percakapan dengan Asisten Data"
+                    >
                         <div className="mx-auto flex max-w-3xl flex-col gap-5">
-                            {!adaPesan && !sedangKirim ? (
+                            {memuat ? (
+                                <div className="space-y-4" aria-label="Memuat riwayat">
+                                    <Skeleton className="ml-auto h-10 w-2/5 rounded-2xl" />
+                                    <Skeleton className="h-20 w-3/4 rounded-2xl" />
+                                    <Skeleton className="ml-auto h-10 w-1/3 rounded-2xl" />
+                                </div>
+                            ) : gagalMemuat ? (
+                                <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                                    {gagalMemuat}. Muat ulang halaman untuk mencoba lagi.
+                                </p>
+                            ) : !adaPesan && !sedangKirim ? (
                                 <EmptyState tahun={tahunAnggaran} onPilih={(t) => void kirim(t)} />
                             ) : (
                                 pesan.map((m, i) => <ChatBubble key={i} message={m} />)
@@ -109,7 +143,12 @@ export function AsistenAiPage() {
 
                     <div className="border-t bg-background px-4 pb-4 pt-3 sm:px-6">
                         <div className="mx-auto max-w-3xl space-y-2">
-                            <Composer value={teks} onChange={setTeks} onSubmit={() => void kirim(teks)} disabled={sedangKirim} />
+                            <Composer
+                                value={teks}
+                                onChange={setTeks}
+                                onSubmit={() => void kirim(teks)}
+                                disabled={sedangKirim || memuat || !!gagalMemuat}
+                            />
                             <p className="text-center text-[11px] text-muted-foreground">
                                 Jawaban AI bisa keliru. Periksa angka pada sumbernya sebelum mengambil keputusan.
                             </p>
