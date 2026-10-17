@@ -7,6 +7,12 @@ export const RELOAD_ATTEMPT_KEY = 'arumanis-reload-attempt'
 const RELOAD_LOCK_TTL_MS = 12_000
 export const MAX_AUTO_RELOAD_ATTEMPTS = 3
 
+/** Halaman dianggap sehat bila berjalan selama ini tanpa error aset. Baru setelah itu penghitung reload direset. */
+const HEALTHY_AFTER_MS = 15_000
+
+/** Sudah ada error aset di halaman ini. Penghitung reload tidak boleh direset. */
+let staleErrorSeen = false
+
 export type AppBuildInfo = {
     version: string
     buildId: string
@@ -249,10 +255,24 @@ export async function hardReloadApp(options?: { force?: boolean }): Promise<bool
     return true
 }
 
+/**
+ * Mereset penghitung reload hanya setelah halaman berjalan sehat. Sebelumnya penghitung direset
+ * setiap aplikasi dibuka, sehingga halaman yang selalu gagal memuat aset reload tanpa henti.
+ */
+export function scheduleReloadAttemptReset(): void {
+    window.setTimeout(() => {
+        if (!staleErrorSeen) {
+            clearReloadAttemptState()
+        }
+    }, HEALTHY_AFTER_MS)
+}
+
 export async function handleStaleAppError(error: unknown, options?: { force?: boolean }): Promise<boolean> {
     if (!isAssetLoadError(error)) {
         return false
     }
+
+    staleErrorSeen = true
 
     return hardReloadApp(options)
 }
