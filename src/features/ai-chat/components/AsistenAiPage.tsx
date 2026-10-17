@@ -31,7 +31,7 @@ export function AsistenAiPage() {
     useEffect(() => {
         const controller = new AbortController()
         ambilRiwayatChat(controller.signal)
-            .then((riwayat) => setPesan(riwayat.map((m) => ({ role: m.role, content: m.content }))))
+            .then((riwayat) => setPesan(riwayat.map((m) => ({ role: m.role, content: m.content, sumber: m.sumber ?? undefined }))))
             .catch((error) => {
                 if (!controller.signal.aborted) {
                     setGagalMemuat(error instanceof Error ? error.message : 'Riwayat chat belum bisa dimuat.')

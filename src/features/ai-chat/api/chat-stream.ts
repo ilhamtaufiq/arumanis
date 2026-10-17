@@ -3,6 +3,8 @@ import { API_BASE } from '@/lib/api-base'
 export interface PesanChat {
     role: 'user' | 'assistant'
     content: string
+    /** Sumber data jawaban. Riwayat lama belum menyimpannya, sehingga bisa kosong. */
+    sumber?: SumberChat[] | null
 }
 
 export interface SumberChat {
