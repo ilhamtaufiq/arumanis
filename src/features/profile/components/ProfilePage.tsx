@@ -25,6 +25,7 @@ import {
     Mail,
     IdCard,
     Briefcase,
+    Phone,
     Building2,
     Award,
     CalendarDays,
@@ -71,6 +72,7 @@ export default function ProfilePage() {
         email: '',
         nip: '',
         jabatan: '',
+        whatsapp: '',
         unit_kerja: '',
         pangkat_golongan: '',
         gender: '' as UserGender | '',
@@ -91,6 +93,7 @@ export default function ProfilePage() {
             email: fetchedUser.email || '',
             nip: fetchedUser.nip || '',
             jabatan: fetchedUser.jabatan || '',
+            whatsapp: toFormText(fetchedUser.whatsapp),
             unit_kerja: toFormText(fetchedUser.unit_kerja),
             pangkat_golongan: toFormText(fetchedUser.pangkat_golongan),
             gender: fetchedUser.gender || '',
@@ -518,6 +521,24 @@ export default function ProfilePage() {
                                             placeholder="Jabatan"
                                         />
                                     </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="whatsapp" className="flex items-center gap-2">
+                                        <Phone className="h-4 w-4" />
+                                        Nomor WhatsApp
+                                    </Label>
+                                    <Input
+                                        id="whatsapp"
+                                        name="whatsapp"
+                                        type="tel"
+                                        inputMode="tel"
+                                        value={formData.whatsapp}
+                                        onChange={handleChange}
+                                        maxLength={20}
+                                        placeholder="mis. 081234567890 atau +62 812-3456-7890"
+                                    />
+                                    <p className="text-xs text-muted-foreground">Dipakai untuk menghubungi Anda terkait pekerjaan. Kosongkan untuk menghapus.</p>
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

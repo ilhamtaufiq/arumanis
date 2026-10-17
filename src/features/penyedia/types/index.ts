@@ -18,8 +18,16 @@ export interface Penyedia {
     bank?: string;
     norek?: string;
     dokumen?: DokumenMedia[];
+    whatsapp?: PenyediaWhatsapp[];
     created_at?: string;
     updated_at?: string;
+}
+
+export interface PenyediaWhatsapp {
+    id: number;
+    /** Format internasional tanpa tanda baca, mis. 6281234567890. */
+    nomor: string;
+    label?: string | null;
 }
 
 export interface PenyediaDto {
