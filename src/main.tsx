@@ -17,7 +17,7 @@ import { ThemeProvider } from './context/theme-provider'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { registerClientErrorReporting } from '@/lib/client-error-reporting'
 import {
-  clearReloadAttemptState,
+  scheduleReloadAttemptReset,
   getServedBuildInfoFromDOM,
   handleStaleAppError,
   isAssetLoadError,
@@ -169,7 +169,7 @@ if (servedBuild?.buildId) {
   rememberBuildId(servedBuild.buildId)
 }
 
-clearReloadAttemptState()
+scheduleReloadAttemptReset()
 
 // Render the app
 const rootElement = document.getElementById('root')!
