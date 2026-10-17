@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { Outlet, createRootRoute, redirect, useLocation, useRouterState } from '@tanstack/react-router'
 import { Toaster } from '@/components/ui/sonner'
 import { AppUpdateOverlay } from '@/components/app-update-overlay'
@@ -25,12 +26,35 @@ export const Route = createRootRoute({
     notFoundComponent: NotFoundPage,
     errorComponent: ({ error }) => {
         if (isAssetLoadError(error)) {
-            void handleStaleAppError(error)
-            return <AppUpdateOverlay forceVisible />
+            return <AssetErrorFallback error={error} />
         }
         return <ServerErrorPage showReload />
     },
 })
+
+/**
+ * Overlay selama reload otomatis. Bila reload tidak bisa dimulai (batas percobaan habis),
+ * tampilkan halaman error dengan tombol muat ulang agar pengguna tidak terkunci di overlay.
+ */
+function AssetErrorFallback({ error }: { error: unknown }) {
+    const startRef = useRef<Promise<boolean> | null>(null)
+    const [failed, setFailed] = useState(false)
+
+    useEffect(() => {
+        // Ref menjaga reload hanya dipicu sekali, termasuk saat StrictMode memanggil effect dua kali.
+        startRef.current ??= handleStaleAppError(error)
+        let active = true
+        void startRef.current.then((started) => {
+            if (active && !started) setFailed(true)
+        })
+        return () => {
+            active = false
+        }
+    }, [error])
+
+    if (failed) return <ServerErrorPage showReload />
+    return <AppUpdateOverlay forceVisible />
+}
 
 function RootComponent() {
     const location = useLocation()
