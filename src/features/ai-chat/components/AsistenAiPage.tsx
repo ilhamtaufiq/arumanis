@@ -1,64 +1,75 @@
 import { useEffect, useRef, useState } from 'react'
-import ReactMarkdown from 'react-markdown'
-import { Send, Sparkles } from 'lucide-react'
+import { Database, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
-import { kirimChat, type PesanChat, type SumberChat } from '../api/chat-stream'
+import { ambilRiwayatChat, kirimChat } from '../api/chat-stream'
+import { labelStatus } from '../lib/labels'
+import { ChatBubble, TypingIndicator, type BubbleChat } from './ChatBubble'
+import { Composer } from './Composer'
+import { EmptyState } from './EmptyState'
 
-interface BubbleChat extends PesanChat {
-    sumber?: SumberChat[]
-}
-
-const CONTOH = [
-    'Berapa pekerjaan yang sudah berkontrak?',
-    'Desa mana yang paling banyak pagunya?',
-    'Berapa SP2D terbaru dan nilainya?',
-]
-
-/** Chat multi-giliran dengan asisten data. Status tampil saat model mengambil data, jawaban menampilkan sumbernya. */
+/**
+ * Asisten Data: satu percakapan yang tersimpan di server. Asisten mengingat percakapan sebelumnya,
+ * jadi riwayat dimuat saat halaman dibuka dan pertanyaan baru hanya dikirim satu per satu.
+ */
 export function AsistenAiPage() {
     const { tahunAnggaran } = useAppSettingsValues()
     const [pesan, setPesan] = useState<BubbleChat[]>([])
+    const [memuat, setMemuat] = useState(true)
+    const [gagalMemuat, setGagalMemuat] = useState<string | null>(null)
     const [teks, setTeks] = useState('')
     const [status, setStatus] = useState<string | null>(null)
     const [sedangKirim, setSedangKirim] = useState(false)
     const abortRef = useRef<AbortController | null>(null)
     const ujungRef = useRef<HTMLDivElement>(null)
 
+    // Riwayat dimuat sekali saat halaman dibuka.
+    useEffect(() => {
+        const controller = new AbortController()
+        ambilRiwayatChat(controller.signal)
+            .then((riwayat) => setPesan(riwayat.map((m) => ({ role: m.role, content: m.content, sumber: m.sumber ?? undefined }))))
+            .catch((error) => {
+                if (!controller.signal.aborted) {
+                    setGagalMemuat(error instanceof Error ? error.message : 'Riwayat chat belum bisa dimuat.')
+                }
+            })
+            .finally(() => {
+                if (!controller.signal.aborted) setMemuat(false)
+            })
+        return () => controller.abort()
+    }, [])
+
     useEffect(() => () => abortRef.current?.abort(), [])
     useEffect(() => {
         ujungRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-    }, [pesan, status])
+    }, [pesan.length, status])
 
     const kirim = async (isi: string) => {
         const bersih = isi.trim()
         if (!bersih || sedangKirim) return
-        const riwayat: BubbleChat[] = [...pesan, { role: 'user', content: bersih }]
-        setPesan(riwayat)
+        setPesan((p) => [...p, { role: 'user', content: bersih }])
         setTeks('')
         setSedangKirim(true)
         setStatus('Memproses…')
         const controller = new AbortController()
         abortRef.current = controller
 
+        let berhasil = false
         try {
             await kirimChat(
-                riwayat.map(({ role, content }) => ({ role, content })),
+                bersih,
                 tahunAnggaran,
                 (ev) => {
-                    if (ev.type === 'status') setStatus(ev.message)
+                    if (ev.type === 'status') setStatus(labelStatus(ev.message))
                     if (ev.type === 'done') {
-                        setStatus(null)
+                        berhasil = true
                         setPesan((p) => [...p, { role: 'assistant', content: ev.jawaban, sumber: ev.sumber }])
                     }
-                    if (ev.type === 'error') {
-                        setStatus(null)
-                        toast.error(ev.message)
-                    }
+                    if (ev.type === 'error') toast.error(ev.message)
                 },
                 controller.signal,
             )
@@ -67,89 +78,82 @@ export function AsistenAiPage() {
                 toast.error(error instanceof Error ? error.message : 'Chat gagal.')
             }
         } finally {
+            // Bila gagal, pertanyaan dikembalikan ke kolom agar bisa dikirim ulang tanpa mengetik lagi.
+            if (!berhasil && !controller.signal.aborted) {
+                setPesan((p) => (p.at(-1)?.role === 'user' ? p.slice(0, -1) : p))
+                setTeks(bersih)
+            }
             setStatus(null)
             setSedangKirim(false)
         }
     }
 
+    const adaPesan = pesan.length > 0
+
     return (
         <>
             <Header fixed />
-            <Main fluid className="w-full max-w-none px-3 pb-4 pt-4 sm:px-5">
-                <div className="mx-auto flex h-[calc(100vh-7rem)] max-w-3xl flex-col gap-4">
-                    <div>
-                        <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight">
-                            <Sparkles className="h-5 w-5" aria-hidden />
-                            Asisten Data
-                        </h1>
-                        <p className="text-sm text-muted-foreground">
-                            Tanya tentang data pembangunan TA {tahunAnggaran}. Jawaban diambil dari data Arumanis dan menyebut sumbernya.
-                        </p>
-                    </div>
-
-                    <div className="flex-1 space-y-4 overflow-y-auto rounded-lg border bg-card p-4" aria-live="polite">
-                        {pesan.length === 0 && (
-                            <div className="flex flex-col items-start gap-3 text-sm text-muted-foreground">
-                                <p>Coba salah satu pertanyaan ini:</p>
-                                <div className="flex flex-wrap gap-2">
-                                    {CONTOH.map((c) => (
-                                        <Button key={c} type="button" size="sm" variant="outline" onClick={() => void kirim(c)}>
-                                            {c}
-                                        </Button>
-                                    ))}
-                                </div>
+            <Main fluid className="w-full max-w-none px-0 pb-0 pt-0">
+                <div className="flex h-[calc(100svh-3.5rem)] flex-col">
+                    <header className="flex items-center justify-between gap-3 border-b bg-background/80 px-4 py-3 backdrop-blur sm:px-6">
+                        <div className="flex min-w-0 items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                                <Sparkles className="h-4 w-4" aria-hidden />
                             </div>
-                        )}
-
-                        {pesan.map((m, i) => (
-                            <div key={i} className={m.role === 'user' ? 'flex justify-end' : 'flex justify-start'}>
-                                <div
-                                    className={
-                                        m.role === 'user'
-                                            ? 'max-w-[85%] rounded-2xl bg-primary px-4 py-2 text-sm text-primary-foreground'
-                                            : 'max-w-[85%] space-y-2 rounded-2xl bg-muted px-4 py-2 text-sm'
-                                    }
-                                >
-                                    {m.role === 'user' ? (
-                                        <p className="whitespace-pre-wrap">{m.content}</p>
-                                    ) : (
-                                        <div className="space-y-2 leading-relaxed [&_li]:ml-4 [&_li]:list-disc">
-                                            <ReactMarkdown>{m.content}</ReactMarkdown>
-                                        </div>
-                                    )}
-                                    {m.sumber && m.sumber.length > 0 && (
-                                        <p className="text-xs text-muted-foreground">
-                                            Sumber: {m.sumber.map((s) => `${s.tool}${s.jumlah_baris !== null ? ` (${s.jumlah_baris} baris)` : ''}`).join(', ')}
-                                        </p>
-                                    )}
-                                </div>
+                            <div className="min-w-0">
+                                <h1 className="truncate text-base font-semibold tracking-tight">Asisten Data</h1>
+                                <p className="truncate text-xs text-muted-foreground">
+                                    Percakapan tersimpan. Asisten mengingat hal yang pernah dibahas.
+                                </p>
                             </div>
-                        ))}
+                        </div>
+                        <Badge variant="outline" className="shrink-0 gap-1.5">
+                            <Database className="h-3 w-3" aria-hidden />
+                            TA {tahunAnggaran}
+                        </Badge>
+                    </header>
 
-                        {status && <p className="text-xs italic text-muted-foreground">{status}</p>}
-                        <div ref={ujungRef} />
-                    </div>
-
-                    <form
-                        className="flex gap-2"
-                        onSubmit={(e) => {
-                            e.preventDefault()
-                            void kirim(teks)
-                        }}
+                    <div
+                        className="flex-1 overflow-y-auto px-4 py-6 sm:px-6"
+                        role="log"
+                        aria-live="polite"
+                        aria-busy={memuat || sedangKirim}
+                        aria-label="Percakapan dengan Asisten Data"
                     >
-                        <Input
-                            value={teks}
-                            onChange={(e) => setTeks(e.target.value)}
-                            maxLength={2000}
-                            placeholder="Tulis pertanyaan…"
-                            aria-label="Pertanyaan"
-                            disabled={sedangKirim}
-                        />
-                        <Button type="submit" disabled={sedangKirim || !teks.trim()}>
-                            <Send className="mr-2 h-4 w-4" aria-hidden />
-                            Kirim
-                        </Button>
-                    </form>
+                        <div className="mx-auto flex max-w-3xl flex-col gap-5">
+                            {memuat ? (
+                                <div className="space-y-4" aria-label="Memuat riwayat">
+                                    <Skeleton className="ml-auto h-10 w-2/5 rounded-2xl" />
+                                    <Skeleton className="h-20 w-3/4 rounded-2xl" />
+                                    <Skeleton className="ml-auto h-10 w-1/3 rounded-2xl" />
+                                </div>
+                            ) : gagalMemuat ? (
+                                <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+                                    {gagalMemuat}. Muat ulang halaman untuk mencoba lagi.
+                                </p>
+                            ) : !adaPesan && !sedangKirim ? (
+                                <EmptyState tahun={tahunAnggaran} onPilih={(t) => void kirim(t)} />
+                            ) : (
+                                pesan.map((m, i) => <ChatBubble key={i} message={m} />)
+                            )}
+                            {sedangKirim && <TypingIndicator label={status} />}
+                            <div ref={ujungRef} />
+                        </div>
+                    </div>
+
+                    <div className="border-t bg-background px-4 pb-4 pt-3 sm:px-6">
+                        <div className="mx-auto max-w-3xl space-y-2">
+                            <Composer
+                                value={teks}
+                                onChange={setTeks}
+                                onSubmit={() => void kirim(teks)}
+                                disabled={sedangKirim || memuat || !!gagalMemuat}
+                            />
+                            <p className="text-center text-[11px] text-muted-foreground">
+                                Jawaban AI bisa keliru. Periksa angka pada sumbernya sebelum mengambil keputusan.
+                            </p>
+                        </div>
+                    </div>
                 </div>
             </Main>
         </>
