@@ -25,7 +25,7 @@ Portal operasional untuk perencanaan, pelaksanaan, dokumentasi lapangan, dan pen
 
 | Branch | Runtime | Backend | Maintainer |
 |:------:|:-------:|:-------:|:----------:|
-| `dev` | Bun | [apiamis](https://github.com/ilhamtaufiq/apiamis) | [@ilhamtaufiq](https://github.com/ilhamtaufiq) |
+| `dev` | Bun | [apiamis](https://github.com/ilhamtaufiq/apiamis) (Rust) | [@ilhamtaufiq](https://github.com/ilhamtaufiq) |
 
 </div>
 
@@ -33,7 +33,7 @@ Portal operasional untuk perencanaan, pelaksanaan, dokumentasi lapangan, dan pen
 
 ## Apa ini?
 
-Arumanis adalah SPA + BFF untuk staf dinas, operator, dan pengawas lapangan. Data bisnis hidup di Laravel APIAMIS; repo ini mengurus UI, session cookie, dan proxy aman ke API.
+Arumanis adalah SPA + BFF untuk staf dinas, operator, dan pengawas lapangan. Data bisnis hidup di backend APIAMIS (Rust); repo ini mengurus UI, session cookie, dan proxy aman ke API.
 
 ```text
   👤 Operator / Pengawas
@@ -41,8 +41,8 @@ Arumanis adalah SPA + BFF untuk staf dinas, operator, dan pengawas lapangan. Dat
            ▼
   ┌────────────────────┐     /bff/*      ┌─────────────────┐     REST      ┌──────────────┐
   │  React SPA         │ ──────────────► │  BFF (Hono/Bun) │ ────────────► │  APIAMIS     │
-  │  Vite · :5173      │ ◄────────────── │  server/ :8787  │ ◄──────────── │  Laravel     │
-  └────────────────────┘  httpOnly cookie└─────────────────┘   Sanctum     └──────┬───────┘
+  │  Vite · :5173      │ ◄────────────── │  server/ :8787  │ ◄──────────── │  Rust (Axum) │
+  └────────────────────┘  httpOnly cookie└─────────────────┘   token       └──────┬───────┘
                                                                                    │
                               Fumadocs → /docs                                     ▼
                                                                                  MySQL · Redis · storage
@@ -75,7 +75,7 @@ Stack ringkas: React 19 · TypeScript · Vite · TanStack Router/Query · Zustan
 ```text
 C:\laragon\www\
   bun\        ← repo ini (frontend + BFF)
-  apiamis\    ← backend Laravel
+  apiamis\    ← backend Rust
 ```
 
 ```bash
@@ -83,7 +83,7 @@ git clone https://github.com/ilhamtaufiq/arumanis.git
 cd arumanis
 bun install
 cp .env.example .env
-# set APIAMIS_BASE_URL → API Laravel kamu
+# set APIAMIS_BASE_URL → API apiamis (Rust) kamu
 
 bun run dev
 ```
@@ -95,7 +95,7 @@ bun run dev
 | Health | http://localhost:8787/health/live |
 | Docs (dev) | `bun run docs:dev` → Fumadocs |
 
-Vite mem-proxy `/bff` ke BFF. Login butuh APIAMIS hidup.
+Vite mem-proxy `/bff` ke BFF. Login butuh backend apiamis hidup.
 
 Pisah proses:
 
@@ -114,7 +114,7 @@ Salin `.env.example` → `.env`.
 
 | Variabel | Fungsi | Default tipikal |
 |----------|--------|-----------------|
-| `APIAMIS_BASE_URL` | Base REST Laravel (tanpa `/` akhir) | `http://apiamis.test/api` |
+| `APIAMIS_BASE_URL` | Base REST apiamis (tanpa `/` akhir) | `http://localhost:8000/api` |
 | `PORT` | Port BFF | `8787` |
 | `SESSION_COOKIE_NAME` | Nama cookie | `arumanis_session` |
 | `SESSION_COOKIE_SECURE` | Flag `Secure` | `false` di dev |
@@ -235,7 +235,7 @@ GitHub Actions CI saat ini **manual only** (`workflow_dispatch`) sampai billing 
 | Repo | Peran | Versi platform |
 |------|--------|----------------|
 | [arumanis](https://github.com/ilhamtaufiq/arumanis) | Frontend + BFF (ini) | **0.8.0** |
-| [apiamis](https://github.com/ilhamtaufiq/apiamis) | Laravel API | 0.8.0 |
+| [apiamis](https://github.com/ilhamtaufiq/apiamis) | Backend Rust (Axum) | 0.8.0 |
 | [arumanis-pengawasan](https://github.com/ilhamtaufiq/arumanis-pengawasan) | Panel lapangan | 0.8.0 |
 
 Versi diselaraskan lewat `platform.version.json`. Ubah kontrak API di **kedua** sisi (apiamis + arumanis).
