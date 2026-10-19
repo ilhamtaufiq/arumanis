@@ -7,6 +7,7 @@ import {
     getBroadcastHistory,
     sendBroadcastNotification,
     type BroadcastNotificationData,
+    type BroadcastSendResponse,
 } from '../api/broadcast'
 import {
     getNotifications,
@@ -121,9 +122,15 @@ export function useSendBroadcast() {
 
     return useMutation({
         mutationFn: (data: BroadcastNotificationData) => sendBroadcastNotification(data),
-        onSuccess: () => {
+        onSuccess: (res: BroadcastSendResponse) => {
             queryClient.invalidateQueries({ queryKey: ['broadcast-history'] })
-            toast.success('Notifikasi berhasil dikirim')
+            const wa = res?.whatsapp
+            if (wa) {
+                const tanpa = wa.tanpa_nomor > 0 ? `, ${wa.tanpa_nomor} tanpa nomor` : ''
+                toast.success(`Notifikasi terkirim. WhatsApp: ${wa.antrean} pesan dijadwalkan${tanpa}`)
+            } else {
+                toast.success('Notifikasi berhasil dikirim')
+            }
         },
         onError: (error: { response?: { data?: { message?: string } } }) => {
             toast.error(error.response?.data?.message || 'Gagal mengirim notifikasi')

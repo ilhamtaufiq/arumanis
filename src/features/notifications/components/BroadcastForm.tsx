@@ -39,6 +39,7 @@ const broadcastSchema = z
         notification_type: z.enum(['info', 'success', 'warning', 'error']),
         url: z.string().optional(),
         is_banner: z.boolean(),
+        whatsapp: z.boolean(),
     })
     .refine(
         (data) => {
@@ -69,10 +70,12 @@ export function BroadcastForm() {
             notification_type: 'info',
             url: '',
             is_banner: false,
+            whatsapp: false,
         },
     })
 
     const watchType = form.watch('type')
+    const watchUserIds = form.watch('user_ids') ?? []
 
     const { data: userData, isLoading: isLoadingUsers } = useQuery({
         queryKey: ['users'],
@@ -80,6 +83,9 @@ export function BroadcastForm() {
     })
 
     const users = userData?.data || []
+    const targetUsers = watchType === 'all' ? users : users.filter((u) => watchUserIds.includes(u.id))
+    const targetTotal = targetUsers.length
+    const whatsappTerdaftar = targetUsers.filter((u) => u.whatsapp).length
     const filteredUsers = users.filter(
         (user) =>
             user.name.toLowerCase().includes(searchUser.toLowerCase()) ||
@@ -96,6 +102,7 @@ export function BroadcastForm() {
             notification_type: 'info',
             url: '',
             is_banner: false,
+            whatsapp: false,
         })
         setSearchUser('')
     }
@@ -228,6 +235,28 @@ export function BroadcastForm() {
                                             <FormLabel>Banner Notification</FormLabel>
                                             <p className="text-xs text-muted-foreground">
                                                 Tampilkan sebagai popup saat user membuka dashboard.
+                                            </p>
+                                        </div>
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="whatsapp"
+                                render={({ field }) => (
+                                    <FormItem className="flex h-auto min-h-11 flex-row items-center space-x-3 space-y-0 rounded-xl border bg-muted/20 p-4 md:col-span-2">
+                                        <FormControl>
+                                            <Checkbox
+                                                checked={field.value}
+                                                onCheckedChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <div className="space-y-1 leading-none">
+                                            <FormLabel>Kirim juga ke WhatsApp</FormLabel>
+                                            <p className="text-xs text-muted-foreground">
+                                                {whatsappTerdaftar} dari {targetTotal} penerima punya nomor WhatsApp.
+                                                Pesan dikirim satu per satu di latar belakang.
                                             </p>
                                         </div>
                                     </FormItem>
