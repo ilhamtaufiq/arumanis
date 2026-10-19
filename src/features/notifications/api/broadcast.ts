@@ -8,6 +8,14 @@ export interface BroadcastNotificationData {
     notification_type?: 'info' | 'success' | 'warning' | 'error';
     url?: string;
     is_banner?: boolean;
+    /** Kirim juga ke nomor WhatsApp penerima yang sudah terdaftar. */
+    whatsapp?: boolean;
+}
+
+export interface BroadcastSendResponse {
+    message: string;
+    recipient_count: number;
+    whatsapp?: { antrean: number; tanpa_nomor: number };
 }
 
 export interface BroadcastHistory {
@@ -32,7 +40,7 @@ export interface BroadcastHistoryResponse {
 }
 
 export const sendBroadcastNotification = async (data: BroadcastNotificationData) => {
-    return api.post('/notifications/broadcast', data);
+    return api.post<BroadcastSendResponse>('/notifications/broadcast', data);
 };
 
 export const getBroadcastHistory = async (page = 1) => {
