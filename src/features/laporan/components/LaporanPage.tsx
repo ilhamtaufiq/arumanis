@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { ArrowRight, Download, FileSpreadsheet, Loader2 } from 'lucide-react'
+import { ArrowRight, ClipboardCheck, Download, FileSpreadsheet, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -13,6 +13,8 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { useAuthStore } from '@/stores/auth-stores'
 import { getDashboardStats } from '@/features/dashboard/api/dashboard'
 import {
+    exportChecklistPekerjaan,
+    exportPostPekerjaan,
     exportPaketPekerjaanExcel,
     exportPaketPekerjaanPdf,
     exportProgramExcel,
@@ -234,6 +236,82 @@ export function LaporanPage() {
                                 </CardContent>
                                 <CardFooter className='text-xs text-muted-foreground'>
                                     3 sheet: ringkasan, output, kegiatan per tahun
+                                </CardFooter>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <ClipboardCheck className='size-7 text-sky-600' />
+                                    <CardTitle className='mt-2'>Checklist Pekerjaan</CardTitle>
+                                    <CardDescription>
+                                        Status checklist per paket pekerjaan, sesuai filter tahun anggaran.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className='flex flex-wrap gap-2'>
+                                    <Button
+                                        size='sm'
+                                        disabled={busy !== null}
+                                        onClick={() => void runExport('checklist', () => exportChecklistPekerjaan('excel', tahunAnggaran))}
+                                    >
+                                        {busy === 'checklist' ? <Loader2 className='animate-spin' /> : <Download />}
+                                        Excel
+                                    </Button>
+                                    <Button
+                                        size='sm'
+                                        variant='secondary'
+                                        disabled={busy !== null}
+                                        onClick={() => void runExport('checklist-pdf', () => exportChecklistPekerjaan('pdf', tahunAnggaran))}
+                                    >
+                                        {busy === 'checklist-pdf' ? <Loader2 className='animate-spin' /> : <Download />}
+                                        PDF
+                                    </Button>
+                                    <Button variant='outline' size='sm' asChild>
+                                        <Link to='/checklist'>
+                                            Buka halaman
+                                            <ArrowRight />
+                                        </Link>
+                                    </Button>
+                                </CardContent>
+                                <CardFooter className='text-xs text-muted-foreground'>
+                                    Kolom checklist aktif, ditambah tanggal dan pengubah terakhir
+                                </CardFooter>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <ClipboardCheck className='size-7 text-violet-600' />
+                                    <CardTitle className='mt-2'>Post Pekerjaan</CardTitle>
+                                    <CardDescription>
+                                        Checklist post pekerjaan untuk paket yang sudah berkontrak, sesuai filter tahun anggaran.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className='flex flex-wrap gap-2'>
+                                    <Button
+                                        size='sm'
+                                        disabled={busy !== null}
+                                        onClick={() => void runExport('post', () => exportPostPekerjaan('excel', tahunAnggaran))}
+                                    >
+                                        {busy === 'post' ? <Loader2 className='animate-spin' /> : <Download />}
+                                        Excel
+                                    </Button>
+                                    <Button
+                                        size='sm'
+                                        variant='secondary'
+                                        disabled={busy !== null}
+                                        onClick={() => void runExport('post-pdf', () => exportPostPekerjaan('pdf', tahunAnggaran))}
+                                    >
+                                        {busy === 'post-pdf' ? <Loader2 className='animate-spin' /> : <Download />}
+                                        PDF
+                                    </Button>
+                                    <Button variant='outline' size='sm' asChild>
+                                        <Link to='/post-pekerjaan'>
+                                            Buka halaman
+                                            <ArrowRight />
+                                        </Link>
+                                    </Button>
+                                </CardContent>
+                                <CardFooter className='text-xs text-muted-foreground'>
+                                    Hanya pekerjaan yang sudah berkontrak
                                 </CardFooter>
                             </Card>
                         </div>
