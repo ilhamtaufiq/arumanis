@@ -33,6 +33,7 @@ import {
     UserCog,
     Wallet,
     Gauge,
+    StickyNote,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -76,6 +77,12 @@ export const sidebarData: SidebarData = {
                     title: 'Program',
                     url: '/program',
                     icon: Briefcase,
+                    menuKey: 'dashboard',
+                },
+                {
+                    title: 'Catatan',
+                    url: '/catatan',
+                    icon: StickyNote,
                     menuKey: 'dashboard',
                 },
                 {
