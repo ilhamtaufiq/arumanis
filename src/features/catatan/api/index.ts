@@ -1,8 +1,15 @@
 import api from '@/lib/api-client'
 
+export interface CatatanLampiran {
+    url: string
+    thumb: string
+    mime_type: string
+}
+
 export interface Catatan {
     id: number
     isi: string
+    lampiran?: CatatanLampiran[]
     sumber: 'web' | 'whatsapp' | string
     user_id: number
     user_nama: string | null

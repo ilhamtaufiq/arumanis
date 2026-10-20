@@ -159,6 +159,32 @@ export function CatatanPage() {
                                     ) : (
                                         <>
                                             <p className='whitespace-pre-wrap text-sm'>{c.isi}</p>
+                                            {c.lampiran && c.lampiran.length > 0 && (
+                                                <div className='flex flex-wrap gap-2'>
+                                                    {c.lampiran.map((l) =>
+                                                        l.mime_type.startsWith('image/') ? (
+                                                            <a key={l.url} href={l.url} target='_blank' rel='noreferrer'>
+                                                                <img
+                                                                    src={l.thumb || l.url}
+                                                                    alt='Lampiran catatan'
+                                                                    loading='lazy'
+                                                                    className='h-24 w-24 rounded-md border object-cover'
+                                                                />
+                                                            </a>
+                                                        ) : (
+                                                            <a
+                                                                key={l.url}
+                                                                href={l.url}
+                                                                target='_blank'
+                                                                rel='noreferrer'
+                                                                className='rounded-md border px-3 py-2 text-sm underline'
+                                                            >
+                                                                Buka berkas
+                                                            </a>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            )}
                                             <div className='flex justify-end gap-2'>
                                                 <Button variant='ghost' size='sm' onClick={() => mulaiUbah(c)}>
                                                     <Pencil /> Ubah
