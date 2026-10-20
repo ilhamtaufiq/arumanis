@@ -9,7 +9,8 @@ import { parseIndonesianNumber } from './parse-indonesian-number'
 
 type Kolom = { no: number; uraian: number; sat: number; volume: number; harga: number; jumlah: number; header: number }
 
-const ROMAWI = /^[IVXLC]+$/
+// Angka romawi bagian (I sampai XXIX). Huruf seperti A, B, atau C adalah sub-bagian, bukan bagian.
+const ROMAWI = /^X{0,2}(IX|IV|V?I{0,3})$/
 
 function teks(cell: unknown): string {
     return cell === null || cell === undefined ? '' : String(cell).replace(/\s+/g, ' ').trim()
@@ -24,20 +25,24 @@ function angka(cell: unknown): number | null {
 }
 
 function cariKolom(rows: unknown[][]): Kolom | null {
+    // Pakai header paling bawah: sheet rekap biasanya berada di atas rincian.
+    let hasil: Kolom | null = null
     for (let h = 0; h < rows.length; h++) {
         const row = Array.isArray(rows[h]) ? rows[h] : []
         const cells = row.map((c) => teks(c).toUpperCase())
-        const uraian = cells.indexOf('URAIAN PEKERJAAN')
-        const sat = cells.indexOf('SAT')
-        const volume = cells.indexOf('VOLUME')
-        const harga = cells.indexOf('HARGA')
-        const jumlah = cells.indexOf('JUMLAH')
+        const cari = (...nama: string[]) => cells.findIndex((c) => nama.includes(c))
+        const uraian = cari('URAIAN PEKERJAAN', 'ITEM PEKERJAAN')
+        const sat = cari('SAT', 'SATUAN')
+        const volume = cari('VOLUME')
+        const harga = cari('HARGA', 'HARGA SATUAN')
+        const jumlah = cells.findIndex((c) => c === 'JUMLAH' || c.startsWith('JUMLAH HARGA'))
         if (uraian >= 0 && sat >= 0 && volume >= 0 && harga >= 0 && jumlah >= 0) {
-            const no = cells.indexOf('NO')
-            return { no: no >= 0 ? no : 0, uraian, sat, volume, harga, jumlah, header: h }
+            // Header NO bisa muncul dua kali (kolom nomor urut dan kolom penanda bagian); yang dipakai terakhir.
+            const no = cells.lastIndexOf('NO')
+            hasil = { no: no >= 0 ? no : 0, uraian, sat, volume, harga, jumlah, header: h }
         }
     }
-    return null
+    return hasil
 }
 
 /** Apakah baris-baris ini memakai format rincian RAB (header kolom dan minimal satu bagian ber-SUB TOTAL). */
@@ -68,7 +73,7 @@ export function parseRabRincian(rows: unknown[][]): RabRincianHasil {
         if (!bagian) return
         const jumlahItem = bagian.items.reduce((total, item) => total + item.volume * item.hargaSatuan, 0)
         if (subtotal === null) {
-            lengkap = false
+            if (bagian.items.length > 0) lengkap = false
             // Bagian tanpa baris SUB TOTAL tidak bisa dicocokkan, jadi itemnya tetap dipakai dengan peringatan.
             if (bagian.items.length > 0) {
                 warnings.push(`Bagian "${bagian.judul}" tidak punya SUB TOTAL, jumlahnya tidak bisa dicocokkan.`)
@@ -93,13 +98,12 @@ export function parseRabRincian(rows: unknown[][]): RabRincianHasil {
         const uraianD = teks(cells[kolom.uraian + 1])
         const uraianUpper = uraianC.toUpperCase()
 
-        if (uraianUpper.startsWith('SUB TOTAL')) {
+        if (uraianUpper.startsWith('SUB TOTAL') || uraianUpper === 'JUMLAH') {
             if (bagian) tutupBagian(angka(cells[kolom.jumlah]) ?? 0)
             continue
         }
-        if (uraianUpper.startsWith('JUMLAH')) break
 
-        if (ROMAWI.test(no) && uraianC) {
+        if (no && ROMAWI.test(no) && uraianC) {
             tutupBagian(null)
             bagian = { judul: `${no}. ${uraianC}`, items: [] }
             continue
