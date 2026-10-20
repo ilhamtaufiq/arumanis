@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Calculator, ClipboardPaste, Upload } from 'lucide-react'
-import * as XLSX from 'xlsx'
 import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -24,11 +23,13 @@ import { useQuery } from '@tanstack/react-query'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { analyzeRabItems } from '../lib/calculate-rab-totals'
-import type { RabParsedItem } from '../types'
+import type { RabAnalysisResult } from '../types'
 import { getBerkasList } from '@/features/berkas/api'
 import type { Berkas } from '@/features/berkas/types'
 import { normalizeStorageUrl } from '@/features/foto/lib/foto-url'
-import { mapRabItemsToProgressImport, parseRabPaste, parseRabWorkbook } from '../lib/parse-rab-paste'
+import { mapRabItemsToProgressImport, parseRabPaste } from '../lib/parse-rab-paste'
+import api from '@/lib/api-client'
+import { getApiErrorMessage } from '@/lib/api-error-message'
 import { saveRabPasteDraft } from '@/features/progress/lib/rab-import-bridge'
 import { getProgressReport, saveProgressReport } from '@/features/progress/api/progress'
 import { RabPasteInput } from './RabPasteInput'
@@ -43,7 +44,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
     const navigate = useNavigate()
     const { tahunAnggaran } = useAppSettingsValues()
     const [pasteText, setPasteText] = useState('')
-    const [uploadItems, setUploadItems] = useState<RabParsedItem[] | null>(null)
+    const [result, setResult] = useState<RabAnalysisResult | null>(null)
     const [uploadName, setUploadName] = useState('')
     const [berkasPekerjaanId, setBerkasPekerjaanId] = useState('')
     const [berkasKata, setBerkasKata] = useState('RAB')
@@ -68,31 +69,25 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
 
     const pekerjaanList = pekerjaanRes?.data || []
 
-    const result = useMemo(() => {
-        if (uploadItems) return analyzeRabItems(uploadItems)
-        if (!analyzed || !pasteText.trim()) return null
-        return analyzeRabItems(parseRabPaste(pasteText))
-    }, [analyzed, pasteText, uploadItems])
+    /** Analisa di backend: hasilnya dipakai langsung untuk tabel dan impor. */
+    const analisaServer = (isi: FormData) => api.post<RabAnalysisResult>('/rab/analisa', isi)
 
-    const bacaWorkbook = (buffer: ArrayBuffer, nama: string) => {
+    const analisaBerkas = async (berkas: Blob, nama: string) => {
+        const isi = new FormData()
+        isi.append('file', berkas, nama)
         try {
-            const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' })
-            const items = parseRabWorkbook(workbook)
-            if (items.length === 0) {
-                toast.error('Tidak ada item RAB yang terbaca dari file ini')
-                return
-            }
+            const hasil = await analisaServer(isi)
             setPasteText('')
-            setUploadItems(items)
             setUploadName(nama)
+            setResult(hasil)
             setAnalyzed(true)
-            toast.success(`${items.length} item RAB dari ${nama} berhasil dibaca`)
+            toast.success(`${hasil.summary.itemCount} item RAB dari ${nama} berhasil dianalisa`)
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'File tidak bisa dibaca')
+            toast.error(getApiErrorMessage(error, 'Berkas RAB tidak bisa dianalisa'))
         }
     }
 
-    const handleUpload = async (file: File) => bacaWorkbook(await file.arrayBuffer(), file.name)
+    const handleUpload = (file: File) => analisaBerkas(file, file.name)
 
     const cariBerkas = async () => {
         if (!berkasPekerjaanId) {
@@ -122,7 +117,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
         try {
             const res = await fetch(normalizeStorageUrl(berkas.berkas_url))
             if (!res.ok) throw new Error(`Berkas tidak bisa diunduh (status ${res.status}).`)
-            bacaWorkbook(await res.arrayBuffer(), nama)
+            await analisaBerkas(await res.blob(), nama)
         } catch (error) {
             toast.error(
                 error instanceof Error
@@ -132,26 +127,36 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
         }
     }
 
-    const handleAnalyze = () => {
-        if (!pasteText.trim() && !uploadItems) {
+    const handleAnalyze = async () => {
+        if (!pasteText.trim()) {
             toast.error('Tempel data RAB dari Excel terlebih dahulu')
             return
         }
-
-        setAnalyzed(true)
-        const analysis = uploadItems ? analyzeRabItems(uploadItems) : analyzeRabItems(parseRabPaste(pasteText))
-
-        if (analysis.items.length === 0) {
-            toast.error('Tidak ada item pekerjaan yang valid ditemukan')
-            return
+        const isi = new FormData()
+        isi.append('teks', pasteText)
+        try {
+            const hasil = await analisaServer(isi)
+            setUploadName('')
+            setResult(hasil)
+            setAnalyzed(true)
+            toast.success(`${hasil.summary.itemCount} item pekerjaan berhasil dianalisa`)
+        } catch (error) {
+            // Format yang belum dibaca backend (mis. SPAM JP) memakai parser lokal sebagai cadangan.
+            const lokal = analyzeRabItems(parseRabPaste(pasteText))
+            if (lokal.items.length === 0) {
+                toast.error(getApiErrorMessage(error, 'Tidak ada item pekerjaan yang valid ditemukan'))
+                return
+            }
+            setUploadName('')
+            setResult(lokal)
+            setAnalyzed(true)
+            toast.success(`${lokal.summary.itemCount} item pekerjaan dianalisa dengan parser lokal`)
         }
-
-        toast.success(`${analysis.summary.itemCount} item pekerjaan berhasil dianalisa`)
     }
 
     const handleReset = () => {
         setPasteText('')
-        setUploadItems(null)
+        setResult(null)
         setUploadName('')
         setAnalyzed(false)
     }
@@ -161,7 +166,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
             toast.error('Analisa RAB terlebih dahulu')
             return
         }
-        if (uploadItems && mode === 'laporan') {
+        if (uploadName && mode === 'laporan') {
             toast.error('Dari file Excel, gunakan Simpan ke Progress')
             return
         }
@@ -317,14 +322,14 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                     value={pasteText}
                     onChange={(value) => {
                         setPasteText(value)
-                        setUploadItems(null)
+                        setResult(null)
                         setUploadName('')
                         setAnalyzed(false)
                     }}
                 />
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                    <Button onClick={handleAnalyze} disabled={!pasteText.trim() || uploadItems !== null} className="gap-2">
+                    <Button onClick={() => void handleAnalyze()} disabled={!pasteText.trim() || !!uploadName} className="gap-2">
                         <Calculator className="h-4 w-4" />
                         Analisa RAB
                     </Button>
@@ -339,7 +344,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                             </Button>
                             <Button
                                 variant="outline"
-                                disabled={uploadItems !== null}
+                                disabled={!!uploadName}
                                 onClick={() => handleImportToPekerjaan('laporan')}
                                 className="gap-2"
                             >
@@ -347,7 +352,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                             </Button>
                         </>
                     ) : null}
-                    <Button variant="outline" onClick={handleReset} disabled={!pasteText && !analyzed && !uploadItems}>
+                    <Button variant="outline" onClick={handleReset} disabled={!pasteText && !analyzed && !result}>
                         Reset
                     </Button>
                 </div>
