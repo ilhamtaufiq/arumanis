@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Calculator, ClipboardPaste } from 'lucide-react'
+import { Calculator, ClipboardPaste, Upload } from 'lucide-react'
+import * as XLSX from 'xlsx'
 import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -23,7 +24,11 @@ import { useQuery } from '@tanstack/react-query'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { analyzeRabItems } from '../lib/calculate-rab-totals'
-import { mapRabItemsToProgressImport, parseRabPaste } from '../lib/parse-rab-paste'
+import type { RabParsedItem } from '../types'
+import { getBerkasList } from '@/features/berkas/api'
+import type { Berkas } from '@/features/berkas/types'
+import { normalizeStorageUrl } from '@/features/foto/lib/foto-url'
+import { mapRabItemsToProgressImport, parseRabPaste, parseRabWorkbook } from '../lib/parse-rab-paste'
 import { saveRabPasteDraft } from '@/features/progress/lib/rab-import-bridge'
 import { getProgressReport, saveProgressReport } from '@/features/progress/api/progress'
 import { RabPasteInput } from './RabPasteInput'
@@ -38,6 +43,12 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
     const navigate = useNavigate()
     const { tahunAnggaran } = useAppSettingsValues()
     const [pasteText, setPasteText] = useState('')
+    const [uploadItems, setUploadItems] = useState<RabParsedItem[] | null>(null)
+    const [uploadName, setUploadName] = useState('')
+    const [berkasPekerjaanId, setBerkasPekerjaanId] = useState('')
+    const [berkasKata, setBerkasKata] = useState('RAB')
+    const [berkasList, setBerkasList] = useState<Berkas[] | null>(null)
+    const [berkasMemuat, setBerkasMemuat] = useState(false)
     const [analyzed, setAnalyzed] = useState(false)
     const [importOpen, setImportOpen] = useState(false)
     const [selectedPekerjaanId, setSelectedPekerjaanId] = useState(initialPekerjaanId || '')
@@ -58,18 +69,77 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
     const pekerjaanList = pekerjaanRes?.data || []
 
     const result = useMemo(() => {
+        if (uploadItems) return analyzeRabItems(uploadItems)
         if (!analyzed || !pasteText.trim()) return null
         return analyzeRabItems(parseRabPaste(pasteText))
-    }, [analyzed, pasteText])
+    }, [analyzed, pasteText, uploadItems])
+
+    const bacaWorkbook = (buffer: ArrayBuffer, nama: string) => {
+        try {
+            const workbook = XLSX.read(new Uint8Array(buffer), { type: 'array' })
+            const items = parseRabWorkbook(workbook)
+            if (items.length === 0) {
+                toast.error('Tidak ada item RAB yang terbaca dari file ini')
+                return
+            }
+            setPasteText('')
+            setUploadItems(items)
+            setUploadName(nama)
+            setAnalyzed(true)
+            toast.success(`${items.length} item RAB dari ${nama} berhasil dibaca`)
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'File tidak bisa dibaca')
+        }
+    }
+
+    const handleUpload = async (file: File) => bacaWorkbook(await file.arrayBuffer(), file.name)
+
+    const cariBerkas = async () => {
+        if (!berkasPekerjaanId) {
+            toast.error('Pilih pekerjaan dulu')
+            return
+        }
+        setBerkasMemuat(true)
+        try {
+            const res = await getBerkasList({
+                pekerjaan_id: Number(berkasPekerjaanId),
+                search: berkasKata.trim() || undefined,
+            })
+            setBerkasList(res.data ?? [])
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Berkas tidak bisa dicari')
+        } finally {
+            setBerkasMemuat(false)
+        }
+    }
+
+    const pakaiBerkas = async (berkas: Berkas) => {
+        const nama = berkas.original_name || berkas.file_name || 'berkas.xlsx'
+        if (!/\.xlsx?$/i.test(nama)) {
+            toast.error('Pilih berkas Excel (.xlsx atau .xls)')
+            return
+        }
+        try {
+            const res = await fetch(normalizeStorageUrl(berkas.berkas_url))
+            if (!res.ok) throw new Error(`Berkas tidak bisa diunduh (status ${res.status}).`)
+            bacaWorkbook(await res.arrayBuffer(), nama)
+        } catch (error) {
+            toast.error(
+                error instanceof Error
+                    ? `${error.message} Unduh berkas lalu upload dari komputer.`
+                    : 'Berkas tidak bisa diambil. Unduh lalu upload dari komputer.',
+            )
+        }
+    }
 
     const handleAnalyze = () => {
-        if (!pasteText.trim()) {
+        if (!pasteText.trim() && !uploadItems) {
             toast.error('Tempel data RAB dari Excel terlebih dahulu')
             return
         }
 
         setAnalyzed(true)
-        const analysis = analyzeRabItems(parseRabPaste(pasteText))
+        const analysis = uploadItems ? analyzeRabItems(uploadItems) : analyzeRabItems(parseRabPaste(pasteText))
 
         if (analysis.items.length === 0) {
             toast.error('Tidak ada item pekerjaan yang valid ditemukan')
@@ -81,12 +151,18 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
 
     const handleReset = () => {
         setPasteText('')
+        setUploadItems(null)
+        setUploadName('')
         setAnalyzed(false)
     }
 
     const handleImportToPekerjaan = (mode: 'laporan' | 'persist') => {
         if (!result || result.items.length === 0) {
             toast.error('Analisa RAB terlebih dahulu')
+            return
+        }
+        if (uploadItems && mode === 'laporan') {
+            toast.error('Dari file Excel, gunakan Simpan ke Progress')
             return
         }
         setImportMode(mode)
@@ -167,16 +243,88 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                     </Badge>
                 </div>
 
+                <div className="space-y-2">
+                    <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        <Upload className="h-3.5 w-3.5" />
+                        Upload file RAB (.xlsx)
+                    </p>
+                    <input
+                        type="file"
+                        accept=".xlsx,.xls"
+                        className="block w-full text-sm file:mr-3 file:rounded-md file:border file:bg-background file:px-3 file:py-1.5"
+                        onChange={(event) => {
+                            const file = event.target.files?.[0]
+                            event.target.value = ''
+                            if (file) void handleUpload(file)
+                        }}
+                    />
+                    {uploadName ? (
+                        <p className="text-xs text-muted-foreground">Dibaca dari: {uploadName}</p>
+                    ) : null}
+                </div>
+
+                <div className="space-y-2">
+                    <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Ambil dari berkas pekerjaan
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                        <Select value={berkasPekerjaanId} onValueChange={setBerkasPekerjaanId}>
+                            <SelectTrigger className="w-full sm:w-[320px]">
+                                <SelectValue placeholder="Pilih pekerjaan..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {pekerjaanList.map((item: { id: number; nama_paket: string }) => (
+                                    <SelectItem key={item.id} value={String(item.id)}>
+                                        {item.nama_paket}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <input
+                            value={berkasKata}
+                            onChange={(event) => setBerkasKata(event.target.value)}
+                            placeholder="Kata dalam nama berkas"
+                            className="h-9 rounded-md border bg-background px-3 text-sm"
+                        />
+                        <Button variant="outline" onClick={() => void cariBerkas()} disabled={berkasMemuat}>
+                            {berkasMemuat ? 'Mencari...' : 'Cari berkas'}
+                        </Button>
+                    </div>
+                    {berkasList ? (
+                        berkasList.length === 0 ? (
+                            <p className="text-xs text-muted-foreground">Tidak ada berkas yang cocok.</p>
+                        ) : (
+                            <ul className="divide-y rounded-md border">
+                                {berkasList.map((berkas) => (
+                                    <li key={berkas.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
+                                        <span className="truncate">
+                                            {berkas.original_name || berkas.file_name || `Berkas #${berkas.id}`}
+                                            <span className="ml-2 text-xs text-muted-foreground">{berkas.jenis_dokumen}</span>
+                                        </span>
+                                        <Button size="sm" variant="secondary" onClick={() => void pakaiBerkas(berkas)}>
+                                            Baca
+                                        </Button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )
+                    ) : null}
+                </div>
+
+                <div className="my-4 text-center text-xs text-muted-foreground">atau paste dari Excel</div>
+
                 <RabPasteInput
                     value={pasteText}
                     onChange={(value) => {
                         setPasteText(value)
+                        setUploadItems(null)
+                        setUploadName('')
                         setAnalyzed(false)
                     }}
                 />
 
                 <div className="mt-4 flex flex-wrap gap-2">
-                    <Button onClick={handleAnalyze} disabled={!pasteText.trim()} className="gap-2">
+                    <Button onClick={handleAnalyze} disabled={!pasteText.trim() || uploadItems !== null} className="gap-2">
                         <Calculator className="h-4 w-4" />
                         Analisa RAB
                     </Button>
@@ -191,6 +339,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                             </Button>
                             <Button
                                 variant="outline"
+                                disabled={uploadItems !== null}
                                 onClick={() => handleImportToPekerjaan('laporan')}
                                 className="gap-2"
                             >
@@ -198,7 +347,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                             </Button>
                         </>
                     ) : null}
-                    <Button variant="outline" onClick={handleReset} disabled={!pasteText && !analyzed}>
+                    <Button variant="outline" onClick={handleReset} disabled={!pasteText && !analyzed && !uploadItems}>
                         Reset
                     </Button>
                 </div>
