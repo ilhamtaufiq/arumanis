@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
-import { Database, Sparkles } from 'lucide-react'
+import { Database } from 'lucide-react'
 import { toast } from 'sonner'
-import { Header } from '@/components/layout/header'
-import { Main } from '@/components/layout/main'
+import PageContainer from '@/components/layout/page-container'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
@@ -91,27 +90,18 @@ export function AsistenAiPage() {
     const adaPesan = pesan.length > 0
 
     return (
-        <>
-            <Header fixed />
-            <Main fluid className="w-full max-w-none px-0 pb-0 pt-0">
-                <div className="flex h-[calc(100svh-3.5rem)] flex-col">
-                    <header className="flex items-center justify-between gap-3 border-b bg-background/80 px-4 py-3 backdrop-blur sm:px-6">
-                        <div className="flex min-w-0 items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                                <Sparkles className="h-4 w-4" aria-hidden />
-                            </div>
-                            <div className="min-w-0">
-                                <h1 className="truncate text-base font-semibold tracking-tight">Asisten Data</h1>
-                                <p className="truncate text-xs text-muted-foreground">
-                                    Percakapan tersimpan. Asisten mengingat hal yang pernah dibahas.
-                                </p>
-                            </div>
-                        </div>
-                        <Badge variant="outline" className="shrink-0 gap-1.5">
-                            <Database className="h-3 w-3" aria-hidden />
-                            TA {tahunAnggaran}
-                        </Badge>
-                    </header>
+        <PageContainer
+            scrollable={false}
+            pageTitle="Asisten Data"
+            pageDescription="Percakapan tersimpan. Asisten mengingat hal yang pernah dibahas."
+            pageHeaderAction={
+                <Badge variant="outline" className="gap-1.5">
+                    <Database className="h-3 w-3" aria-hidden />
+                    TA {tahunAnggaran}
+                </Badge>
+            }
+        >
+                <div className="flex min-h-0 flex-1 flex-col">
 
                     <div
                         className="flex-1 overflow-y-auto px-4 py-6 sm:px-6"
@@ -155,8 +145,7 @@ export function AsistenAiPage() {
                         </div>
                     </div>
                 </div>
-            </Main>
-        </>
+        </PageContainer>
     )
 }
 

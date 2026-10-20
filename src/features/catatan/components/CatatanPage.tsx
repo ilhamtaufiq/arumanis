@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Loader2, Pencil, Plus, StickyNote, Trash2, X } from 'lucide-react'
+import { Loader2, Pencil, Plus, Trash2, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { getApiErrorMessage } from '@/lib/api-error-message'
 import { useAuthStore } from '@/stores/auth-stores'
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Textarea } from '@/components/ui/textarea'
 import { SearchInput } from '@/components/shared/SearchInput'
+import PageContainer from '@/components/layout/page-container'
 import { CATATAN_KEY, createCatatan, deleteCatatan, getCatatan, updateCatatan, type Catatan } from '../api'
 
 const tanggalFormatter = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
@@ -74,24 +75,18 @@ export function CatatanPage() {
     }
 
     return (
-        <div className='mx-auto flex w-full max-w-3xl flex-col gap-4'>
-            <div className='flex flex-wrap items-center justify-between gap-2'>
-                <div>
-                    <h1 className='flex items-center gap-2 text-xl font-bold tracking-tight'>
-                        <StickyNote className='h-5 w-5' aria-hidden />
-                        Catatan
-                    </h1>
-                    <p className='text-sm text-muted-foreground'>
-                        Catatan pribadi Anda. Bisa juga dibuat dari WhatsApp dengan membalas pesan lalu mention @arumanis catat.
-                    </p>
-                </div>
-                {isAdmin && (
+        <PageContainer
+            pageTitle='Catatan'
+            pageDescription='Catatan pribadi Anda. Bisa juga dibuat dari WhatsApp dengan membalas pesan lalu mention @arumanis catat.'
+            pageHeaderAction={
+                isAdmin ? (
                     <Button variant={semua ? 'default' : 'outline'} size='sm' onClick={() => { setSemua((v) => !v); setPage(1) }}>
                         {semua ? 'Catatan saya' : 'Tampilkan semua'}
                     </Button>
-                )}
-            </div>
-
+                ) : undefined
+            }
+        >
+        <div className='flex w-full flex-col gap-4'>
             <Card>
                 <CardHeader>
                     <CardTitle className='text-base'>Catatan baru</CardTitle>
@@ -197,6 +192,7 @@ export function CatatanPage() {
                 </div>
             )}
         </div>
+        </PageContainer>
     )
 }
 
