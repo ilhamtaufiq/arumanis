@@ -66,11 +66,13 @@ export interface Pekerjaan {
     kegiatan_id: number | null;
     pengawas_id?: number | null;
     pendamping_id?: number | null;
+    usulan_penyedia_id?: number | null;
     kecamatan?: Kecamatan;
     desa?: Desa;
     kegiatan?: Kegiatan;
     pengawas?: Pengawas;
     pendamping?: Pengawas;
+    usulan_penyedia?: Pick<Penyedia, 'id' | 'nama'> | null;
     berita_acara?: BeritaAcara;
     kontrak?: Kontrak[];
     tags?: Tag[];

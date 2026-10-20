@@ -320,6 +320,12 @@ export default function PekerjaanDetail() {
                                     )}
                                 </span>
                             </InfoItem>
+                            <InfoItem
+                                label="Usulan Penyedia"
+                                icon={<Users className="h-4 w-4 shrink-0 text-muted-foreground" />}
+                            >
+                                <span>{pekerjaan.usulan_penyedia?.nama || '-'}</span>
+                            </InfoItem>
                         </div>
 
                         {/* Tags Section */}
