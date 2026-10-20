@@ -12,15 +12,9 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog'
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select'
 import { useQuery } from '@tanstack/react-query'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
+import { SearchableSelect } from '@/components/ui/searchable-select'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { analyzeRabItems } from '../lib/calculate-rab-totals'
 import type { RabAnalysisResult } from '../types'
@@ -50,6 +44,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
     const [berkasKata, setBerkasKata] = useState('RAB')
     const [berkasList, setBerkasList] = useState<Berkas[] | null>(null)
     const [berkasMemuat, setBerkasMemuat] = useState(false)
+    const [analisaMemuat, setAnalisaMemuat] = useState(false)
     const [analyzed, setAnalyzed] = useState(false)
     const [importOpen, setImportOpen] = useState(false)
     const [selectedPekerjaanId, setSelectedPekerjaanId] = useState(initialPekerjaanId || '')
@@ -64,10 +59,15 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
 
     const { data: pekerjaanRes } = useQuery({
         queryKey: ['rab-import-pekerjaan', tahunAnggaran],
-        queryFn: () => getPekerjaan({ tahun: tahunAnggaran, per_page: 100, summary: true }),
+        queryFn: () => getPekerjaan({ tahun: tahunAnggaran, per_page: -1, summary: true }),
     })
 
     const pekerjaanList = pekerjaanRes?.data || []
+    const pekerjaanOptions = pekerjaanList.map((item: { id: number; nama_paket: string; kode_rekening?: string | null }) => ({
+        value: String(item.id),
+        label: item.nama_paket,
+        keywords: item.kode_rekening ?? undefined,
+    }))
 
     /** Analisa di backend: hasilnya dipakai langsung untuk tabel dan impor. */
     const analisaServer = (isi: FormData) => api.post<RabAnalysisResult>('/rab/analisa', isi)
@@ -75,6 +75,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
     const analisaBerkas = async (berkas: Blob, nama: string) => {
         const isi = new FormData()
         isi.append('file', berkas, nama)
+        setAnalisaMemuat(true)
         try {
             const hasil = await analisaServer(isi)
             setPasteText('')
@@ -84,20 +85,22 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
             toast.success(`${hasil.summary.itemCount} item RAB dari ${nama} berhasil dianalisa`)
         } catch (error) {
             toast.error(getApiErrorMessage(error, 'Berkas RAB tidak bisa dianalisa'))
+        } finally {
+            setAnalisaMemuat(false)
         }
     }
 
     const handleUpload = (file: File) => analisaBerkas(file, file.name)
 
-    const cariBerkas = async () => {
-        if (!berkasPekerjaanId) {
+    const cariBerkas = async (pekerjaanId: string = berkasPekerjaanId) => {
+        if (!pekerjaanId) {
             toast.error('Pilih pekerjaan dulu')
             return
         }
         setBerkasMemuat(true)
         try {
             const res = await getBerkasList({
-                pekerjaan_id: Number(berkasPekerjaanId),
+                pekerjaan_id: Number(pekerjaanId),
                 search: berkasKata.trim() || undefined,
             })
             setBerkasList(res.data ?? [])
@@ -272,26 +275,29 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                     <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                         Ambil dari berkas pekerjaan
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                        <Select value={berkasPekerjaanId} onValueChange={setBerkasPekerjaanId}>
-                            <SelectTrigger className="w-full sm:w-[320px]">
-                                <SelectValue placeholder="Pilih pekerjaan..." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {pekerjaanList.map((item: { id: number; nama_paket: string }) => (
-                                    <SelectItem key={item.id} value={String(item.id)}>
-                                        {item.nama_paket}
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+                    <SearchableSelect
+                        options={pekerjaanOptions}
+                        value={berkasPekerjaanId}
+                        onValueChange={(nilai) => {
+                            setBerkasPekerjaanId(nilai)
+                            void cariBerkas(nilai)
+                        }}
+                        placeholder="Pilih pekerjaan..."
+                        searchPlaceholder="Cari nama paket atau kode rekening..."
+                        emptyMessage="Pekerjaan tidak ditemukan."
+                        className="w-full"
+                    />
+                    <div className="flex flex-col gap-2 sm:flex-row">
                         <input
                             value={berkasKata}
                             onChange={(event) => setBerkasKata(event.target.value)}
-                            placeholder="Kata dalam nama berkas"
-                            className="h-9 rounded-md border bg-background px-3 text-sm"
+                            onKeyDown={(event) => {
+                                if (event.key === 'Enter') void cariBerkas()
+                            }}
+                            placeholder="Kata dalam nama berkas (default: RAB)"
+                            className="h-9 w-full rounded-md border bg-background px-3 text-sm"
                         />
-                        <Button variant="outline" onClick={() => void cariBerkas()} disabled={berkasMemuat}>
+                        <Button variant="outline" onClick={() => void cariBerkas()} disabled={berkasMemuat || !berkasPekerjaanId}>
                             {berkasMemuat ? 'Mencari...' : 'Cari berkas'}
                         </Button>
                     </div>
@@ -299,16 +305,25 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                         berkasList.length === 0 ? (
                             <p className="text-xs text-muted-foreground">Tidak ada berkas yang cocok.</p>
                         ) : (
-                            <ul className="divide-y rounded-md border">
+                            <ul className="divide-y overflow-hidden rounded-md border">
                                 {berkasList.map((berkas) => (
-                                    <li key={berkas.id} className="flex items-center justify-between gap-2 px-3 py-2 text-sm">
-                                        <span className="truncate">
-                                            {berkas.original_name || berkas.file_name || `Berkas #${berkas.id}`}
-                                            <span className="ml-2 text-xs text-muted-foreground">{berkas.jenis_dokumen}</span>
-                                        </span>
-                                        <Button size="sm" variant="secondary" onClick={() => void pakaiBerkas(berkas)}>
-                                            Baca
-                                        </Button>
+                                    <li key={berkas.id}>
+                                        <button
+                                            type="button"
+                                            onClick={() => void pakaiBerkas(berkas)}
+                                            disabled={analisaMemuat}
+                                            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-sm hover:bg-muted disabled:opacity-60"
+                                        >
+                                            <span className="min-w-0">
+                                                <span className="block truncate font-medium">
+                                                    {berkas.original_name || berkas.file_name || `Berkas #${berkas.id}`}
+                                                </span>
+                                                <span className="block truncate text-xs text-muted-foreground">{berkas.jenis_dokumen}</span>
+                                            </span>
+                                            <span className="shrink-0 text-xs font-medium text-primary">
+                                                {analisaMemuat ? 'Membaca...' : 'Analisa'}
+                                            </span>
+                                        </button>
                                     </li>
                                 ))}
                             </ul>
@@ -387,18 +402,14 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                                 : `Pilih pekerjaan untuk mengimpor ${result?.summary.itemCount ?? 0} item RAB ke editor Buat Laporan.`}
                         </DialogDescription>
                     </DialogHeader>
-                    <Select value={selectedPekerjaanId} onValueChange={setSelectedPekerjaanId}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Pilih pekerjaan..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {pekerjaanList.map((item: { id: number; nama_paket: string }) => (
-                                <SelectItem key={item.id} value={String(item.id)}>
-                                    {item.nama_paket}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    <SearchableSelect
+                        options={pekerjaanOptions}
+                        value={selectedPekerjaanId}
+                        onValueChange={setSelectedPekerjaanId}
+                        placeholder="Pilih pekerjaan..."
+                        searchPlaceholder="Cari nama paket atau kode rekening..."
+                        emptyMessage="Pekerjaan tidak ditemukan."
+                    />
                     <DialogFooter>
                         <Button variant="ghost" onClick={() => setImportOpen(false)} disabled={saving}>
                             Batal
