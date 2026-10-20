@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bot, Loader2, RefreshCw, Save } from 'lucide-react'
+import { Bot, Loader2, RefreshCw, Save, Layers } from 'lucide-react'
 import { toast } from 'sonner'
 import api from '@/lib/api-client'
 import { getApiErrorMessage } from '@/lib/api-error-message'
@@ -42,6 +42,12 @@ export function AiModelPanel() {
 
     const aktif = data?.model_aktif ?? ''
     const adaPerubahan = pilihan !== '' && pilihan !== aktif
+
+    const bangunMemori = useMutation({
+        mutationFn: () => api.post<{ status: string; batas: number }>('/ai/ringkas', {}),
+        onSuccess: (res) => toast.success(`Ringkasan memori dimulai (maksimal ${res.batas} per klik). Berjalan di latar belakang.`),
+        onError: (err) => toast.error(getApiErrorMessage(err, 'Gagal memulai ringkasan memori')),
+    })
 
     return (
         <Card>
@@ -95,6 +101,23 @@ export function AiModelPanel() {
                             </Button>
                             <Button variant="ghost" size="sm" disabled={isFetching} onClick={() => void refetch()}>
                                 <RefreshCw className={isFetching ? 'h-4 w-4 animate-spin' : 'h-4 w-4'} /> Muat ulang daftar
+                            </Button>
+                        </div>
+                        <div className="space-y-2 border-t pt-4">
+                            <p className="flex items-center gap-2 text-sm font-medium">
+                                <Layers className="h-4 w-4 text-primary" /> Memori chat
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                                Ringkasan memori tidak lagi dibuat otomatis setelah setiap chat. Jalankan manual bila diperlukan,
+                                misalnya saat riwayat chat sudah panjang. Proses berjalan di latar belakang dan memakai model AI.
+                            </p>
+                            <Button
+                                variant="outline"
+                                disabled={bangunMemori.isPending}
+                                onClick={() => bangunMemori.mutate()}
+                            >
+                                {bangunMemori.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Layers className="h-4 w-4" />}
+                                Bangun ringkasan memori
                             </Button>
                         </div>
                     </>
