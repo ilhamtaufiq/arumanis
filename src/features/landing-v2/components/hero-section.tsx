@@ -32,18 +32,21 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Ilustrasi program di area kosong kanan atas agar tidak menimpa judul atau tombol */}
-      <figure className="absolute right-[5%] top-[18%] hidden w-[min(34vw,440px)] lg:block pointer-events-none xl:right-[7%]">
+      {/* Ilustrasi program sebagai background hero, dengan gradien agar judul dan tombol tetap terbaca */}
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
         <img
           src="/images/hero-arumanis.webp"
-          alt="Petugas lapangan memantau jaringan air minum dan fasilitas MCK sambil membuka dashboard digital"
+          alt=""
           width={1280}
           height={720}
           decoding="async"
-          className="block h-auto w-full rounded-2xl border border-border shadow-sm"
+          fetchPriority="high"
+          className="h-full w-full object-cover object-[75%_center] lg:object-right dark:opacity-40"
         />
-      </figure>
-      
+        <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/80 to-background/95 lg:bg-gradient-to-r lg:from-background lg:from-35% lg:via-background/85 lg:via-60% lg:to-background/0" />
+        <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-background via-background/70 to-transparent" />
+      </div>
+
       {/* Subtle grid lines */}
       <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
         {[...Array(8)].map((_, i) => (
