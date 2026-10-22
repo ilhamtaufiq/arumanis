@@ -7,7 +7,6 @@ import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { usePublicLocale } from "@/features/public/i18n/use-public-locale";
 import { AnchorLink } from "./anchor-link";
 
-import { HeroDriplet } from "./hero-driplet";
 
 const heroStats = [
   { value: "32", label: "kecamatan terpantau", company: "KAB. CIANJUR" },
@@ -33,13 +32,17 @@ export function HeroSection() {
 
   return (
     <section className="relative min-h-screen flex flex-col justify-center overflow-hidden">
-      {/* Driplet acak sebagai dekorasi hero, di area kosong kanan atas agar tidak menimpa judul atau tombol */}
-      <div
-        aria-hidden="true"
-        className="absolute right-[5%] top-[18%] hidden lg:block opacity-90 pointer-events-none xl:right-[7%]"
-      >
-        <HeroDriplet reducedMotion={reducedMotion} className="w-[240px] h-auto xl:w-[300px]" />
-      </div>
+      {/* Ilustrasi program di area kosong kanan atas agar tidak menimpa judul atau tombol */}
+      <figure className="absolute right-[5%] top-[18%] hidden w-[min(34vw,440px)] lg:block pointer-events-none xl:right-[7%]">
+        <img
+          src="/images/hero-arumanis.webp"
+          alt="Petugas lapangan memantau jaringan air minum dan fasilitas MCK sambil membuka dashboard digital"
+          width={1280}
+          height={720}
+          decoding="async"
+          className="block h-auto w-full rounded-2xl border border-border shadow-sm"
+        />
+      </figure>
       
       {/* Subtle grid lines */}
       <div aria-hidden="true" className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
