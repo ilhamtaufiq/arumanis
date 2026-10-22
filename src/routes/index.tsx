@@ -7,6 +7,7 @@ import { useLandingCopy } from '@/features/landing-v2/i18n'
 import '../features/landing-v2/landing-v2.css'
 import { Navigation } from '@/features/landing-v2/components/navigation'
 import { HeroSection } from '@/features/landing-v2/components/hero-section'
+import { BannerSection } from '@/features/landing-v2/components/banner-section'
 
 // Code-split below-the-fold landing sections to reduce initial JS payload by ~80%
 const FeaturesSection = lazy(() =>
@@ -70,6 +71,7 @@ function LandingPage() {
       <Navigation />
       <main>
         <HeroSection />
+        <BannerSection />
         <Suspense fallback={null}>
           <FeaturesSection />
           <HowItWorksSection />
