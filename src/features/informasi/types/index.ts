@@ -30,3 +30,9 @@ export interface InformasiListResponse {
     /** Tanggal hari ini menurut server (YYYY-MM-DD), dipakai untuk status tampil. */
     today: string
 }
+
+export interface InformasiDetailResponse {
+    data: Informasi
+    is_admin: boolean
+    today: string
+}

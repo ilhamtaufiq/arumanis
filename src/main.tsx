@@ -17,7 +17,7 @@ import { ThemeProvider } from './context/theme-provider'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { registerClientErrorReporting } from '@/lib/client-error-reporting'
 import {
-  clearReloadAttemptState,
+  scheduleReloadAttemptReset,
   getServedBuildInfoFromDOM,
   handleStaleAppError,
   isAssetLoadError,
@@ -123,13 +123,11 @@ const queryClient = new QueryClient({
       if (error instanceof ApiError) {
         if (error.status === 401) {
           const queryRoot = Array.isArray(query.queryKey) ? query.queryKey[0] : null
-          const errorCode = (error.data as { code?: string } | undefined)?.code
+          // 401 dari BFF SIPD (BFF_NO_SESSION / BFF_INVALID_SESSION) hanya berarti sesi SIPD
+          // di BFF tidak terbaca. Halaman SIPD menampilkan pesannya sendiri. Jangan keluarkan
+          // user dari aplikasi: sign-in akan mengembalikannya ke halaman yang sama, lalu loop.
           const isSipdQuery = typeof queryRoot === 'string' && queryRoot.startsWith('sipd-')
-          if (
-            isSipdQuery
-            && errorCode !== 'BFF_NO_SESSION'
-            && errorCode !== 'BFF_INVALID_SESSION'
-          ) {
+          if (isSipdQuery) {
             return
           }
 
@@ -171,7 +169,7 @@ if (servedBuild?.buildId) {
   rememberBuildId(servedBuild.buildId)
 }
 
-clearReloadAttemptState()
+scheduleReloadAttemptReset()
 
 // Render the app
 const rootElement = document.getElementById('root')!

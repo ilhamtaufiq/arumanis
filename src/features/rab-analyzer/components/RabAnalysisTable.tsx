@@ -8,12 +8,21 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { formatCurrency } from '@/lib/format'
 import type { RabAnalysisResult } from '../types'
+import { PAJAK_PERSEN, rapikanTeks } from '../lib/rapikan-teks'
 
 type RabAnalysisTableProps = {
     result: RabAnalysisResult
     maxHeightClassName?: string
+}
+
+/** Angka dengan dua digit di belakang koma, tanpa lambang Rp. */
+function formatAngka(value: number | null | undefined): string {
+    if (value === null || value === undefined || Number.isNaN(value)) return '-'
+    return value.toLocaleString('id-ID', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    })
 }
 
 export function RabAnalysisTable({
@@ -35,29 +44,27 @@ export function RabAnalysisTable({
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead className="min-w-[48px]">No</TableHead>
-                            <TableHead className="min-w-[140px]">Grup</TableHead>
+                            <TableHead className="min-w-[48px] select-none">No</TableHead>
                             <TableHead className="min-w-[220px]">Uraian</TableHead>
-                            <TableHead>Sat</TableHead>
-                            <TableHead className="text-right">Vol</TableHead>
+                            <TableHead>Satuan</TableHead>
+                            <TableHead className="text-right">Volume</TableHead>
                             <TableHead className="text-right">Harga</TableHead>
-                            <TableHead className="text-right">DPP</TableHead>
-                            <TableHead className="text-right">PPN</TableHead>
+                            <TableHead className="text-right">Pajak (%)</TableHead>
                             <TableHead className="text-right">Total</TableHead>
+                            <TableHead className="min-w-[140px]">Group</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {result.items.map((item, index) => (
                             <TableRow key={`${item.grup}-${item.uraian}-${index}`}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell className="text-xs text-muted-foreground">{item.grup}</TableCell>
-                                <TableCell className="font-medium">{item.uraian}</TableCell>
-                                <TableCell>{item.satuan}</TableCell>
-                                <TableCell className="text-right tabular-nums">{item.volume.toLocaleString('id-ID')}</TableCell>
-                                <TableCell className="text-right tabular-nums">{formatCurrency(item.hargaSatuan)}</TableCell>
-                                <TableCell className="text-right tabular-nums">{formatCurrency(item.jumlah)}</TableCell>
-                                <TableCell className="text-right tabular-nums text-muted-foreground">{formatCurrency(item.ppn)}</TableCell>
-                                <TableCell className="text-right tabular-nums font-medium">{formatCurrency(item.total)}</TableCell>
+                                <TableCell className="select-none">{index + 1}</TableCell>
+                                <TableCell className="font-medium">{rapikanTeks(item.uraian)}</TableCell>
+                                <TableCell>{rapikanTeks(item.satuan)}</TableCell>
+                                <TableCell className="text-right tabular-nums">{formatAngka(item.volume)}</TableCell>
+                                <TableCell className="text-right tabular-nums">{formatAngka(item.hargaSatuan)}</TableCell>
+                                <TableCell className="text-right tabular-nums text-muted-foreground">{PAJAK_PERSEN}</TableCell>
+                                <TableCell className="text-right tabular-nums font-medium">{formatAngka(item.total)}</TableCell>
+                                <TableCell className="text-xs text-muted-foreground">{rapikanTeks(item.grup)}</TableCell>
                             </TableRow>
                         ))}
                     </TableBody>

@@ -14,6 +14,7 @@ import type { Desa } from '@/features/desa/types';
 import { getAllKegiatan } from '@/features/kegiatan/api/kegiatan';
 import type { Kegiatan } from '@/features/kegiatan/types';
 import { getPengawas } from '@/features/pengawas/api/pengawas';
+import { getPenyedia } from '../api/penyedia';
 import type { Pengawas } from '@/features/pengawas/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -34,7 +35,7 @@ import { ArrowLeft, Save, Loader2, Info, MapPin, Users, Wallet, Tag as TagIcon, 
 import PageContainer from '@/components/layout/page-container';
 import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import TagInput from './TagInput';
-import type { PekerjaanStatus, Tag } from '../types';
+import type { Penyedia, PekerjaanStatus, Tag } from '../types';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { Separator } from '@/components/ui/separator';
 import { getDesaName, getKecamatanName } from '@/lib/wilayah-fields';
@@ -90,6 +91,7 @@ export default function PekerjaanForm() {
         kegiatan_id: 0,
         pengawas_id: 0,
         pendamping_id: 0,
+        usulan_penyedia_id: 0,
     });
     const [selectedTags, setSelectedTags] = useState<Tag[]>([]);
     /** Prevent double-hydrate overwriting user edits if query refetches. */
@@ -110,6 +112,11 @@ export default function PekerjaanForm() {
     const { data: pengawasRes } = useQuery({
         queryKey: ['pengawas'],
         queryFn: () => getPengawas(),
+    });
+
+    const { data: penyediaRes } = useQuery({
+        queryKey: ['penyedia', 'all'],
+        queryFn: () => getPenyedia({ per_page: -1 }),
     });
 
     const { data: pekerjaanRes, isLoading: loadingPekerjaan } = useQuery({
@@ -175,6 +182,12 @@ export default function PekerjaanForm() {
         [pengawasRes, pekerjaanRes?.pengawas, pekerjaanRes?.pendamping],
     );
 
+    const usulanPenyedia = (pekerjaanRes as { usulan_penyedia?: Penyedia | null } | undefined)?.usulan_penyedia;
+    const usulanPenyediaList = useMemo(
+        () => ensureOption(unwrapList<Penyedia>(penyediaRes), usulanPenyedia),
+        [penyediaRes, usulanPenyedia],
+    );
+
     // Hydrate form once per edit id when detail arrives
     useEffect(() => {
         if (!pekerjaanRes || !isEdit || !id) return;
@@ -186,6 +199,7 @@ export default function PekerjaanForm() {
             kegiatan?: { id?: number }
             pengawas?: { id?: number }
             pendamping?: { id?: number }
+            usulan_penyedia?: { id?: number }
             tags?: Tag[]
         };
 
@@ -201,6 +215,7 @@ export default function PekerjaanForm() {
             kegiatan_id: toId(data.kegiatan_id ?? data.kegiatan?.id),
             pengawas_id: toId(data.pengawas_id ?? data.pengawas?.id),
             pendamping_id: toId(data.pendamping_id ?? data.pendamping?.id),
+            usulan_penyedia_id: toId(data.usulan_penyedia_id ?? data.usulan_penyedia?.id),
         });
         setSelectedTags(Array.isArray(data.tags) ? data.tags : []);
         setHydratedId(id);
@@ -346,6 +361,7 @@ export default function PekerjaanForm() {
             kegiatan_id: formData.kegiatan_id === 0 ? null : formData.kegiatan_id,
             pengawas_id: formData.pengawas_id === 0 ? null : formData.pengawas_id,
             pendamping_id: formData.pendamping_id === 0 ? null : formData.pendamping_id,
+            usulan_penyedia_id: formData.usulan_penyedia_id === 0 ? null : formData.usulan_penyedia_id,
             tag_ids: selectedTags.map(tag => tag.id)
         };
 
@@ -630,6 +646,32 @@ export default function PekerjaanForm() {
                                                     <SelectItem value="0" className="text-muted-foreground italic">Belum ditentukan</SelectItem>
                                                     <SelectSeparator className="my-1" />
                                                     {pengawasList.map((p) => (
+                                                        <SelectItem key={p.id} value={String(p.id)}>
+                                                            {p.nama}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div className="space-y-2 md:col-span-2">
+                                            <Label htmlFor="usulan_penyedia_id" className="text-xs uppercase tracking-wider text-muted-foreground flex justify-between">
+                                                Usulan Penyedia
+                                                <span className="text-[10px] text-muted-foreground lowercase italic">Optional</span>
+                                            </Label>
+                                            <Select
+                                                key={`usulan-penyedia-${formData.usulan_penyedia_id}-${usulanPenyediaList.length}`}
+                                                value={selectValue(formData.usulan_penyedia_id, true)}
+                                                onValueChange={(val) => handleSelectChange('usulan_penyedia_id', val)}
+                                                disabled={mutation.isPending}
+                                            >
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Pilih Usulan Penyedia" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="0" className="text-muted-foreground italic">Belum ditentukan</SelectItem>
+                                                    <SelectSeparator className="my-1" />
+                                                    {usulanPenyediaList.map((p) => (
                                                         <SelectItem key={p.id} value={String(p.id)}>
                                                             {p.nama}
                                                         </SelectItem>

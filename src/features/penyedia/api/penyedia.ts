@@ -1,5 +1,5 @@
 import api from '@/lib/api-client';
-import type { Penyedia, PenyediaDto } from '../types';
+import type { Penyedia, PenyediaDto, PenyediaWhatsapp } from '../types';
 
 interface PaginatedResponse<T> {
     data: T[];
@@ -50,4 +50,16 @@ export async function updatePenyedia(id: number, data: PenyediaDto) {
 
 export async function deletePenyedia(id: number) {
     return api.delete(`/penyedia/${id}`);
+}
+
+export async function getPenyediaWhatsapp(id: number) {
+    return api.get<{ data: PenyediaWhatsapp[] }>(`/penyedia/${id}/whatsapp`);
+}
+
+export async function addPenyediaWhatsapp(id: number, body: { nomor: string; label?: string }) {
+    return api.post<{ data: PenyediaWhatsapp }>(`/penyedia/${id}/whatsapp`, body);
+}
+
+export async function deletePenyediaWhatsapp(id: number, waId: number) {
+    await api.delete(`/penyedia/${id}/whatsapp/${waId}`);
 }

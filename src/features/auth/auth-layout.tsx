@@ -1,5 +1,6 @@
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
-import { AnimatedSphere } from '@/features/landing-v2/components/animated-sphere'
+import { HeroDriplet } from '@/features/landing-v2/components/hero-driplet'
+import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion'
 
 type AuthLayoutProps = {
     children: React.ReactNode
@@ -8,6 +9,7 @@ type AuthLayoutProps = {
 export function AuthLayout({ children }: AuthLayoutProps) {
     const { logoUrl, appName } = useAppSettingsValues()
     const finalLogo = logoUrl || '/arumanis.svg'
+    const reducedMotion = usePrefersReducedMotion()
 
     return (
         <div className='min-h-svh bg-background text-foreground lg:grid lg:grid-cols-2'>
@@ -30,15 +32,12 @@ export function AuthLayout({ children }: AuthLayoutProps) {
                 </div>
             </div>
 
-            {/* Kanan: animasi sphere */}
-            <div className='relative hidden min-h-svh items-center justify-center overflow-hidden border-l border-border bg-muted/40 lg:flex'>
-                <div
-                    aria-hidden
-                    className='pointer-events-none absolute h-[560px] w-[560px] opacity-70'
-                >
-                    <AnimatedSphere />
+            {/* Kanan: Driplet acak sebagai dekorasi */}
+            <div className='relative hidden min-h-svh flex-col items-center justify-center gap-8 overflow-hidden border-l border-border bg-muted/40 px-10 lg:flex'>
+                <div aria-hidden className='pointer-events-none opacity-90'>
+                    <HeroDriplet reducedMotion={reducedMotion} className='w-[280px] h-auto xl:w-[340px]' />
                 </div>
-                <div className='relative z-10 px-10 text-center'>
+                <div className='relative z-10 text-center'>
                     <p className='font-display text-4xl font-bold tracking-tight text-foreground'>
                         {appName || 'Arumanis'}
                     </p>

@@ -1,5 +1,5 @@
 import api from '@/lib/api-client'
-import type { Surat, SuratFormData, SuratListResponse, SuratPratinjau } from '../types'
+import type { Surat, SuratFormData, SuratJenis, SuratJenisBaru, SuratListResponse, SuratPratinjau } from '../types'
 
 export interface SuratListParams {
     tahun: number
@@ -11,6 +11,9 @@ export interface SuratListParams {
 
 export const getSuratList = (params: SuratListParams) =>
     api.get<SuratListResponse>('/surat', { params: params as Record<string, string | number | undefined> })
+
+/** Menambah jenis surat baru dari halaman surat. Hanya membuat; ubah dan hapus jenis tidak lewat sini. */
+export const createSuratJenis = (data: SuratJenisBaru) => api.post<{ data: SuratJenis }>('/surat/jenis', data)
 
 export const getSurat = (id: number) => api.get<{ data: Surat }>(`/surat/${id}`)
 

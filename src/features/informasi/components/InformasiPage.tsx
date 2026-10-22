@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { CalendarRange, Megaphone, Pencil, Plus, Trash2 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
@@ -11,28 +12,20 @@ import { useDeleteInformasi, useInformasiList } from '../hooks/useInformasi'
 import {
     KATEGORI_OPSI,
     kategoriInfo,
+    ringkasan,
     rentangTampil,
     STATUS_LABEL,
+    STATUS_TONE,
     statusTampil,
 } from '../lib/informasi-helpers'
 import type { Informasi, InformasiKategori } from '../types'
-import { InformasiFormDialog } from './InformasiFormDialog'
 
 const SEMUA = 'semua'
-
-const STATUS_TONE: Record<string, string> = {
-    draft: 'bg-muted text-muted-foreground',
-    terjadwal: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200',
-    berakhir: 'bg-muted text-muted-foreground',
-    tampil: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200',
-}
 
 const tanggalWaktuFormatter = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
 
 export default function InformasiPage() {
     const [kategori, setKategori] = useState<string>(SEMUA)
-    const [formOpen, setFormOpen] = useState(false)
-    const [editing, setEditing] = useState<Informasi | null>(null)
     const [deleting, setDeleting] = useState<Informasi | null>(null)
 
     const filter = kategori === SEMUA ? undefined : (kategori as InformasiKategori)
@@ -42,16 +35,6 @@ export default function InformasiPage() {
     const items = data?.data ?? []
     const isAdmin = data?.is_admin ?? false
     const today = data?.today ?? new Date().toISOString().slice(0, 10)
-
-    const bukaBaru = () => {
-        setEditing(null)
-        setFormOpen(true)
-    }
-
-    const bukaUbah = (item: Informasi) => {
-        setEditing(item)
-        setFormOpen(true)
-    }
 
     const handleDelete = async () => {
         if (!deleting) return
@@ -77,9 +60,11 @@ export default function InformasiPage() {
                     </p>
                 </div>
                 {isAdmin && (
-                    <Button type="button" onClick={bukaBaru}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Informasi baru
+                    <Button asChild>
+                        <Link to="/informasi/tambah">
+                            <Plus className="mr-2 h-4 w-4" />
+                            Informasi baru
+                        </Link>
                     </Button>
                 )}
             </div>
@@ -133,11 +118,17 @@ export default function InformasiPage() {
                                         )}
                                     </div>
                                     <div className="flex items-start justify-between gap-3">
-                                        <CardTitle className="text-lg leading-snug">{item.judul}</CardTitle>
+                                        <CardTitle className="text-lg leading-snug">
+                                            <Link to="/informasi/$id" params={{ id: String(item.id) }} className="hover:text-primary">
+                                                {item.judul}
+                                            </Link>
+                                        </CardTitle>
                                         {isAdmin && (
                                             <div className="flex shrink-0 gap-1">
-                                                <Button type="button" variant="ghost" size="icon" onClick={() => bukaUbah(item)} aria-label={`Ubah ${item.judul}`}>
-                                                    <Pencil className="h-4 w-4" />
+                                                <Button asChild variant="ghost" size="icon" aria-label={`Ubah ${item.judul}`}>
+                                                    <Link to="/informasi/$id/edit" params={{ id: String(item.id) }}>
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Link>
                                                 </Button>
                                                 <Button type="button" variant="ghost" size="icon" onClick={() => setDeleting(item)} aria-label={`Hapus ${item.judul}`}>
                                                     <Trash2 className="h-4 w-4" />
@@ -153,20 +144,25 @@ export default function InformasiPage() {
                                     )}
                                 </CardHeader>
                                 <CardContent>
-                                    <p className="whitespace-pre-line text-sm leading-relaxed">{item.isi}</p>
-                                    {item.created_at && (
-                                        <p className="mt-3 text-xs text-muted-foreground">
-                                            Dibuat {tanggalWaktuFormatter.format(new Date(item.created_at))}
-                                        </p>
-                                    )}
+                                    <p className="text-sm leading-relaxed text-muted-foreground">{ringkasan(item.isi)}</p>
+                                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+                                        {item.created_at && (
+                                            <span>Dibuat {tanggalWaktuFormatter.format(new Date(item.created_at))}</span>
+                                        )}
+                                        <Link
+                                            to="/informasi/$id"
+                                            params={{ id: String(item.id) }}
+                                            className="font-medium text-primary underline-offset-4 hover:underline"
+                                        >
+                                            Baca selengkapnya
+                                        </Link>
+                                    </div>
                                 </CardContent>
                             </Card>
                         </li>
                     )
                 })}
             </ul>
-
-            <InformasiFormDialog open={formOpen} onOpenChange={setFormOpen} item={editing} />
 
             <ConfirmDeleteDialog
                 open={deleting !== null}

@@ -5,6 +5,8 @@ import {
     groupByKonsolidasi,
     type RekapPekerjaanItem,
 } from '@/features/progress/lib/rekap-progress'
+import { exportChecklistExcel, exportChecklistPdf } from '@/features/checklist/api/checklist'
+import { exportPostPekerjaanExcel, exportPostPekerjaanPdf } from '@/features/post-pekerjaan/api/post-pekerjaan'
 import { buildReportPdf } from './laporan-pdf'
 
 async function writeExcelFile(filename: string, sheetName: string, rows: Record<string, unknown>[]) {
@@ -238,4 +240,32 @@ export async function exportRekapProgressExcel(list: RekapPekerjaanItem[], tahun
         'Realisasi Keuangan (%)': r.keuangan,
     }))
     await writeExcelFile(`Rekap_Progress_${tahun}_${stamp()}.xlsx`, 'Rekap Progress', rows)
+}
+
+/** Simpan blob hasil ekspor server sebagai berkas unduhan. */
+export function unduhBlob(blob: Blob, filename: string): void {
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+}
+
+/** Unduh ekspor checklist pekerjaan (Excel atau PDF) dari server, sesuai filter tahun anggaran. */
+export async function exportChecklistPekerjaan(kind: 'excel' | 'pdf', tahun: string): Promise<void> {
+    const blob = kind === 'excel'
+        ? await exportChecklistExcel({ tahun })
+        : await exportChecklistPdf({ tahun })
+    unduhBlob(blob, `checklist_pekerjaan_${tahun}_${stamp()}.${kind === 'excel' ? 'xlsx' : 'pdf'}`)
+}
+
+/** Unduh ekspor post pekerjaan (Excel atau PDF) dari server, sesuai filter tahun anggaran. */
+export async function exportPostPekerjaan(kind: 'excel' | 'pdf', tahun: string): Promise<void> {
+    const blob = kind === 'excel'
+        ? await exportPostPekerjaanExcel({ tahun })
+        : await exportPostPekerjaanPdf({ tahun })
+    unduhBlob(blob, `post_pekerjaan_${tahun}_${stamp()}.${kind === 'excel' ? 'xlsx' : 'pdf'}`)
 }

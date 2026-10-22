@@ -117,12 +117,14 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
     };
 
 
-    const handleDownload = (url: string, jenisDokumen: string) => {
-        // Create a temporary link and trigger download
+    const handleDownload = (berkas: Berkas) => {
+        // Nama unduhan memakai nama asli saat upload. Berkas lama tanpa nama asli memakai nama dari URL.
         const link = document.createElement('a');
-        link.href = normalizeStorageUrl(url);
-        link.download = jenisDokumen;
-        link.target = '_blank';
+        link.href = normalizeStorageUrl(berkas.berkas_url);
+        link.download = safeDownloadFilename(
+            berkas.original_name || resolveBerkasFileName(berkas),
+            `berkas_${berkas.id}`,
+        );
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -273,7 +275,14 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                                     <TableCell className="font-medium">
                                         <div className="flex items-center gap-2">
                                             <FileText className="h-4 w-4 text-muted-foreground" />
-                                            {berkas.jenis_dokumen}
+                                            <div className="flex min-w-0 flex-col">
+                                                <span>{berkas.jenis_dokumen}</span>
+                                                {berkas.original_name ? (
+                                                    <span className="truncate text-xs font-normal text-muted-foreground" title={berkas.original_name}>
+                                                        {berkas.original_name}
+                                                    </span>
+                                                ) : null}
+                                            </div>
                                             {matchesPengawasSharedBerkasJudul(berkas.jenis_dokumen, sharedJuduls) ? (
                                                 <Badge variant="secondary" className="text-[10px] font-semibold uppercase tracking-wide">
                                                     Bersama
@@ -316,7 +325,7 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => handleDownload(berkas.berkas_url, berkas.jenis_dokumen)}
+                                                onClick={() => handleDownload(berkas)}
                                             >
                                                 <Download className="h-4 w-4" />
                                             </Button>

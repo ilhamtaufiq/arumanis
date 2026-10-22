@@ -11,6 +11,13 @@ export function kategoriInfo(kategori: InformasiKategori) {
     return KATEGORI_OPSI.find((k) => k.value === kategori) ?? KATEGORI_OPSI[KATEGORI_OPSI.length - 1]!
 }
 
+export const STATUS_TONE: Record<StatusTampil, string> = {
+    draft: 'bg-muted text-muted-foreground',
+    terjadwal: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-200',
+    berakhir: 'bg-muted text-muted-foreground',
+    tampil: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200',
+}
+
 export type StatusTampil = 'draft' | 'terjadwal' | 'berakhir' | 'tampil'
 
 /** Status untuk admin: draft bila tidak terbit, lalu dibandingkan dengan tanggal hari ini dari server. */
@@ -46,6 +53,43 @@ export function rentangTampil(item: Pick<Informasi, 'tampil_dari' | 'tampil_samp
     return null
 }
 
+/** Batas isi dalam karakter HTML, termasuk tag dari editor. */
+export const ISI_MAX_CHARS = 100_000
+
+const PENANDA_HTML = /<[a-z][\s\S]*>/i
+
+function escapeHtml(teks: string): string {
+    return teks.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+}
+
+/**
+ * Isi yang sudah HTML dikembalikan apa adanya. Isi teks biasa dari data lama diubah menjadi paragraf,
+ * agar bisa dibuka di editor dan ditampilkan seperti publikasi.
+ */
+export function isiToHtml(isi: string): string {
+    if (PENANDA_HTML.test(isi)) return isi
+    return isi
+        .split(/\n{2,}/)
+        .map((paragraf) => `<p>${escapeHtml(paragraf).replace(/\n/g, '<br>')}</p>`)
+        .join('')
+}
+
+/** Teks polos dari isi (HTML atau teks biasa). DOMParser tidak memuat gambar maupun menjalankan skrip. */
+export function isiToTeks(isi: string): string {
+    const teks = PENANDA_HTML.test(isi)
+        ? new DOMParser()
+            .parseFromString(isi.replace(/<\/(p|h[1-6]|li|div|blockquote)>|<br\s*\/?>/gi, ' $& '), 'text/html')
+            .body.textContent ?? ''
+        : isi
+    return teks.replace(/\s+/g, ' ').trim()
+}
+
+/** Ringkasan satu-dua baris untuk daftar. */
+export function ringkasan(isi: string, panjang = 180): string {
+    const teks = isiToTeks(isi)
+    return teks.length > panjang ? `${teks.slice(0, panjang).trimEnd()}…` : teks
+}
+
 export function emptyInformasiForm(): InformasiFormData {
     return { judul: '', isi: '', kategori: 'pengumuman', terbit: true, tampil_dari: null, tampil_sampai: null }
 }
@@ -53,7 +97,7 @@ export function emptyInformasiForm(): InformasiFormData {
 export function toInformasiForm(item: Informasi): InformasiFormData {
     return {
         judul: item.judul,
-        isi: item.isi,
+        isi: isiToHtml(item.isi),
         kategori: item.kategori,
         terbit: item.terbit,
         tampil_dari: item.tampil_dari,
@@ -66,8 +110,8 @@ export function validasiInformasiForm(form: InformasiFormData): Partial<Record<'
     const errors: Partial<Record<'judul' | 'isi' | 'tampil_sampai', string>> = {}
     if (!form.judul.trim()) errors.judul = 'Judul wajib diisi.'
     else if (form.judul.trim().length > 255) errors.judul = 'Judul maksimal 255 karakter.'
-    if (!form.isi.trim()) errors.isi = 'Isi wajib diisi.'
-    else if (form.isi.trim().length > 10000) errors.isi = 'Isi maksimal 10.000 karakter.'
+    if (!isiToTeks(form.isi)) errors.isi = 'Isi wajib diisi.'
+    else if (form.isi.length > ISI_MAX_CHARS) errors.isi = 'Isi terlalu panjang. Kurangi isi atau gambar yang disisipkan.'
     if (form.tampil_dari && form.tampil_sampai && form.tampil_sampai < form.tampil_dari) {
         errors.tampil_sampai = 'Tanggal selesai tidak boleh sebelum tanggal mulai.'
     }

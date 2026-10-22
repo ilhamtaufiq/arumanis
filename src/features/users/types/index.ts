@@ -13,6 +13,8 @@ export interface User {
     gender?: UserGender | null;
     nip?: string;
     jabatan?: string;
+    /** Nomor WhatsApp ternormalisasi (mis. 6281234567890), atau null bila belum diisi. */
+    whatsapp?: string | null;
     unit_kerja?: string | null;
     pangkat_golongan?: string | null;
     roles: Role[];
@@ -30,6 +32,7 @@ export interface UserFormData {
     gender?: UserGender | null;
     nip?: string;
     jabatan?: string;
+    whatsapp?: string | null;
     unit_kerja?: string | null;
     pangkat_golongan?: string | null;
     roles?: string[]; // Role names
