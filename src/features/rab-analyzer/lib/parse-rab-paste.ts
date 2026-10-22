@@ -1,5 +1,4 @@
 import * as XLSX from 'xlsx'
-import { looksLikeRabRincian, parseRabRincian } from './parse-rab-rincian'
 import type { RabParsedItem } from '../types'
 import { parseIndonesianNumber } from './parse-indonesian-number'
 import { isNegoWorkbook, parseNegoRows, parseNegoWorkbook } from './parse-nego'
@@ -523,12 +522,6 @@ function parseDhspRows(rows: unknown[][], groupName: string): RabParsedItem[] {
 }
 
 export function parseBestImportRows(rows: unknown[][], groupName = 'Tanpa Kategori'): RabParsedItem[] {
-    // Rincian RAB (kolom NO, URAIAN PEKERJAAN, SAT, VOLUME, HARGA, JUMLAH) dengan subtotal per bagian.
-    if (looksLikeRabRincian(rows)) {
-        const rincian = parseRabRincian(rows)
-        if (rincian.lengkap && rincian.items.length > 0) return rincian.items
-    }
-
     // Coba format Hasil Nego dulu (paste / sheet tanpa nama Nego)
     const negoItems = parseNegoRows(rows)
     if (negoItems.length > 0) {
@@ -576,8 +569,6 @@ export function parseRabWorkbook(workbook: XLSX.WorkBook): RabParsedItem[] {
 
     const rabSheet = findWorksheetByName(workbook, [/^rab$/i])
     if (rabSheet) {
-        const rincian = parseRabRincian(rabSheet.rows)
-        if (rincian.lengkap && rincian.items.length > 0) return rincian.items
         const rabItems = parseAirMinumRabRows(rabSheet.rows)
         if (rabItems.length > 0) return rabItems
     }
