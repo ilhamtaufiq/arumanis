@@ -21,6 +21,8 @@ export type RabAnalysisResult = {
         itemCount: number
     }
     warnings: string[]
+    /** Total rekap di berkas dan selisihnya dengan rincian. Null bila berkas tidak punya rekap (teks tempel). */
+    rekap?: { jumlah: number; selisih: number } | null
 }
 
 export const RAB_PPN_RATE = 0.11
