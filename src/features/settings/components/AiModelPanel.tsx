@@ -44,8 +44,11 @@ export function AiModelPanel() {
     const adaPerubahan = pilihan !== '' && pilihan !== aktif
 
     const bangunMemori = useMutation({
-        mutationFn: () => api.post<{ status: string; batas: number }>('/ai/ringkas', {}),
-        onSuccess: (res) => toast.success(`Ringkasan memori dimulai (maksimal ${res.batas} per klik). Berjalan di latar belakang.`),
+        mutationFn: () => api.post<{ status: string; batas?: number }>('/ai/ringkas', {}),
+        onSuccess: (res) =>
+            res.status === 'sudah_berjalan'
+                ? toast.info('Ringkasan memori masih berjalan. Tunggu sampai selesai.')
+                : toast.success(`Ringkasan memori dimulai (maksimal ${res.batas} per klik). Berjalan di latar belakang.`),
         onError: (err) => toast.error(getApiErrorMessage(err, 'Gagal memulai ringkasan memori')),
     })
 
