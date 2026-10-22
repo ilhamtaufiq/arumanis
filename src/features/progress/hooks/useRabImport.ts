@@ -1,13 +1,9 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useState } from 'react'
 import * as XLSX from 'xlsx'
 import { toast } from 'sonner'
 import { analyzeRabItems } from '@/features/rab-analyzer/lib/calculate-rab-totals'
-import {
-    parseBestImportRows,
-    parseRabPaste,
-    parseRabPasteText,
-    parseRabWorkbook,
-} from '@/features/rab-analyzer/lib/parse-rab-paste'
+import { analisaRabServer } from '@/features/rab-analyzer/api/analisa'
+import { parseRabPaste, parseRabWorkbook } from '@/features/rab-analyzer/lib/parse-rab-paste'
 import { parseNegoPdfFile } from '@/features/rab-analyzer/lib/parse-nego-pdf'
 import {
     clearRabPasteDraft,
@@ -15,7 +11,7 @@ import {
     progressItemsFromRabImport,
     mapRabItemsToProgressImport,
 } from '../lib/rab-import-bridge'
-import type { RabAnalysisResult } from '@/features/rab-analyzer/types'
+import type { RabAnalysisResult, RabParsedItem } from '@/features/rab-analyzer/types'
 import type { EditableProgressItem } from '../types/progress-editor'
 
 type UseRabImportOptions = {
@@ -30,19 +26,23 @@ export function useRabImport({ editableItems, onImport, onRequestAutoFill }: Use
     const [analyzed, setAnalyzed] = useState(false)
     const [pendingReplace, setPendingReplace] = useState(false)
 
-    const analysis: RabAnalysisResult | null = useMemo(() => {
-        if (!analyzed || !pasteText.trim()) return null
-        return analyzeRabItems(parseRabPaste(pasteText))
-    }, [analyzed, pasteText])
+    const [analysis, setAnalysis] = useState<RabAnalysisResult | null>(null)
+
+    /** Analisa lewat backend. Format yang tidak dikenali backend dibaca parser lama (Hasil Nego, SPAM JP). */
+    const muatAnalisa = useCallback(async (teks: string): Promise<RabAnalysisResult> => {
+        const dariServer = await analisaRabServer({ teks })
+        return dariServer ?? analyzeRabItems(parseRabPaste(teks))
+    }, [])
 
     const resetDialog = useCallback(() => {
         setPasteText('')
         setAnalyzed(false)
+        setAnalysis(null)
         setPendingReplace(false)
     }, [])
 
-    const commitImport = useCallback((rows: unknown[][]) => {
-        const parsed = mapRabItemsToProgressImport(parseBestImportRows(rows))
+    const commitImport = useCallback((hasilRab: RabParsedItem[]) => {
+        const parsed = mapRabItemsToProgressImport(hasilRab)
         const items = progressItemsFromRabImport(parsed)
 
         if (items.length === 0) {
@@ -67,13 +67,19 @@ export function useRabImport({ editableItems, onImport, onRequestAutoFill }: Use
         }
     }, [onImport, onRequestAutoFill, resetDialog])
 
-    const confirmImport = useCallback(() => {
+    const confirmImport = useCallback(async () => {
         if (!pasteText.trim()) {
             toast.error('Tempel data Hasil Nego / uraian pekerjaan terlebih dahulu')
             return
         }
 
-        const result = analyzeRabItems(parseRabPaste(pasteText))
+        let result: RabAnalysisResult
+        try {
+            result = await muatAnalisa(pasteText)
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Analisa RAB gagal')
+            return
+        }
         if (result.items.length === 0) {
             toast.error(result.warnings[0] || 'Tidak ada item pekerjaan yang valid ditemukan')
             return
@@ -84,24 +90,31 @@ export function useRabImport({ editableItems, onImport, onRequestAutoFill }: Use
             return
         }
 
-        commitImport(parseRabPasteText(pasteText))
-    }, [commitImport, editableItems, pasteText, pendingReplace])
+        commitImport(result.items)
+    }, [commitImport, editableItems, muatAnalisa, pasteText, pendingReplace])
 
-    const handleAnalyze = useCallback(() => {
+    const handleAnalyze = useCallback(async () => {
         if (!pasteText.trim()) {
             toast.error('Tempel data Hasil Nego / uraian pekerjaan terlebih dahulu')
             return
         }
 
         setAnalyzed(true)
-        const result = analyzeRabItems(parseRabPaste(pasteText))
+        let result: RabAnalysisResult
+        try {
+            result = await muatAnalisa(pasteText)
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Analisa RAB gagal')
+            return
+        }
+        setAnalysis(result)
         if (result.items.length === 0) {
             toast.error(result.warnings[0] || 'Tidak ada item pekerjaan yang valid ditemukan')
             return
         }
 
         toast.success(`${result.summary.itemCount} item pekerjaan siap diimpor`)
-    }, [pasteText])
+    }, [muatAnalisa, pasteText])
 
     const finishFileImport = useCallback(
         (
@@ -204,20 +217,19 @@ export function useRabImport({ editableItems, onImport, onRequestAutoFill }: Use
                 return
             }
 
-            const reader = new FileReader()
-            reader.onload = (event) => {
+            void (async () => {
                 try {
-                    const buffer = event.target?.result
-                    const workbook = XLSX.read(buffer, { type: 'binary' })
-                    const parsed = mapRabItemsToProgressImport(parseRabWorkbook(workbook))
-                    const items = progressItemsFromRabImport(parsed)
+                    const dariServer = await analisaRabServer({ file })
+                    const sumber: RabParsedItem[] = dariServer
+                        ? dariServer.items
+                        : parseRabWorkbook(XLSX.read(new Uint8Array(await file.arrayBuffer()), { type: 'array' }))
+                    const items = progressItemsFromRabImport(mapRabItemsToProgressImport(sumber))
                     finishFileImport(items, 'Excel')
                 } catch (err) {
                     console.error(err)
                     toast.error('Gagal membaca file Excel Hasil Nego.')
                 }
-            }
-            reader.readAsBinaryString(file)
+            })()
         },
         [finishFileImport],
     )
@@ -228,8 +240,11 @@ export function useRabImport({ editableItems, onImport, onRequestAutoFill }: Use
         setPasteText(draft.pasteText)
         setAnalyzed(true)
         setOpen(true)
+        void muatAnalisa(draft.pasteText)
+            .then(setAnalysis)
+            .catch(() => setAnalysis(null))
         return true
-    }, [])
+    }, [muatAnalisa])
 
     return {
         open,
@@ -238,6 +253,7 @@ export function useRabImport({ editableItems, onImport, onRequestAutoFill }: Use
         setPasteText: (value: string) => {
             setPasteText(value)
             setAnalyzed(false)
+            setAnalysis(null)
             setPendingReplace(false)
         },
         analyzed,
