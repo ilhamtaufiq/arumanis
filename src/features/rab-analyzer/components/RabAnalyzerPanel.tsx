@@ -297,7 +297,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
 
             {result && result.items.length > 0 ? (
                 <>
-                    <RabAnalysisSummary summary={result.summary} />
+                    <RabAnalysisSummary summary={result.summary} rekap={result.rekap} />
                     <RabAnalysisTable result={result} />
                 </>
             ) : (
