@@ -6,7 +6,6 @@ import { PublikasiCard } from './PublikasiCard'
 import { getPublikasi, type PublikasiPost } from '../api'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useAuthStore } from '@/stores/auth-stores'
-import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,7 +20,6 @@ import {
 
 export function PublikasiList() {
     const { auth } = useAuthStore()
-    const { logoUrl } = useAppSettingsValues()
     const { category: selectedCategory } = useSearch({ from: '/publikasi' })
     const navigate = useNavigate({ from: '/publikasi' })
     const [query, setQuery] = useState('')
@@ -179,7 +177,7 @@ export function PublikasiList() {
                 <LoadingState />
             ) : posts.length > 0 ? (
                 <div className="space-y-14">
-                    {featuredPost ? <FeaturedPost post={featuredPost} logoUrl={logoUrl} /> : null}
+                    {featuredPost ? <FeaturedPost post={featuredPost} /> : null}
 
                     {regularPosts.length > 0 ? (
                         <section className="space-y-8">
@@ -212,7 +210,7 @@ export function PublikasiList() {
     )
 }
 
-function FeaturedPost({ post, logoUrl }: { post: PublikasiPost; logoUrl?: string | null }) {
+function FeaturedPost({ post }: { post: PublikasiPost }) {
     const readingTime = estimateReadingTime(post.content)
 
     return (
@@ -224,7 +222,7 @@ function FeaturedPost({ post, logoUrl }: { post: PublikasiPost; logoUrl?: string
                     className="group relative block min-h-[280px] overflow-hidden border-b border-border bg-muted lg:min-h-[420px] lg:border-b-0 lg:border-r"
                 >
                     <img
-                        src={getCoverImage(post.cover_image, logoUrl)}
+                        src={getCoverImage(post.cover_image)}
                         alt={post.title}
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />

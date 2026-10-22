@@ -20,7 +20,7 @@ export type BlogResponse = {
 const DEFAULT_TITLE = 'Arumanis — Portal Air Minum & Sanitasi Kabupaten Cianjur'
 const DEFAULT_DESCRIPTION =
   'Portal informasi publik capaian layanan air minum dan sanitasi Kabupaten Cianjur. Peta interaktif, data per desa, publikasi, dan dokumen terbuka.'
-const DEFAULT_IMAGE_PATH = '/arumanis.svg'
+const DEFAULT_IMAGE_PATH = '/images/default-publikasi.jpg'
 const PUSPEN_TITLE = 'Puspen Arumanis'
 const PUSPEN_DESCRIPTION =
   'Ruang kerja publikasi, media sharing, PDF, dan progress fisik Puspen Arumanis.'

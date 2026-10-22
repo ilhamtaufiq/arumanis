@@ -31,13 +31,9 @@ export function estimateReadingTime(content: string): number {
     return Math.max(1, Math.ceil(words / 200))
 }
 
-export function getCoverImage(
-    coverImage: string | null | undefined,
-    fallback?: string | null,
-): string {
-    return (
-        coverImage ||
-        fallback ||
-        'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=1200&auto=format&fit=crop'
-    )
+/** Gambar default publikasi tanpa cover: ilustrasi program dengan logo dan teks Arumanis. */
+export const DEFAULT_COVER_IMAGE = '/images/default-publikasi.jpg'
+
+export function getCoverImage(coverImage: string | null | undefined): string {
+    return coverImage || DEFAULT_COVER_IMAGE
 }

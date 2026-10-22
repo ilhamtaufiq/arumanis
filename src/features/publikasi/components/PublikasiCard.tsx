@@ -1,7 +1,6 @@
 import { type PublikasiPost } from '../api'
 import { Link } from '@tanstack/react-router'
 import { ArrowUpRight, Clock, Lock } from 'lucide-react'
-import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import {
@@ -27,7 +26,6 @@ export function PublikasiCard({
     user,
     variant = 'default',
 }: PublikasiCardProps) {
-    const { logoUrl } = useAppSettingsValues()
     const excerpt = getExcerpt(content, variant === 'compact' ? 100 : 140)
     const readingTime = estimateReadingTime(content)
 
@@ -47,7 +45,7 @@ export function PublikasiCard({
                 )}
             >
                 <img
-                    src={getCoverImage(cover_image, logoUrl)}
+                    src={getCoverImage(cover_image)}
                     alt={title}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     loading="lazy"
