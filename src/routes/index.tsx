@@ -7,6 +7,7 @@ import { useLandingCopy } from '@/features/landing-v2/i18n'
 import '../features/landing-v2/landing-v2.css'
 import { Navigation } from '@/features/landing-v2/components/navigation'
 import { HeroSection } from '@/features/landing-v2/components/hero-section'
+import { FloatingDriplet } from '@/features/landing-v2/components/floating-driplet'
 
 // Code-split below-the-fold landing sections to reduce initial JS payload by ~80%
 const FeaturesSection = lazy(() =>
@@ -35,9 +36,6 @@ const TestimonialsSection = lazy(() =>
 )
 const LatestPublikasiSection = lazy(() =>
   import('@/features/landing-v2/components/latest-publikasi-section').then((m) => ({ default: m.LatestPublikasiSection }))
-)
-const LatestPublikasiAlert = lazy(() =>
-  import('@/features/landing-v2/components/latest-publikasi-alert').then((m) => ({ default: m.LatestPublikasiAlert }))
 )
 const CtaSection = lazy(() =>
   import('@/features/landing-v2/components/cta-section').then((m) => ({ default: m.CtaSection }))
@@ -68,6 +66,7 @@ function LandingPage() {
   return (
     <div id="top" className="landing-v2 noise-overlay relative min-h-screen overflow-x-hidden antialiased">
       <Navigation />
+      <FloatingDriplet />
       <main>
         <HeroSection />
         <Suspense fallback={null}>
@@ -80,7 +79,6 @@ function LandingPage() {
           <DevelopersSection />
           <TestimonialsSection />
           <LatestPublikasiSection />
-          <LatestPublikasiAlert />
           <CtaSection />
           <LandingContactSection copy={messages.landing.contact} />
         </Suspense>
