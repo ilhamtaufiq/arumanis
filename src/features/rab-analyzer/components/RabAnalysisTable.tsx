@@ -15,6 +15,9 @@ type RabAnalysisTableProps = {
     maxHeightClassName?: string
 }
 
+/** Persentase pajak default yang ditampilkan di setiap baris. */
+const PAJAK_PERSEN = 11
+
 const PECAHAN: Record<string, string> = {
     '¼': '1/4',
     '½': '1/2',
@@ -97,7 +100,7 @@ export function RabAnalysisTable({
                             <TableHead>Satuan</TableHead>
                             <TableHead className="text-right">Volume</TableHead>
                             <TableHead className="text-right">Harga</TableHead>
-                            <TableHead className="text-right">Pajak (11%)</TableHead>
+                            <TableHead className="text-right">Pajak (%)</TableHead>
                             <TableHead className="text-right">Total</TableHead>
                             <TableHead className="min-w-[140px]">Group</TableHead>
                         </TableRow>
@@ -110,7 +113,7 @@ export function RabAnalysisTable({
                                 <TableCell>{rapikanTeks(item.satuan)}</TableCell>
                                 <TableCell className="text-right tabular-nums">{formatAngka(item.volume)}</TableCell>
                                 <TableCell className="text-right tabular-nums">{formatAngka(item.hargaSatuan)}</TableCell>
-                                <TableCell className="text-right tabular-nums text-muted-foreground">{formatAngka(item.ppn)}</TableCell>
+                                <TableCell className="text-right tabular-nums text-muted-foreground">{PAJAK_PERSEN}</TableCell>
                                 <TableCell className="text-right tabular-nums font-medium">{formatAngka(item.total)}</TableCell>
                                 <TableCell className="text-xs text-muted-foreground">{rapikanTeks(item.grup)}</TableCell>
                             </TableRow>
