@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Calculator, Upload } from 'lucide-react'
+import { Calculator, Loader2, Upload } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -42,6 +42,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
     const [berkasList, setBerkasList] = useState<Berkas[] | null>(null)
     const [berkasMemuat, setBerkasMemuat] = useState(false)
     const [analisaMemuat, setAnalisaMemuat] = useState(false)
+    const [namaAnalisa, setNamaAnalisa] = useState('')
     const [importOpen, setImportOpen] = useState(false)
     const [selectedPekerjaanId, setSelectedPekerjaanId] = useState(initialPekerjaanId || '')
     const [saving, setSaving] = useState(false)
@@ -70,6 +71,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
     const analisaBerkas = async (berkas: Blob, nama: string) => {
         const isi = new FormData()
         isi.append('file', berkas, nama)
+        setNamaAnalisa(nama)
         setAnalisaMemuat(true)
         try {
             const hasil = await analisaServer(isi)
@@ -80,6 +82,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
             toast.error(getApiErrorMessage(error, 'Berkas RAB tidak bisa dianalisa'))
         } finally {
             setAnalisaMemuat(false)
+            setNamaAnalisa('')
         }
     }
 
@@ -202,14 +205,29 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                     <input
                         type="file"
                         accept=".xlsx,.xls"
-                        className="block w-full text-sm file:mr-3 file:rounded-md file:border file:bg-background file:px-3 file:py-1.5"
+                        disabled={analisaMemuat}
+                        className="block w-full text-sm file:mr-3 file:rounded-md file:border file:bg-background file:px-3 file:py-1.5 disabled:opacity-60"
                         onChange={(event) => {
                             const file = event.target.files?.[0]
                             event.target.value = ''
                             if (file) void handleUpload(file)
                         }}
                     />
-                    {uploadName ? (
+                    {analisaMemuat ? (
+                        <div className="space-y-2 rounded-xl border bg-muted/30 p-3" role="status" aria-live="polite">
+                            <p className="flex items-center gap-2 text-sm font-medium">
+                                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                                Menganalisa {namaAnalisa}...
+                            </p>
+                            <div className="h-1.5 w-full overflow-hidden rounded bg-muted">
+                                <div className="h-full w-full animate-pulse rounded bg-primary/70" />
+                            </div>
+                            <p className="text-xs text-muted-foreground">
+                                Membaca sheet RAB, menghitung DPP dan PPN 11%, lalu membandingkan dengan rekap di berkas.
+                            </p>
+                        </div>
+                    ) : null}
+                    {uploadName && !analisaMemuat ? (
                         <p className="text-xs text-muted-foreground">Dibaca dari: {uploadName}</p>
                     ) : null}
                 </div>
