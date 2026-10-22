@@ -28,6 +28,7 @@ import { getProgressReport, saveProgressReport } from '@/features/progress/api/p
 import { RabPasteInput } from './RabPasteInput'
 import { RabAnalysisSummary } from './RabAnalysisSummary'
 import { RabAnalysisTable } from './RabAnalysisTable'
+import { downloadRincianHps } from '../lib/export-rincian-hps'
 
 type RabAnalyzerPanelProps = {
     initialPekerjaanId?: string
@@ -346,6 +347,13 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                                 className="gap-2"
                             >
                                 Simpan ke Progress
+                            </Button>
+                            <Button
+                                variant="outline"
+                                onClick={() => downloadRincianHps(result)}
+                                className="gap-2"
+                            >
+                                Download rincian-hps
                             </Button>
                             <Button
                                 variant="outline"
