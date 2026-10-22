@@ -3,8 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
-import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
-import { HeroDriplet } from "./hero-driplet";
 import { getPublikasi } from "@/features/publikasi/api";
 import {
   formatPublikasiDate,
@@ -13,7 +11,6 @@ import {
 } from "@/features/publikasi/lib/format";
 
 export function LatestPublikasiSection() {
-  const reducedMotion = usePrefersReducedMotion();
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const { copy } = useLandingCopy();
@@ -55,13 +52,6 @@ export function LatestPublikasiSection() {
       ref={sectionRef}
       className="relative py-24 lg:py-32 border-t border-foreground/10"
     >
-      {/* Driplet sebagai dekorasi di area kosong kanan atas bagian publikasi */}
-      <div
-        aria-hidden="true"
-        className="absolute right-[5%] top-24 hidden xl:block opacity-90 pointer-events-none"
-      >
-        <HeroDriplet reducedMotion={reducedMotion} className="w-[220px] h-auto" />
-      </div>
       <div className="max-w-[1400px] mx-auto px-6 lg:px-12">
         {/* Header */}
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between mb-16">
