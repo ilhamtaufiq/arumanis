@@ -32,7 +32,7 @@ export default function RabAnalyzerPage() {
                             Analisa RAB
                         </h1>
                         <p className="max-w-2xl text-sm text-muted-foreground sm:text-base">
-                            Tempel data RAB dari Excel untuk mengurai item pekerjaan, menghitung DPP, PPN 11%, dan total secara otomatis.
+                            Upload berkas RAB dari Excel untuk mengurai item pekerjaan, menghitung DPP, PPN 11%, dan total secara otomatis.
                         </p>
                     </div>
                 </div>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Calculator, ClipboardPaste, Upload } from 'lucide-react'
+import { Calculator, Upload } from 'lucide-react'
 import { useNavigate } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -23,9 +23,7 @@ import { normalizeStorageUrl } from '@/features/foto/lib/foto-url'
 import { mapRabItemsToProgressImport } from '../lib/parse-rab-paste'
 import api from '@/lib/api-client'
 import { getApiErrorMessage } from '@/lib/api-error-message'
-import { saveRabPasteDraft } from '@/features/progress/lib/rab-import-bridge'
 import { getProgressReport, saveProgressReport } from '@/features/progress/api/progress'
-import { RabPasteInput } from './RabPasteInput'
 import { RabAnalysisSummary } from './RabAnalysisSummary'
 import { RabAnalysisTable } from './RabAnalysisTable'
 import { downloadRincianHps } from '../lib/export-rincian-hps'
@@ -37,7 +35,6 @@ type RabAnalyzerPanelProps = {
 export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) {
     const navigate = useNavigate()
     const { tahunAnggaran } = useAppSettingsValues()
-    const [pasteText, setPasteText] = useState('')
     const [result, setResult] = useState<RabAnalysisResult | null>(null)
     const [uploadName, setUploadName] = useState('')
     const [berkasPekerjaanId, setBerkasPekerjaanId] = useState('')
@@ -45,11 +42,9 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
     const [berkasList, setBerkasList] = useState<Berkas[] | null>(null)
     const [berkasMemuat, setBerkasMemuat] = useState(false)
     const [analisaMemuat, setAnalisaMemuat] = useState(false)
-    const [analyzed, setAnalyzed] = useState(false)
     const [importOpen, setImportOpen] = useState(false)
     const [selectedPekerjaanId, setSelectedPekerjaanId] = useState(initialPekerjaanId || '')
     const [saving, setSaving] = useState(false)
-    const [importMode, setImportMode] = useState<'laporan' | 'persist'>('persist')
 
     useEffect(() => {
         if (initialPekerjaanId) {
@@ -78,10 +73,8 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
         setAnalisaMemuat(true)
         try {
             const hasil = await analisaServer(isi)
-            setPasteText('')
             setUploadName(nama)
             setResult(hasil)
-            setAnalyzed(true)
             toast.success(`${hasil.summary.itemCount} item RAB dari ${nama} berhasil dianalisa`)
         } catch (error) {
             toast.error(getApiErrorMessage(error, 'Berkas RAB tidak bisa dianalisa'))
@@ -130,41 +123,16 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
         }
     }
 
-    const handleAnalyze = async () => {
-        if (!pasteText.trim()) {
-            toast.error('Tempel data RAB dari Excel terlebih dahulu')
-            return
-        }
-        const isi = new FormData()
-        isi.append('teks', pasteText)
-        try {
-            const hasil = await analisaServer(isi)
-            setUploadName('')
-            setResult(hasil)
-            setAnalyzed(true)
-            toast.success(`${hasil.summary.itemCount} item pekerjaan berhasil dianalisa`)
-        } catch (error) {
-            toast.error(getApiErrorMessage(error, 'Tidak ada item pekerjaan yang valid ditemukan'))
-        }
-    }
-
     const handleReset = () => {
-        setPasteText('')
         setResult(null)
         setUploadName('')
-        setAnalyzed(false)
     }
 
-    const handleImportToPekerjaan = (mode: 'laporan' | 'persist') => {
+    const handleImportToPekerjaan = () => {
         if (!result || result.items.length === 0) {
             toast.error('Analisa RAB terlebih dahulu')
             return
         }
-        if (uploadName && mode === 'laporan') {
-            toast.error('Dari file Excel, gunakan Simpan ke Progress')
-            return
-        }
-        setImportMode(mode)
         setImportOpen(true)
     }
 
@@ -174,23 +142,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
             return
         }
 
-        if (importMode === 'laporan') {
-            const saved = saveRabPasteDraft(pasteText, result?.summary)
-            if (!saved) {
-                toast.error('Gagal menyimpan draft RAB. Data terlalu besar — paste ulang di Buat Laporan.')
-                return
-            }
-
-            setImportOpen(false)
-            navigate({
-                to: '/buat-laporan/$id',
-                params: { id: selectedPekerjaanId },
-                search: { importRab: 1 },
-            })
-            return
-        }
-
-        // Persist langsung ke progress pekerjaan
+        // Simpan langsung ke progress pekerjaan
         setSaving(true)
         try {
             const pekerjaanId = Number(selectedPekerjaanId)
@@ -230,11 +182,11 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                 <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                     <div>
                         <h3 className="flex items-center gap-2 text-base font-semibold">
-                            <ClipboardPaste className="h-5 w-5 text-primary" />
-                            Tempel Data dari Excel
+                            <Calculator className="h-5 w-5 text-primary" />
+                            Analisa RAB
                         </h3>
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Blok baris RAB MCK/SPAM JP dari Excel (Ctrl+C), lalu tempel di sini.
+                            Upload berkas RAB (.xlsx) atau ambil dari berkas pekerjaan.
                         </p>
                     </div>
                     <Badge variant="outline" className="font-mono text-[11px]">
@@ -322,53 +274,19 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                     ) : null}
                 </div>
 
-                <div className="my-4 text-center text-xs text-muted-foreground">atau paste dari Excel</div>
-
-                <RabPasteInput
-                    value={pasteText}
-                    onChange={(value) => {
-                        setPasteText(value)
-                        setResult(null)
-                        setUploadName('')
-                        setAnalyzed(false)
-                    }}
-                />
-
-                <div className="mt-4 flex flex-wrap gap-2">
-                    <Button onClick={() => void handleAnalyze()} disabled={!pasteText.trim() || !!uploadName} className="gap-2">
-                        <Calculator className="h-4 w-4" />
-                        Analisa RAB
-                    </Button>
-                    {result && result.items.length > 0 ? (
-                        <>
-                            <Button
-                                variant="secondary"
-                                onClick={() => handleImportToPekerjaan('persist')}
-                                className="gap-2"
-                            >
-                                Simpan ke Progress
-                            </Button>
-                            <Button
-                                variant="outline"
-                                onClick={() => downloadRincianHps(result)}
-                                className="gap-2"
-                            >
-                                Download rincian-hps
-                            </Button>
-                            <Button
-                                variant="outline"
-                                disabled={!!uploadName}
-                                onClick={() => handleImportToPekerjaan('laporan')}
-                                className="gap-2"
-                            >
-                                Buka di Buat Laporan
-                            </Button>
-                        </>
-                    ) : null}
-                    <Button variant="outline" onClick={handleReset} disabled={!pasteText && !analyzed && !result}>
-                        Reset
-                    </Button>
-                </div>
+                {result && result.items.length > 0 ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                        <Button variant="secondary" onClick={handleImportToPekerjaan} className="gap-2">
+                            Simpan ke Progress
+                        </Button>
+                        <Button variant="outline" onClick={() => downloadRincianHps(result)} className="gap-2">
+                            Download rincian-hps
+                        </Button>
+                        <Button variant="outline" onClick={handleReset}>
+                            Reset
+                        </Button>
+                    </div>
+                ) : null}
             </div>
 
             {result?.warnings.length && result.items.length === 0 ? (
@@ -384,20 +302,16 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                 </>
             ) : (
                 <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-dashed bg-muted/20 p-6 text-sm text-muted-foreground">
-                    Tempel data RAB lalu klik <strong className="mx-1">Analisa RAB</strong> untuk melihat hasil.
+                    Upload berkas RAB atau pilih dari berkas pekerjaan untuk melihat hasil.
                 </div>
             )}
 
             <Dialog open={importOpen} onOpenChange={setImportOpen}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>
-                            {importMode === 'persist' ? 'Simpan RAB ke Progress' : 'Import ke Buat Laporan'}
-                        </DialogTitle>
+                        <DialogTitle>Simpan RAB ke Progress</DialogTitle>
                         <DialogDescription>
-                            {importMode === 'persist'
-                                ? `Simpan ${result?.summary.itemCount ?? 0} item RAB sebagai item progress pekerjaan (menimpa item progress existing).`
-                                : `Pilih pekerjaan untuk mengimpor ${result?.summary.itemCount ?? 0} item RAB ke editor Buat Laporan.`}
+                            Simpan {result?.summary.itemCount ?? 0} item RAB sebagai item progress pekerjaan (menimpa item progress existing).
                         </DialogDescription>
                     </DialogHeader>
                     <SearchableSelect
@@ -413,11 +327,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
                             Batal
                         </Button>
                         <Button onClick={() => void confirmImportToPekerjaan()} disabled={saving}>
-                            {saving
-                                ? 'Menyimpan...'
-                                : importMode === 'persist'
-                                  ? 'Simpan ke Progress'
-                                  : 'Lanjut ke Buat Laporan'}
+                            {saving ? 'Menyimpan...' : 'Simpan ke Progress'}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
