@@ -42,6 +42,8 @@ const SUPERSCRIPT: Record<string, string> = {
 export function rapikanTeks(teks: string): string {
     let hasil = teks.replace(/"/g, ' inch')
     for (const [pecahan, tulisan] of Object.entries(PECAHAN)) {
+        // Angka bulat di depan pecahan (1¼) dipisah spasi jadi "1 1/4", bukan "11/4".
+        hasil = hasil.replace(new RegExp(`(\\d)${pecahan}`, 'g'), (_, angka: string) => `${angka} ${tulisan}`)
         hasil = hasil.split(pecahan).join(tulisan)
     }
     for (const [pangkat, angka] of Object.entries(SUPERSCRIPT)) {
