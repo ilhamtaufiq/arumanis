@@ -40,7 +40,7 @@ const SUPERSCRIPT: Record<string, string> = {
  * serta angka pangkat (m³) menjadi angka biasa (m3).
  */
 export function rapikanTeks(teks: string): string {
-    let hasil = teks.replace(/"/g, ' inch')
+    let hasil = teks.replace(/"/g, ' inch').replace(/[Øø]/g, 'diameter ')
     for (const [pecahan, tulisan] of Object.entries(PECAHAN)) {
         // Angka bulat di depan pecahan (1¼) dipisah spasi jadi "1 1/4", bukan "11/4".
         hasil = hasil.replace(new RegExp(`(\\d)${pecahan}`, 'g'), (_, angka: string) => `${angka} ${tulisan}`)
