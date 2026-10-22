@@ -16,12 +16,11 @@ import { useQuery } from '@tanstack/react-query'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
-import { analyzeRabItems } from '../lib/calculate-rab-totals'
 import type { RabAnalysisResult } from '../types'
 import { getBerkasList } from '@/features/berkas/api'
 import type { Berkas } from '@/features/berkas/types'
 import { normalizeStorageUrl } from '@/features/foto/lib/foto-url'
-import { mapRabItemsToProgressImport, parseRabPaste } from '../lib/parse-rab-paste'
+import { mapRabItemsToProgressImport } from '../lib/parse-rab-paste'
 import api from '@/lib/api-client'
 import { getApiErrorMessage } from '@/lib/api-error-message'
 import { saveRabPasteDraft } from '@/features/progress/lib/rab-import-bridge'
@@ -144,16 +143,7 @@ export function RabAnalyzerPanel({ initialPekerjaanId }: RabAnalyzerPanelProps) 
             setAnalyzed(true)
             toast.success(`${hasil.summary.itemCount} item pekerjaan berhasil dianalisa`)
         } catch (error) {
-            // Format yang belum dibaca backend (mis. SPAM JP) memakai parser lokal sebagai cadangan.
-            const lokal = analyzeRabItems(parseRabPaste(pasteText))
-            if (lokal.items.length === 0) {
-                toast.error(getApiErrorMessage(error, 'Tidak ada item pekerjaan yang valid ditemukan'))
-                return
-            }
-            setUploadName('')
-            setResult(lokal)
-            setAnalyzed(true)
-            toast.success(`${lokal.summary.itemCount} item pekerjaan dianalisa dengan parser lokal`)
+            toast.error(getApiErrorMessage(error, 'Tidak ada item pekerjaan yang valid ditemukan'))
         }
     }
 
