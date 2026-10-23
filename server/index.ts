@@ -11,7 +11,14 @@ import {
   proxyOnlyOfficeHttp,
   type OnlyOfficeWsData,
 } from './onlyoffice-proxy.ts'
-import { buildPublikasiHtml, buildPublikasiListHtml, buildPuspenHtml } from './seo-meta.ts'
+import {
+  buildPublikasiHtml,
+  buildPublikasiListHtml,
+  buildPuspenHtml,
+  DEFAULT_IMAGE_PATH,
+  fetchBlogPost,
+} from './seo-meta.ts'
+import { renderOgImage } from './og-image.ts'
 import { buildSitemapXml } from './sitemap.ts'
 import { proxySipdRequest } from './sipd-proxy.ts'
 import {
@@ -455,6 +462,28 @@ app.get('/sitemap.xml', async (c) => {
     'Content-Type': 'application/xml; charset=utf-8',
     'Cache-Control': 'public, max-age=3600',
   })
+})
+
+// Gambar pratinjau publikasi tanpa cover: judul artikel digambar di atas ilustrasi program.
+app.get('/og/publikasi/:file', async (c) => {
+  const slug = c.req.param('file').replace(/\.jpe?g$/i, '')
+
+  try {
+    const post = await fetchBlogPost(slug)
+    const image = post?.title ? await renderOgImage(post.title) : null
+    if (image) {
+      return new Response(image, {
+        headers: {
+          'Content-Type': 'image/jpeg',
+          'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800',
+        },
+      })
+    }
+  } catch (error) {
+    console.error('Gagal membuat OG image publikasi:', error)
+  }
+
+  return c.redirect(DEFAULT_IMAGE_PATH, 302)
 })
 
 app.get('*', async (c) => {
