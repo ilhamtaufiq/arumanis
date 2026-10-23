@@ -20,7 +20,7 @@ export type BlogResponse = {
 const DEFAULT_TITLE = 'Arumanis — Portal Air Minum & Sanitasi Kabupaten Cianjur'
 const DEFAULT_DESCRIPTION =
   'Portal informasi publik capaian layanan air minum dan sanitasi Kabupaten Cianjur. Peta interaktif, data per desa, publikasi, dan dokumen terbuka.'
-const DEFAULT_IMAGE_PATH = '/arumanis.svg'
+export const DEFAULT_IMAGE_PATH = '/images/default-publikasi.jpg'
 const PUSPEN_TITLE = 'Puspen Arumanis'
 const PUSPEN_DESCRIPTION =
   'Ruang kerja publikasi, media sharing, PDF, dan progress fisik Puspen Arumanis.'
@@ -122,6 +122,23 @@ export function injectMetaIntoHtml(html: string, meta: SeoMetaInput) {
   return replaceMetaTags(html, buildMetaTags(meta))
 }
 
+export async function fetchBlogPost(slug: string): Promise<BlogPost | undefined> {
+  const response = await fetch(`${getApiBaseUrl()}/blog/${encodeURIComponent(slug)}`, {
+    headers: { Accept: 'application/json' },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Blog API returned ${response.status}`)
+  }
+
+  return ((await response.json()) as BlogResponse).data
+}
+
+/** Gambar pratinjau yang dibuat server dari judul, untuk publikasi tanpa cover. */
+export function generatedOgImageUrl(slug: string, siteUrl = getSiteUrl()) {
+  return `${siteUrl}/og/publikasi/${encodeURIComponent(slug)}.jpg`
+}
+
 export async function buildPublikasiHtml(slug: string, pathname: string, indexHtml: string) {
   const siteUrl = getSiteUrl()
   const apiBaseUrl = getApiBaseUrl()
@@ -129,19 +146,12 @@ export async function buildPublikasiHtml(slug: string, pathname: string, indexHt
   const defaults = getDefaultSeoMeta(siteUrl)
 
   try {
-    const response = await fetch(`${apiBaseUrl}/blog/${encodeURIComponent(slug)}`, {
-      headers: { Accept: 'application/json' },
-    })
-
-    if (!response.ok) {
-      throw new Error(`Blog API returned ${response.status}`)
-    }
-
-    const payload = (await response.json()) as BlogResponse
-    const post = payload.data
+    const post = await fetchBlogPost(slug)
     const title = post?.title?.trim() || defaults.title
     const description = stripHtml(post?.content || '').slice(0, 160) || defaults.description
-    const image = absoluteImageUrl(post?.cover_image, siteUrl, apiBaseUrl)
+    const image = post?.cover_image
+      ? absoluteImageUrl(post.cover_image, siteUrl, apiBaseUrl)
+      : generatedOgImageUrl(slug, siteUrl)
 
     return injectMetaIntoHtml(indexHtml, {
       title,

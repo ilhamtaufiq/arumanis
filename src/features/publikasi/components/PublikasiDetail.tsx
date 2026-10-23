@@ -14,7 +14,6 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { useAuthStore } from '@/stores/auth-stores'
-import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import {
     estimateReadingTime,
     formatPublikasiDate,
@@ -33,7 +32,6 @@ type PublikasiDetailProps = {
 
 export function PublikasiDetail({ slug }: PublikasiDetailProps) {
     const { auth } = useAuthStore()
-    const { logoUrl } = useAppSettingsValues()
     const progressRef = useRef<HTMLDivElement>(null)
 
     const { data, isLoading } = useQuery({
@@ -48,7 +46,7 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
 
         const pageUrl = `${window.location.origin}/publikasi/${slug}`
         const description = getExcerpt(post.content, 160)
-        const image = resolvePublicAssetUrl(getCoverImage(post.cover_image, logoUrl))
+        const image = resolvePublicAssetUrl(getCoverImage(post.cover_image))
 
         return {
             title: post.title,
@@ -66,7 +64,7 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
                 authorName: post.user?.name,
             }),
         }
-    }, [post, slug, logoUrl])
+    }, [post, slug])
 
     usePageSeo(pageSeo)
 
@@ -191,7 +189,7 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
                         {post.cover_image ? (
                             <div className="overflow-hidden rounded-2xl border border-border bg-muted">
                                 <img
-                                    src={getCoverImage(post.cover_image, logoUrl)}
+                                    src={getCoverImage(post.cover_image)}
                                     alt={post.title}
                                     className="aspect-[16/9] w-full object-cover"
                                 />

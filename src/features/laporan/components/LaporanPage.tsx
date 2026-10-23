@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { ArrowRight, ClipboardCheck, Download, FileSpreadsheet, Loader2 } from 'lucide-react'
+import { ArrowRight, ClipboardCheck, Download, FileSpreadsheet, ImageIcon, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -24,6 +24,7 @@ import {
     exportSubKegiatanExcel,
     exportSubKegiatanPdf,
 } from '../lib/laporan-export'
+import { PosterCapaianDialog } from './PosterCapaianDialog'
 
 /** Pusat unduhan laporan: rekap progres, keuangan, program (Excel langsung + link halaman penuh). */
 export function LaporanPage() {
@@ -31,6 +32,7 @@ export function LaporanPage() {
     const { auth } = useAuthStore()
     const canDownload = auth.user?.roles?.some((role) => role === 'admin' || role === 'manager') ?? false
     const [busy, setBusy] = useState<string | null>(null)
+    const [posterOpen, setPosterOpen] = useState(false)
 
     const statsQuery = useQuery({
         queryKey: ['dashboard-stats', tahunAnggaran],
@@ -314,10 +316,31 @@ export function LaporanPage() {
                                     Hanya pekerjaan yang sudah berkontrak
                                 </CardFooter>
                             </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <ImageIcon className='size-7 text-sky-600' />
+                                    <CardTitle className='mt-2'>Poster Capaian</CardTitle>
+                                    <CardDescription>
+                                        Infografis capaian air minum dan sanitasi per sub bidang, angka selalu dari data terbaru.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className='flex flex-wrap gap-2'>
+                                    <Button size='sm' onClick={() => setPosterOpen(true)}>
+                                        <ImageIcon />
+                                        Buat poster
+                                    </Button>
+                                </CardContent>
+                                <CardFooter className='text-xs text-muted-foreground'>
+                                    Sumber: /dashboard/capaian-bidang TA {tahunAnggaran} · unduhan PNG
+                                </CardFooter>
+                            </Card>
                         </div>
                     )}
                 </div>
             </Main>
+
+            <PosterCapaianDialog open={posterOpen} onOpenChange={setPosterOpen} tahun={tahunAnggaran} />
         </>
     )
 }
