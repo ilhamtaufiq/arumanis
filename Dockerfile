@@ -111,7 +111,9 @@ ENV SESSION_COOKIE_NAME=arumanis_session
 ENV PUBLIC_SITE_URL=https://arumanis.cianjur.space
 ENV ONLYOFFICE_DOCUMENT_SERVER_URL=https://office.cianjur.space
 
-RUN bun add hono@4.5.10
+# satori + resvg-wasm + jpeg-js (JS/WASM murni, tanpa modul native) membuat gambar pratinjau publikasi
+# (server/og-image.ts). Bila gagal terpasang, server memakai gambar default statis.
+RUN bun add hono@4.5.10 satori@0.63.2 @resvg/resvg-wasm@2.6.2 jpeg-js@0.4.4
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/server ./server

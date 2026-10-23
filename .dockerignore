@@ -75,3 +75,6 @@ whatsapp-service/
 !public/**
 !docs-site/public/
 !docs-site/public/**
+# Aset runtime BFF (gambar dasar + font untuk server/og-image.ts)
+!server/assets/
+!server/assets/**
