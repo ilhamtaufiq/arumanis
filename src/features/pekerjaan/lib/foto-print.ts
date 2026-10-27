@@ -6,6 +6,7 @@
 
 import jsPDF from 'jspdf'
 import type { Foto } from '@/features/foto/types'
+import { normalizeStorageUrl } from '@/features/foto/lib/foto-url'
 import { hasFotoKoordinat, isFotoKoordinatInvalid } from '@/features/foto/lib/koordinat-status'
 import {
     FOTO_PROGRESS_LEVELS,
@@ -72,7 +73,7 @@ export function escapeHtml(value: unknown): string {
  */
 export function printImgHtml(src: string, fullSrc: string, alt: string): string {
     const retry = 'if(!this.dataset.retry){this.dataset.retry=1;this.src=this.dataset.full}'
-    return `<img src="${escapeHtml(src)}" data-full="${escapeHtml(fullSrc)}" onerror="${escapeHtml(retry)}" alt="${escapeHtml(alt)}" loading="eager" crossorigin="anonymous" />`
+    return `<img src="${escapeHtml(src)}" data-full="${escapeHtml(fullSrc)}" onerror="${escapeHtml(retry)}" alt="${escapeHtml(alt)}" loading="eager" />`
 }
 
 export function gpsStatusOf(foto: Pick<Foto, 'koordinat' | 'validasi_koordinat'>): FotoPrintGpsStatus {
@@ -121,8 +122,8 @@ export function collectFotoPrintItems(
                 if (!photoPassesGpsFilter(foto, options.onlyValidGps)) continue
                 items.push({
                     id: foto.id,
-                    url: foto.foto_url,
-                    thumbUrl: foto.foto_thumb_url || foto.foto_url,
+                    url: normalizeStorageUrl(foto.foto_url),
+                    thumbUrl: normalizeStorageUrl(foto.foto_thumb_url || foto.foto_url),
                     komponen: group.komponen_nama || foto.komponen?.komponen || '-',
                     penerima: group.penerima_nama || foto.penerima?.nama || '',
                     penerimaNik: group.penerima_nik || foto.penerima?.nik || '',
@@ -408,8 +409,8 @@ function buildMatrixHtml(
                 const thumbs = photos
                     .map((foto) => {
                         const src = options.useFullQuality
-                            ? foto.foto_url
-                            : foto.foto_thumb_url || foto.foto_url
+                            ? normalizeStorageUrl(foto.foto_url)
+                            : normalizeStorageUrl(foto.foto_thumb_url || foto.foto_url)
                         const gps = gpsStatusOf(foto)
                         const gpsClass =
                             gps === 'valid' ? 'gps-valid' : gps === 'invalid' ? 'gps-invalid' : 'gps-none'
@@ -419,7 +420,7 @@ function buildMatrixHtml(
                                 : ''
                         return `
                           <div class="thumb-wrap">
-                            ${printImgHtml(src, foto.foto_url, level)}
+                            ${printImgHtml(src, normalizeStorageUrl(foto.foto_url), level)}
                             <div class="${gpsClass}">${escapeHtml(gpsStatusLabel(gps))}</div>
                             ${coord}
                           </div>
