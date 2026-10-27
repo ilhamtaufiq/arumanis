@@ -6,6 +6,7 @@
 
 import jsPDF from 'jspdf'
 import type { Foto } from '@/features/foto/types'
+import { normalizeStorageUrl } from '@/features/foto/lib/foto-url'
 import { hasFotoKoordinat, isFotoKoordinatInvalid } from '@/features/foto/lib/koordinat-status'
 import {
     FOTO_PROGRESS_LEVELS,
@@ -72,7 +73,7 @@ export function escapeHtml(value: unknown): string {
  */
 export function printImgHtml(src: string, fullSrc: string, alt: string): string {
     const retry = 'if(!this.dataset.retry){this.dataset.retry=1;this.src=this.dataset.full}'
-    return `<img src="${escapeHtml(src)}" data-full="${escapeHtml(fullSrc)}" onerror="${escapeHtml(retry)}" alt="${escapeHtml(alt)}" loading="eager" crossorigin="anonymous" />`
+    return `<img src="${escapeHtml(src)}" data-full="${escapeHtml(fullSrc)}" onerror="${escapeHtml(retry)}" alt="${escapeHtml(alt)}" loading="eager" />`
 }
 
 export function gpsStatusOf(foto: Pick<Foto, 'koordinat' | 'validasi_koordinat'>): FotoPrintGpsStatus {
@@ -121,8 +122,8 @@ export function collectFotoPrintItems(
                 if (!photoPassesGpsFilter(foto, options.onlyValidGps)) continue
                 items.push({
                     id: foto.id,
-                    url: foto.foto_url,
-                    thumbUrl: foto.foto_thumb_url || foto.foto_url,
+                    url: normalizeStorageUrl(foto.foto_url),
+                    thumbUrl: normalizeStorageUrl(foto.foto_thumb_url || foto.foto_url),
                     komponen: group.komponen_nama || foto.komponen?.komponen || '-',
                     penerima: group.penerima_nama || foto.penerima?.nama || '',
                     penerimaNik: group.penerima_nik || foto.penerima?.nik || '',
@@ -229,7 +230,14 @@ function sharedStyles(orientation: 'portrait' | 'landscape'): string {
             z-index: 0;
         }
         .page-num::after {
-            content: counter(page);
+            content: counter(page) " / " counter(pages);
+        }
+        .running-head {
+            font-size: 9px;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 3px;
+            margin-bottom: 6px;
         }
         .gps-valid { color: #15803d; font-weight: 600; }
         .gps-invalid { color: #b91c1c; font-weight: 600; }
@@ -253,6 +261,11 @@ function headerHtml(meta: FotoPrintMeta, extraLine?: string): string {
         </div>
       </div>
     `
+}
+
+/** Baris ringkas di halaman berikutnya, supaya setiap lembar jelas asal paketnya. */
+function runningHeadHtml(meta: FotoPrintMeta): string {
+    return `<div class="running-head">${escapeHtml(meta.paketName)} · ${escapeHtml(meta.komponenLabel)} · ${escapeHtml(meta.lokasi)}</div>`
 }
 
 function footerFixedHtml(meta: FotoPrintMeta): string {
@@ -312,7 +325,7 @@ function buildGridHtml(
 
         pages += `
           <div class="page">
-            ${i === 0 ? headerHtml(meta, `Layout: ${layoutLabel(options.layout)}`) : ''}
+            ${i === 0 ? headerHtml(meta, `Layout: ${layoutLabel(options.layout)}`) : runningHeadHtml(meta)}
             <div class="grid cols-${cols}">${cards}</div>
           </div>
         `
@@ -347,7 +360,7 @@ function buildGridHtml(
     .photo-card img {
       width: 100%;
       height: ${imgH}mm;
-      object-fit: cover;
+      object-fit: contain;
       border-radius: 3px;
       border: 1px solid #e2e8f0;
       display: block;
@@ -408,8 +421,8 @@ function buildMatrixHtml(
                 const thumbs = photos
                     .map((foto) => {
                         const src = options.useFullQuality
-                            ? foto.foto_url
-                            : foto.foto_thumb_url || foto.foto_url
+                            ? normalizeStorageUrl(foto.foto_url)
+                            : normalizeStorageUrl(foto.foto_thumb_url || foto.foto_url)
                         const gps = gpsStatusOf(foto)
                         const gpsClass =
                             gps === 'valid' ? 'gps-valid' : gps === 'invalid' ? 'gps-invalid' : 'gps-none'
@@ -419,7 +432,7 @@ function buildMatrixHtml(
                                 : ''
                         return `
                           <div class="thumb-wrap">
-                            ${printImgHtml(src, foto.foto_url, level)}
+                            ${printImgHtml(src, normalizeStorageUrl(foto.foto_url), level)}
                             <div class="${gpsClass}">${escapeHtml(gpsStatusLabel(gps))}</div>
                             ${coord}
                           </div>
