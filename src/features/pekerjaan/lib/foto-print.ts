@@ -66,6 +66,15 @@ export function escapeHtml(value: unknown): string {
         .replace(/'/g, '&#39;')
 }
 
+/**
+ * `<img>` untuk HTML cetak. Bila thumbnail gagal dimuat (file thumb hilang di server),
+ * gambar mencoba URL penuh sekali, sama seperti grid di tab Foto.
+ */
+export function printImgHtml(src: string, fullSrc: string, alt: string): string {
+    const retry = 'if(!this.dataset.retry){this.dataset.retry=1;this.src=this.dataset.full}'
+    return `<img src="${escapeHtml(src)}" data-full="${escapeHtml(fullSrc)}" onerror="${escapeHtml(retry)}" alt="${escapeHtml(alt)}" loading="eager" crossorigin="anonymous" />`
+}
+
 export function gpsStatusOf(foto: Pick<Foto, 'koordinat' | 'validasi_koordinat'>): FotoPrintGpsStatus {
     if (!hasFotoKoordinat(foto)) return 'none'
     if (isFotoKoordinatInvalid(foto)) return 'invalid'
@@ -294,7 +303,7 @@ function buildGridHtml(
                 const src = options.useFullQuality ? item.url : item.thumbUrl || item.url
                 return `
                   <div class="photo-card">
-                    <img src="${escapeHtml(src)}" alt="Foto ${escapeHtml(item.level)}" loading="eager" crossorigin="anonymous" />
+                    ${printImgHtml(src, item.url, `Foto ${item.level}`)}
                     ${itemInfoHtml(item, options)}
                   </div>
                 `
@@ -410,7 +419,7 @@ function buildMatrixHtml(
                                 : ''
                         return `
                           <div class="thumb-wrap">
-                            <img src="${escapeHtml(src)}" alt="${escapeHtml(level)}" loading="eager" crossorigin="anonymous" />
+                            ${printImgHtml(src, foto.foto_url, level)}
                             <div class="${gpsClass}">${escapeHtml(gpsStatusLabel(gps))}</div>
                             ${coord}
                           </div>
@@ -637,7 +646,9 @@ export async function downloadFotoPdf(
     for (let i = 0; i < items.length; i++) {
         const item = items[i]
         const src = options.useFullQuality ? item.url : item.thumbUrl || item.url
-        dataUrls.push(await loadImageDataUrl(src))
+        // Thumb yang hilang di server: coba URL penuh sebelum menyerah pada foto ini.
+        const dataUrl = (await loadImageDataUrl(src)) ?? (src !== item.url ? await loadImageDataUrl(item.url) : null)
+        dataUrls.push(dataUrl)
         if ((i + 1) % 5 === 0) onProgress?.(`Memuat foto ${i + 1}/${items.length}…`)
     }
 
