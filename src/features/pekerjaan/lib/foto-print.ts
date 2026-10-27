@@ -230,7 +230,14 @@ function sharedStyles(orientation: 'portrait' | 'landscape'): string {
             z-index: 0;
         }
         .page-num::after {
-            content: counter(page);
+            content: counter(page) " / " counter(pages);
+        }
+        .running-head {
+            font-size: 9px;
+            color: #475569;
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 3px;
+            margin-bottom: 6px;
         }
         .gps-valid { color: #15803d; font-weight: 600; }
         .gps-invalid { color: #b91c1c; font-weight: 600; }
@@ -254,6 +261,11 @@ function headerHtml(meta: FotoPrintMeta, extraLine?: string): string {
         </div>
       </div>
     `
+}
+
+/** Baris ringkas di halaman berikutnya, supaya setiap lembar jelas asal paketnya. */
+function runningHeadHtml(meta: FotoPrintMeta): string {
+    return `<div class="running-head">${escapeHtml(meta.paketName)} · ${escapeHtml(meta.komponenLabel)} · ${escapeHtml(meta.lokasi)}</div>`
 }
 
 function footerFixedHtml(meta: FotoPrintMeta): string {
@@ -313,7 +325,7 @@ function buildGridHtml(
 
         pages += `
           <div class="page">
-            ${i === 0 ? headerHtml(meta, `Layout: ${layoutLabel(options.layout)}`) : ''}
+            ${i === 0 ? headerHtml(meta, `Layout: ${layoutLabel(options.layout)}`) : runningHeadHtml(meta)}
             <div class="grid cols-${cols}">${cards}</div>
           </div>
         `
@@ -348,7 +360,7 @@ function buildGridHtml(
     .photo-card img {
       width: 100%;
       height: ${imgH}mm;
-      object-fit: cover;
+      object-fit: contain;
       border-radius: 3px;
       border: 1px solid #e2e8f0;
       display: block;
