@@ -8,6 +8,15 @@ describe('seo json-ld builders', () => {
         expect(schema.name).toBe('Arumanis')
     })
 
+    it('mencantumkan profil sosial media resmi di sameAs', () => {
+        const schema = buildOrganizationJsonLd()
+        expect(schema.sameAs).toEqual([
+            'https://www.instagram.com/arumanis_space/',
+            'https://www.tiktok.com/@arumanis_space',
+            'https://x.com/arumanis_space',
+        ])
+    })
+
     it('builds article schema with author', () => {
         const schema = buildArticleJsonLd({
             title: 'Judul Artikel',

@@ -79,10 +79,10 @@ function captureRestorableState(): RestorableState {
             ['meta[property="og:image"]', readMetaContent('meta[property="og:image"]')],
             ['meta[property="og:url"]', readMetaContent('meta[property="og:url"]')],
             ['meta[property="og:type"]', readMetaContent('meta[property="og:type"]')],
-            ['meta[property="twitter:title"]', readMetaContent('meta[property="twitter:title"]')],
-            ['meta[property="twitter:description"]', readMetaContent('meta[property="twitter:description"]')],
-            ['meta[property="twitter:image"]', readMetaContent('meta[property="twitter:image"]')],
-            ['meta[property="twitter:url"]', readMetaContent('meta[property="twitter:url"]')],
+            ['meta[name="twitter:title"]', readMetaContent('meta[name="twitter:title"]')],
+            ['meta[name="twitter:description"]', readMetaContent('meta[name="twitter:description"]')],
+            ['meta[name="twitter:image"]', readMetaContent('meta[name="twitter:image"]')],
+            ['meta[name="twitter:url"]', readMetaContent('meta[name="twitter:url"]')],
         ]),
         canonical: document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href ?? null,
         jsonLd: document.getElementById(JSON_LD_ID),
@@ -118,23 +118,23 @@ export function applyPageMeta(meta: PageMeta) {
         document.title = meta.title
         setMetaContent('meta[name="title"]', meta.title)
         setMetaContent('meta[property="og:title"]', meta.title)
-        setMetaContent('meta[property="twitter:title"]', meta.title)
+        setMetaContent('meta[name="twitter:title"]', meta.title)
     }
 
     if (meta.description) {
         setMetaContent('meta[name="description"]', meta.description)
         setMetaContent('meta[property="og:description"]', meta.description)
-        setMetaContent('meta[property="twitter:description"]', meta.description)
+        setMetaContent('meta[name="twitter:description"]', meta.description)
     }
 
     if (meta.image) {
         setMetaContent('meta[property="og:image"]', meta.image)
-        setMetaContent('meta[property="twitter:image"]', meta.image)
+        setMetaContent('meta[name="twitter:image"]', meta.image)
     }
 
     if (meta.url) {
         setMetaContent('meta[property="og:url"]', meta.url)
-        setMetaContent('meta[property="twitter:url"]', meta.url)
+        setMetaContent('meta[name="twitter:url"]', meta.url)
         setCanonical(meta.url)
     }
 
@@ -207,5 +207,10 @@ export function buildOrganizationJsonLd() {
             '@type': 'AdministrativeArea',
             name: 'Kabupaten Cianjur',
         },
+        sameAs: [
+            'https://www.instagram.com/arumanis_space/',
+            'https://www.tiktok.com/@arumanis_space',
+            'https://x.com/arumanis_space',
+        ],
     }
 }
