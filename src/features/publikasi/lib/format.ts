@@ -34,6 +34,12 @@ export function estimateReadingTime(content: string): number {
 /** Gambar default publikasi tanpa cover: ilustrasi program dengan logo dan teks Arumanis. */
 export const DEFAULT_COVER_IMAGE = '/images/default-publikasi.jpg'
 
-export function getCoverImage(coverImage: string | null | undefined): string {
-    return coverImage || DEFAULT_COVER_IMAGE
+/**
+ * Gambar sampul publikasi. Bila post tidak punya cover, gambar dibuat server dari judulnya
+ * (`/og/publikasi/:slug.jpg`). Tanpa slug, pakai gambar default statis.
+ */
+export function getCoverImage(coverImage: string | null | undefined, slug?: string | null): string {
+    if (coverImage) return coverImage
+    if (slug) return `/og/publikasi/${encodeURIComponent(slug)}.jpg`
+    return DEFAULT_COVER_IMAGE
 }
