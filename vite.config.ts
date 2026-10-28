@@ -291,6 +291,11 @@ export default defineConfig({
         target: `http://127.0.0.1:${BFF_PORT}`,
         changeOrigin: true,
       },
+      // Gambar sampul publikasi tanpa cover dibuat di BFF (server/index.ts).
+      '/og': {
+        target: `http://127.0.0.1:${BFF_PORT}`,
+        changeOrigin: true,
+      },
       '/office': {
         target: `http://127.0.0.1:${BFF_PORT}`,
         changeOrigin: true,

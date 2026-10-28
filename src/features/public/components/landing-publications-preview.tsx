@@ -64,7 +64,7 @@ export function LandingPublicationsPreview() {
                             className="relative block aspect-[16/10] shrink-0 overflow-hidden bg-slate-900/60"
                         >
                             <img
-                                src={getCoverImage(post.cover_image)}
+                                src={getCoverImage(post.cover_image, post.slug)}
                                 alt=""
                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                                 loading="lazy"

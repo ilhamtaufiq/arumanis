@@ -222,7 +222,7 @@ function FeaturedPost({ post }: { post: PublikasiPost }) {
                     className="group relative block min-h-[280px] overflow-hidden border-b border-border bg-muted lg:min-h-[420px] lg:border-b-0 lg:border-r"
                 >
                     <img
-                        src={getCoverImage(post.cover_image)}
+                        src={getCoverImage(post.cover_image, post.slug)}
                         alt={post.title}
                         className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />

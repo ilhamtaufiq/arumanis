@@ -113,7 +113,7 @@ export function LatestPublikasiSection() {
               >
                 <div className="relative aspect-[16/10] overflow-hidden bg-muted">
                   <img
-                    src={getCoverImage(post.cover_image)}
+                    src={getCoverImage(post.cover_image, post.slug)}
                     alt={post.title}
                     loading="lazy"
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"

@@ -35,7 +35,7 @@ export function useAppSettingsEffect({ enabled = true }: { enabled?: boolean } =
             const ogTitle = document.querySelector('meta[property="og:title"]');
             if (ogTitle) ogTitle.setAttribute('content', titleWithYear);
 
-            const twitterTitle = document.querySelector('meta[property="twitter:title"]');
+            const twitterTitle = document.querySelector('meta[name="twitter:title"]');
             if (twitterTitle) twitterTitle.setAttribute('content', titleWithYear);
         }
 
@@ -47,7 +47,7 @@ export function useAppSettingsEffect({ enabled = true }: { enabled?: boolean } =
             const ogDesc = document.querySelector('meta[property="og:description"]');
             if (ogDesc) ogDesc.setAttribute('content', appDescription);
 
-            const twitterDesc = document.querySelector('meta[property="twitter:description"]');
+            const twitterDesc = document.querySelector('meta[name="twitter:description"]');
             if (twitterDesc) twitterDesc.setAttribute('content', appDescription);
         }
 
