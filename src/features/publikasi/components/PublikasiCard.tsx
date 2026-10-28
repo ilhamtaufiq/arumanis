@@ -45,7 +45,7 @@ export function PublikasiCard({
                 )}
             >
                 <img
-                    src={getCoverImage(cover_image)}
+                    src={getCoverImage(cover_image, slug)}
                     alt={title}
                     className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     loading="lazy"

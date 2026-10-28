@@ -46,7 +46,7 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
 
         const pageUrl = `${window.location.origin}/publikasi/${slug}`
         const description = getExcerpt(post.content, 160)
-        const image = resolvePublicAssetUrl(getCoverImage(post.cover_image))
+        const image = resolvePublicAssetUrl(getCoverImage(post.cover_image, slug))
 
         return {
             title: post.title,
@@ -186,15 +186,13 @@ export function PublikasiDetail({ slug }: PublikasiDetailProps) {
                             </div>
                         </header>
 
-                        {post.cover_image ? (
-                            <div className="overflow-hidden rounded-2xl border border-border bg-muted">
-                                <img
-                                    src={getCoverImage(post.cover_image)}
-                                    alt={post.title}
-                                    className="aspect-[16/9] w-full object-cover"
-                                />
-                            </div>
-                        ) : null}
+                        <div className="overflow-hidden rounded-2xl border border-border bg-muted">
+                            <img
+                                src={getCoverImage(post.cover_image, slug)}
+                                alt={post.title}
+                                className="aspect-[16/9] w-full object-cover"
+                            />
+                        </div>
 
                         <PublikasiContent html={post.content} />
 
