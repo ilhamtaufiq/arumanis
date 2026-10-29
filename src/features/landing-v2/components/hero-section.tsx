@@ -73,7 +73,7 @@ export function HeroSection() {
         ))}
       </div>
       
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12 py-32 lg:py-40">
+      <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12 pt-28 pb-32 lg:pt-32 lg:pb-48">
         {/* Eyebrow */}
         <div className="mb-8">
           <span className="inline-flex items-center gap-3 text-sm font-mono text-muted-foreground">
@@ -84,7 +84,8 @@ export function HeroSection() {
 
         {/* Main headline */}
         <div className="mb-12">
-          <h1 className="text-[clamp(2.5rem,10vw,10rem)] font-display leading-[0.9] tracking-tight">
+          {/* Ukuran juga dibatasi tinggi layar supaya tombol CTA tetap terlihat di laptop 768px */}
+          <h1 className="text-[clamp(2.5rem,min(10vw,14vh),10rem)] font-display leading-[0.9] tracking-tight">
             <span className="block">{copy.titleLine}</span>
             <span className="block">
               <Sparkles aria-hidden="true" className="inline-block text-primary w-[0.75em] h-[0.75em] mr-3 align-baseline" />

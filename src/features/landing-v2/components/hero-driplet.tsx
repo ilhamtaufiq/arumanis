@@ -26,6 +26,9 @@ export function HeroDriplet({ reducedMotion, className = "w-[260px] h-auto sm:w-
       aria-hidden="true"
       width={192}
       height={208}
+      // Lazy: browser tidak mengunduh gambar ini selama wadahnya tersembunyi (layar kecil).
+      loading="lazy"
+      decoding="async"
       className={`h-auto select-none ${className}`}
       draggable={false}
     />

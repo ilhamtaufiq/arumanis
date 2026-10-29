@@ -194,6 +194,13 @@ export function resolvePublicAssetUrl(path: string) {
     return path
 }
 
+/** Akun media sosial resmi Arumanis. Dipakai untuk `sameAs` dan tautan di footer landing. */
+export const SOCIAL_PROFILES = [
+    { label: 'Instagram', url: 'https://www.instagram.com/arumanis_space/' },
+    { label: 'TikTok', url: 'https://www.tiktok.com/@arumanis_space' },
+    { label: 'X', url: 'https://x.com/arumanis_space' },
+] as const
+
 export function buildOrganizationJsonLd() {
     return {
         '@context': 'https://schema.org',
@@ -207,10 +214,6 @@ export function buildOrganizationJsonLd() {
             '@type': 'AdministrativeArea',
             name: 'Kabupaten Cianjur',
         },
-        sameAs: [
-            'https://www.instagram.com/arumanis_space/',
-            'https://www.tiktok.com/@arumanis_space',
-            'https://x.com/arumanis_space',
-        ],
+        sameAs: SOCIAL_PROFILES.map((p) => p.url),
     }
 }

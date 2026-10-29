@@ -2,6 +2,7 @@ import { useLandingCopy } from "../i18n";
 
 import { Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
+import { SOCIAL_PROFILES } from "@/lib/seo";
 import { AnimatedWave } from "./animated-wave";
 import { AnchorLink } from "./anchor-link";
 
@@ -31,11 +32,6 @@ const footerLinks: FooterLink[][] = [
   ],
 ];
 
-const socialHrefs = [
-  "https://cianjurkab.go.id",
-  "https://www.instagram.com/bidang_ams/",
-];
-
 export function FooterSection() {
   const { copy } = useLandingCopy();
   return (
@@ -53,7 +49,14 @@ export function FooterSection() {
             <div className="col-span-2">
               <AnchorLink href="#" className="inline-flex items-center gap-2 mb-6">
                 <span className="text-2xl font-display">Arumanis</span>
-                <img src="/arumanis.svg" alt={copy.footer.logoAlt} className="h-7 w-auto" />
+                <img
+                  src="/images/logo-arumanis-96.webp"
+                  alt={copy.footer.logoAlt}
+                  width={96}
+                  height={96}
+                  loading="lazy"
+                  className="h-7 w-auto"
+                />
               </AnchorLink>
 
               <p className="text-muted-foreground leading-relaxed mb-8 max-w-xs">
@@ -62,13 +65,15 @@ export function FooterSection() {
 
               {/* Social Links */}
               <div className="flex gap-6">
-                {copy.footer.social.map((name, i) => (
+                {SOCIAL_PROFILES.map((profile) => (
                   <a
-                    key={name}
-                    href={socialHrefs[i]}
+                    key={profile.url}
+                    href={profile.url}
+                    target="_blank"
+                    rel="noreferrer"
                     className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 group"
                   >
-                    {name}
+                    {profile.label}
                     <ArrowUpRight className="w-3 h-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                   </a>
                 ))}

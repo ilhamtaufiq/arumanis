@@ -69,9 +69,11 @@ export function Navigation() {
           <AnchorLink href="#" aria-label={copy.home} className="flex items-center gap-2 group">
             <span className={`font-display tracking-tight transition-all duration-500 ${isScrolled ? "text-xl" : "text-2xl"}`}>Arumanis</span>
             <img
-              src="/arumanis.svg"
+              src="/images/logo-arumanis-96.webp"
               alt=""
               aria-hidden="true"
+              width={96}
+              height={96}
               className={`w-auto transition-all duration-500 ${isScrolled ? "h-6" : "h-8"}`}
             />
           </AnchorLink>

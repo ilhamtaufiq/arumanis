@@ -85,7 +85,6 @@ export type LandingV2Copy = {
   footer: {
     tagline: string
     columns: Array<{ title: string; links: string[] }>
-    social: [string, string]
     copyright: string
     status: string
     logoAlt: string
@@ -310,7 +309,6 @@ const id: LandingV2Copy = {
       },
       { title: 'Kebijakan', links: ['Privasi data', 'Ketentuan layanan', 'Transparansi'] },
     ],
-    social: ['Portal Cianjur', 'Instagram'],
     copyright: '2026 Arumanis Cianjur. Hak cipta dilindungi.',
     status: 'Portal layanan air minum & sanitasi',
     logoAlt: 'Logo Arumanis',
@@ -535,7 +533,6 @@ const en: LandingV2Copy = {
       },
       { title: 'Policy', links: ['Data privacy', 'Terms of service', 'Transparency'] },
     ],
-    social: ['Cianjur Portal', 'Instagram'],
     copyright: '2026 Arumanis Cianjur. All rights reserved.',
     status: 'Drinking water & sanitation service portal',
     logoAlt: 'Arumanis logo',
