@@ -25,7 +25,7 @@ Portal operasional untuk perencanaan, pelaksanaan, dokumentasi lapangan, dan pen
 
 | Branch | Runtime | Backend | Maintainer |
 |:------:|:-------:|:-------:|:----------:|
-| `dev` | Bun | [apiamis](https://github.com/ilhamtaufiq/apiamis) (Rust) | [@ilhamtaufiq](https://github.com/ilhamtaufiq) |
+| `main` | Bun | [apiamis](https://github.com/ilhamtaufiq/apiamis) (Rust) | [@ilhamtaufiq](https://github.com/ilhamtaufiq) |
 
 </div>
 
