@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeft, FileText, Loader2 } from 'lucide-react';
@@ -15,6 +15,8 @@ import { downloadBlob } from '@/lib/download-file';
 import { useAuthStore } from '@/stores/auth-stores';
 import { getPekerjaanById } from '../api/pekerjaan';
 import { exportNphd } from '../api/nphd';
+import { getOutput } from '@/features/output/api/output';
+import type { Output } from '@/features/output/types';
 import { useCreateDocumentRegister, useDocumentTypes } from '../hooks/useDocumentRegister';
 import { getPrimaryKontrak, getRegisterApiErrorMessage } from '../lib/register-dokumen';
 import type { Pekerjaan } from '../types';
@@ -31,6 +33,14 @@ type FormState = {
     objek: string;
     nilai: number;
 };
+
+/** Objek hibah dari output pekerjaan, misalnya "1 paket MCK 2 unit/pintu; 2 unit Tangki Septik". */
+function objekDariOutput(outputs: Output[]): string {
+    return outputs
+        .map((o) => `${o.volume} ${o.satuan} ${o.komponen}`.replace(/\s+/g, ' ').trim())
+        .filter(Boolean)
+        .join('; ');
+}
 
 const formAwal = (): FormState => ({
     tanggal: new Date().toISOString().split('T')[0],
@@ -116,14 +126,30 @@ export default function NphdPage() {
 function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
     const [form, setForm] = useState<FormState>(formAwal);
     const [busy, setBusy] = useState(false);
+    const [objekDiedit, setObjekDiedit] = useState(false);
     const { data: docTypes = [] } = useDocumentTypes(true);
     const createRegister = useCreateDocumentRegister();
+    const { data: outputs } = useQuery({
+        queryKey: ['nphd', 'output', pekerjaan.id],
+        queryFn: async () => (await getOutput({ pekerjaan_id: pekerjaan.id, per_page: 100 })).data,
+    });
+    const teksOutput = outputs ? objekDariOutput(outputs) : '';
+
+    // Isi objek dari output selama admin belum mengedit sendiri.
+    useEffect(() => {
+        if (!objekDiedit && teksOutput) setForm((f) => ({ ...f, objek: teksOutput }));
+    }, [objekDiedit, teksOutput]);
 
     const tipe = docTypes.find((t) => t.code.trim().toUpperCase() === TIPE_KODE);
     const kontrak = getPrimaryKontrak(pekerjaan);
 
     const set = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
         setForm((f) => ({ ...f, [key]: e.target.value }));
+
+    const muatObjekDariOutput = () => {
+        setObjekDiedit(false);
+        if (teksOutput) setForm((f) => ({ ...f, objek: teksOutput }));
+    };
 
     const handleSubmit = async () => {
         if (!kontrak) {
@@ -210,8 +236,28 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
                 </div>
 
                 <div className="space-y-2">
-                    <Label htmlFor="nphd-objek">Objek hibah</Label>
-                    <Textarea id="nphd-objek" className="min-h-[72px]" value={form.objek} onChange={set('objek')} />
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <Label htmlFor="nphd-objek">Objek hibah</Label>
+                        {teksOutput ? (
+                            <Button type="button" variant="ghost" size="sm" onClick={muatObjekDariOutput}>
+                                Muat dari output pekerjaan
+                            </Button>
+                        ) : null}
+                    </div>
+                    <Textarea
+                        id="nphd-objek"
+                        className="min-h-[72px]"
+                        value={form.objek}
+                        onChange={(e) => {
+                            setObjekDiedit(true);
+                            setForm((f) => ({ ...f, objek: e.target.value }));
+                        }}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        {teksOutput
+                            ? 'Diisi dari output pekerjaan. Boleh diubah sebelum membuat NPHD.'
+                            : 'Pekerjaan ini belum punya output. Isi objek hibah secara manual.'}
+                    </p>
                 </div>
             </CardContent>
 

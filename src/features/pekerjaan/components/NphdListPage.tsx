@@ -22,8 +22,8 @@ async function fetchPaketBerkontrak(): Promise<Pekerjaan[]> {
     do {
         const res = await getPekerjaan({ page, per_page: PER_PAGE, status: 'active', has_kontrak: true });
         // Filter di server; saring ulang di sini agar tetap benar bila server belum memakai parameter ini.
-        hasil.push(...res.data.data.filter((p) => p.has_kontrak));
-        lastPage = res.data.meta.last_page ?? page;
+        hasil.push(...res.data.filter((p) => p.has_kontrak));
+        lastPage = res.meta.last_page ?? page;
         page += 1;
     } while (page <= lastPage);
     return hasil;
@@ -44,7 +44,7 @@ export default function NphdListPage() {
         const kata = cari.trim().toLowerCase();
         if (!kata) return data;
         return data.filter((p) =>
-            [p.nama_paket, p.nama_desa, p.nama_kecamatan].some((v) => v?.toLowerCase().includes(kata)),
+            [p.nama_paket, p.desa?.nama_desa, p.kecamatan?.nama_kecamatan].some((v) => v?.toLowerCase().includes(kata)),
         );
     }, [data, cari]);
 
@@ -99,7 +99,7 @@ export default function NphdListPage() {
                                     <div className="min-w-0 space-y-1">
                                         <p className="font-medium break-words">{p.nama_paket}</p>
                                         <p className="text-sm text-muted-foreground">
-                                            {[p.nama_desa, p.nama_kecamatan].filter(Boolean).join(', ') || '-'}
+                                            {[p.desa?.nama_desa, p.kecamatan?.nama_kecamatan].filter(Boolean).join(', ') || '-'}
                                         </p>
                                         <div className="flex flex-wrap gap-2">
                                             <Badge variant="secondary">
