@@ -996,8 +996,8 @@ export default function RegisterDokumen() {
                         setForm({ type_id: '', tanggal: new Date().toISOString().split('T')[0], nomor: '', description: '', sequence_number: '' });
                     }
                 }}>
-                    <DialogContent className="sm:max-w-[500px]">
-                        <DialogHeader>
+                    <DialogContent className="flex max-h-[90vh] flex-col gap-0 overflow-hidden sm:max-w-[600px]">
+                        <DialogHeader className="shrink-0">
                             <DialogTitle className="flex items-center gap-2 text-xl">
                                 {editingRegister ? <Settings2 className="h-6 w-6 text-primary" /> : <PlusCircle className="h-6 w-6 text-primary" />}
                                 {editingRegister ? 'Edit Nomor Dokumen' : 'Registrasi Nomor Dokumen'}
@@ -1007,7 +1007,7 @@ export default function RegisterDokumen() {
                             </DialogDescription>
                         </DialogHeader>
 
-                        <div className="space-y-6 py-4">
+                        <div className="min-h-0 flex-1 space-y-6 overflow-y-auto py-4 pr-1">
                             {!selectedPekerjaanForReg ? (
                                 <div className="space-y-2">
                                     <Label className="text-sm font-semibold">Pilih Pekerjaan / Kontrak</Label>
@@ -1092,7 +1092,7 @@ export default function RegisterDokumen() {
                                                                 <span className="text-muted-foreground">—</span>
                                                                 <span>{type.name}</span>
                                                             </div>
-                                                            <span className="text-[10px] text-muted-foreground font-mono mt-0.5 opacity-70">
+                                                            <span className="text-[10px] text-muted-foreground font-mono mt-0.5 break-all opacity-70">
                                                                 Template: {type.format_template || '{sequence}/{code}-AMIS/{month}/{year}'}
                                                             </span>
                                                         </div>
@@ -1177,7 +1177,7 @@ export default function RegisterDokumen() {
                                         );
                                     })()}
 
-                                    <div className="grid grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                         <div className="space-y-2">
                                             <Label className="text-sm font-semibold">Tanggal Dokumen</Label>
                                             <DatePickerField
@@ -1216,7 +1216,7 @@ export default function RegisterDokumen() {
                             )}
                         </div>
 
-                        <DialogFooter className="gap-2 sm:gap-0">
+                        <DialogFooter className="shrink-0 gap-2 border-t pt-3 sm:gap-0">
                             <Button variant="ghost" onClick={() => setShowCreateModal(false)} className="font-medium">Batal</Button>
                             <Button
                                 onClick={handleCreateRegister}
