@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from '@/components/ui/textarea';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import PageContainer from '@/components/layout/page-container';
 import { downloadBlob } from '@/lib/download-file';
 import { useAuthStore } from '@/stores/auth-stores';
@@ -28,7 +29,7 @@ type FormState = {
     pengelola: string;
     ketua: string;
     objek: string;
-    nilai: string;
+    nilai: number;
 };
 
 const formAwal = (): FormState => ({
@@ -36,7 +37,7 @@ const formAwal = (): FormState => ({
     pengelola: PENGELOLA_AWAL,
     ketua: '',
     objek: OBJEK_AWAL,
-    nilai: '',
+    nilai: 0,
 });
 
 /**
@@ -133,7 +134,7 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
             toast.error('Tipe dokumen NPHD belum ada. Tambahkan dulu di Pengaturan Nomor Surat.');
             return;
         }
-        const nilai = Number(form.nilai);
+        const nilai = form.nilai;
         if (!form.objek.trim() || !(nilai > 0)) {
             toast.error('Objek hibah dan nilai aset wajib diisi.');
             return;
@@ -187,13 +188,12 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="nphd-nilai">Nilai aset bangunan (Rp)</Label>
-                        <Input
+                        <CurrencyInput
                             id="nphd-nilai"
-                            type="number"
-                            min={0}
-                            placeholder="49501500"
+                            name="nilai"
+                            placeholder="49.501.500"
                             value={form.nilai}
-                            onChange={set('nilai')}
+                            onChange={(_, nilai) => setForm((f) => ({ ...f, nilai }))}
                         />
                     </div>
                 </div>

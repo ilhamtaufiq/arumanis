@@ -14,18 +14,19 @@ import type { Pekerjaan } from '../types';
 
 const PER_PAGE = 100;
 
-/** Ambil semua pekerjaan aktif lalu sisakan yang sudah punya kontrak. Backend belum punya filter ini. */
+/** Ambil semua paket aktif yang sudah punya kontrak, per halaman sampai habis. */
 async function fetchPaketBerkontrak(): Promise<Pekerjaan[]> {
     const hasil: Pekerjaan[] = [];
     let page = 1;
     let lastPage = 1;
     do {
-        const res = await getPekerjaan({ page, per_page: PER_PAGE, status: 'active' });
-        hasil.push(...res.data.data);
+        const res = await getPekerjaan({ page, per_page: PER_PAGE, status: 'active', has_kontrak: true });
+        // Filter di server; saring ulang di sini agar tetap benar bila server belum memakai parameter ini.
+        hasil.push(...res.data.data.filter((p) => p.has_kontrak));
         lastPage = res.data.meta.last_page ?? page;
         page += 1;
     } while (page <= lastPage);
-    return hasil.filter((p) => p.has_kontrak);
+    return hasil;
 }
 
 export default function NphdListPage() {

@@ -19,6 +19,8 @@ export const getPekerjaan = async (params?: {
     status?: 'active' | 'canceled' | 'all';
     /** 0 = pekerjaan fisik saja, 1 = konsultan saja */
     is_konsultan?: number;
+    /** true = hanya paket yang sudah punya kontrak */
+    has_kontrak?: boolean;
     /** Filter ke sub kegiatan SIPD (nama_sub_kegiatan) — untuk dropdown Status Arumanis */
     nama_sub_kegiatan?: string;
 }) => {
@@ -48,6 +50,7 @@ export const getPekerjaan = async (params?: {
             summary: params?.summary ? 1 : undefined,
             status: params?.status && params.status !== 'all' ? params.status : undefined,
             is_konsultan: params?.is_konsultan,
+            has_kontrak: params?.has_kontrak ? 1 : undefined,
         }
     });
 };
