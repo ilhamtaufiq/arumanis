@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
 import { Link } from '@tanstack/react-router'
 import { formatDistanceToNow } from 'date-fns'
 import { isTodayWib, toWib } from '@/lib/wib'
@@ -31,10 +30,7 @@ import { getTiketList } from '@/features/tiket/api/tiket'
 import { useAppSettingsValues } from '@/hooks/use-app-settings'
 import { useAuthStore } from '@/stores/auth-stores'
 import { getDashboardStats } from '../api/dashboard'
-import type { RingkasanDashboardAi } from '../api/ai'
 import { formatCurrency, formatNumber } from '../lib/format'
-import { DashboardAiAnalysis } from './DashboardAiAnalysis'
-import { DashboardTanyaData } from './DashboardTanyaData'
 import { DashboardSpmCharts } from './DashboardSpmCharts'
 import { DashboardStatCard } from './DashboardStatCard'
 
@@ -195,26 +191,6 @@ export function Dashboard() {
     })
 
     const stats = statsQuery.data
-    // Ringkasan angka yang dikirim ke analisa AI. Hanya angka yang sudah tampil di dashboard.
-    const ringkasanAi = useMemo<RingkasanDashboardAi | null>(() => {
-        if (!stats) return null
-        return {
-            tahun: tahunAnggaran,
-            statistik: {
-                totalKegiatan: stats.totalKegiatan,
-                totalPagu: stats.totalPagu,
-                totalPekerjaan: stats.totalPekerjaan,
-                totalPaguPekerjaan: stats.totalPaguPekerjaan,
-                totalKontrak: stats.totalKontrak,
-                totalNilaiKontrak: stats.totalNilaiKontrak,
-            },
-            pekerjaanPerluPerhatian: (progressData ?? []).map((p) => ({
-                nama: p.nama_paket,
-                fisik: p.fisik,
-                keuangan: p.keuangan,
-            })),
-        }
-    }, [stats, progressData, tahunAnggaran])
     const todayEvents =
         events?.filter((e) => isTodayWib(toWib(e.start))).slice(0, 5) ?? []
     const recentActivity = activityData?.data?.slice(0, 6) ?? []
@@ -297,13 +273,6 @@ export function Dashboard() {
                                 />
                             </div>
                         </section>
-                    ) : null}
-
-                    {canViewStats && stats ? (
-                        <div className="grid gap-6 md:grid-cols-2">
-                            <DashboardAiAnalysis ringkasan={ringkasanAi} />
-                            <DashboardTanyaData tahun={tahunAnggaran} />
-                        </div>
                     ) : null}
 
                     <DashboardSpmCharts />
