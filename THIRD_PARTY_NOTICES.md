@@ -10,13 +10,7 @@ Teks lisensi lengkap ada di `node_modules/<paket>/` setelah `bun install`.
 
 Lisensi berikut tidak berupa lisensi permisif standar (MIT, Apache-2.0, BSD, ISC). Periksa ketentuannya sebelum rilis atau penggunaan komersial.
 
-- **@gsap/react 2.1.2**: `SEE LICENSE AT https://gsap.com/standard-license`
-- **@handsontable/react 16.2.0**: `SEE LICENSE IN LICENSE.txt`
-- **@imgly/background-removal 1.7.0**: `SEE LICENSE IN LICENSE.md`
 - **dompurify 3.4.2**: `(MPL-2.0 OR Apache-2.0)`
-- **gsap 3.15.0**: `Standard 'no charge' license: https://gsap.com/standard-license.`
-- **handsontable 16.2.0**: `SEE LICENSE IN LICENSE.txt`
-- **hyperformula 3.2.0**: `GPL-3.0-only`
 - **jszip 3.10.1**: `(MIT OR GPL-3.0-or-later)`
 - **leaflet.heat 0.2.0**: `UNKNOWN`
 - **lightningcss 1.30.2**: `MPL-2.0`
@@ -34,10 +28,7 @@ Lisensi berikut tidak berupa lisensi permisif standar (MIT, Apache-2.0, BSD, ISC
 | @floating-ui/react | 0.27.19 | MIT | https://floating-ui.com/docs/react |
 | @giphy/js-fetch-api | 5.8.0 | MIT | https://github.com/Giphy/giphy-js/tree/master/packages/fetch-api |
 | @giphy/react-components | 10.1.2 | MIT | https://github.com/Giphy/giphy-js/tree/master/packages/react-components |
-| @gsap/react | 2.1.2 | SEE LICENSE AT https://gsap.com/standard-license | https://github.com/greensock/react#readme |
-| @handsontable/react | 16.2.0 | SEE LICENSE IN LICENSE.txt | https://handsontable.com |
 | @hookform/resolvers | 5.2.2 | MIT | https://react-hook-form.com |
-| @imgly/background-removal | 1.7.0 | SEE LICENSE IN LICENSE.md | https://img.ly/showcases/cesdk/web/background-removal |
 | @onlyoffice/document-editor-react | 2.2.0 | Apache-2.0 | https://www.onlyoffice.com |
 | @radix-ui/react-alert-dialog | 1.1.15 | MIT | https://radix-ui.com/primitives |
 | @radix-ui/react-avatar | 1.1.11 | MIT | https://radix-ui.com/primitives |
@@ -96,15 +87,11 @@ Lisensi berikut tidak berupa lisensi permisif standar (MIT, Apache-2.0, BSD, ISC
 | date-fns | 4.1.0 | MIT | https://github.com/date-fns/date-fns |
 | docx-preview | 0.3.7 | Apache-2.0 | https://github.com/VolodymyrBaydalka/docxjs |
 | dompurify | 3.4.2 | (MPL-2.0 OR Apache-2.0) | https://github.com/cure53/DOMPurify |
-| epanet-js | 0.7.0 | MIT | https://github.com/modelcreate/epanet-js |
 | exceljs | 4.4.0 | MIT | https://github.com/exceljs/exceljs |
 | exifr | 7.1.3 | MIT | https://mutiny.cz/exifr/ |
 | express | 5.2.1 | MIT | https://expressjs.com/ |
-| gsap | 3.15.0 | Standard 'no charge' license: https://gsap.com/standard-license. | https://gsap.com |
-| handsontable | 16.2.0 | SEE LICENSE IN LICENSE.txt | https://handsontable.com/ |
 | hono | 4.12.27 | MIT | https://hono.dev |
 | html2canvas | 1.4.1 | MIT | https://html2canvas.hertzen.com |
-| hyperformula | 3.2.0 | GPL-3.0-only | https://hyperformula.handsontable.com/ |
 | jspdf | 2.5.2 | MIT | https://github.com/mrrio/jspdf |
 | jspdf-autotable | 5.0.7 | MIT | https://simonbengtsson.github.io/jsPDF-AutoTable |
 | jszip | 3.10.1 | (MIT OR GPL-3.0-or-later) | https://github.com/Stuk/jszip |

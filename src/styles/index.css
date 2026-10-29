@@ -183,7 +183,6 @@
 
 @import 'tw-animate-css';
 @import './theme.css';
-@import './handsontable.css';
 
 @custom-variant dark (&:is(.dark *));
 

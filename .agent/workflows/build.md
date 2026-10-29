@@ -30,7 +30,6 @@ The production build will be in `dist/` directory with:
   - `vendor-react` - React core
   - `vendor-tanstack` - TanStack Router & Query
   - `vendor-radix` - Radix UI components
-  - `vendor-handsontable` - Spreadsheet library
   - `vendor-pdf` - PDF generation
   - `vendor-xlsx` - Excel export
   - `vendor-charts` - Recharts

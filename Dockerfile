@@ -60,7 +60,7 @@ COPY docs/user-guide ./docs/user-guide
 COPY docs-site/content ./docs-site/content
 
 # Memory + docs:
-# - max-old-space-size: SPA vite (three, imgly) needs >2GB on Coolify
+# - max-old-space-size: SPA vite (three) needs >2GB on Coolify
 # - full prerender: required so route `loader`s stay valid under ssr:false
 # - split SPA vs docs RUN so peak RSS is not additive
 # Build context must include docs-site/content + docs/user-guide (see .dockerignore).
