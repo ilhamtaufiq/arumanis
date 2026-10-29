@@ -63,7 +63,6 @@ export function findRegistersByType(
 
 export type RegisterPendingConfirmAction =
     | { type: 'delete-register'; id: number }
-    | { type: 'delete-type'; id: number }
     | null
 
 /** Kontrak IDs owned by a pekerjaan (sorted). */
