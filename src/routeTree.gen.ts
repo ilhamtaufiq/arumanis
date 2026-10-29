@@ -29,6 +29,7 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PublikasiIndexRouteImport } from './routes/publikasi/index'
 import { Route as PublikasiSlugRouteImport } from './routes/publikasi/$slug'
+import { Route as AuthenticatedTemplateDokumenRouteImport } from './routes/_authenticated/template-dokumen'
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
 import { Route as AuthenticatedPengaturanSkRouteImport } from './routes/_authenticated/pengaturan-sk'
 import { Route as AuthenticatedManajemenPublikasiRouteImport } from './routes/_authenticated/manajemen-publikasi'
@@ -244,6 +245,12 @@ const PublikasiSlugRoute = PublikasiSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => PublikasiRoute,
 } as any)
+const AuthenticatedTemplateDokumenRoute =
+  AuthenticatedTemplateDokumenRouteImport.update({
+    id: '/template-dokumen',
+    path: '/template-dokumen',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPengawasRoute = AuthenticatedPengawasRouteImport.update({
   id: '/pengawas',
   path: '/pengawas',
@@ -941,6 +948,7 @@ export interface FileRoutesByFullPath {
   '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
+  '/template-dokumen': typeof AuthenticatedTemplateDokumenRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/publikasi/': typeof PublikasiIndexRoute
   '/berkas/media': typeof AuthenticatedBerkasMediaRoute
@@ -1075,6 +1083,7 @@ export interface FileRoutesByTo {
   '/jurnal-kegiatan': typeof AuthenticatedJurnalKegiatanRoute
   '/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
+  '/template-dokumen': typeof AuthenticatedTemplateDokumenRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/publikasi': typeof PublikasiIndexRoute
   '/berkas/media': typeof AuthenticatedBerkasMediaRoute
@@ -1213,6 +1222,7 @@ export interface FileRoutesById {
   '/_authenticated/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
   '/_authenticated/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
+  '/_authenticated/template-dokumen': typeof AuthenticatedTemplateDokumenRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/publikasi/': typeof PublikasiIndexRoute
   '/_authenticated/berkas/media': typeof AuthenticatedBerkasMediaRoute
@@ -1351,6 +1361,7 @@ export interface FileRouteTypes {
     | '/manajemen-publikasi'
     | '/pengaturan-sk'
     | '/pengawas'
+    | '/template-dokumen'
     | '/publikasi/$slug'
     | '/publikasi/'
     | '/berkas/media'
@@ -1485,6 +1496,7 @@ export interface FileRouteTypes {
     | '/jurnal-kegiatan'
     | '/pengaturan-sk'
     | '/pengawas'
+    | '/template-dokumen'
     | '/publikasi/$slug'
     | '/publikasi'
     | '/berkas/media'
@@ -1622,6 +1634,7 @@ export interface FileRouteTypes {
     | '/_authenticated/manajemen-publikasi'
     | '/_authenticated/pengaturan-sk'
     | '/_authenticated/pengawas'
+    | '/_authenticated/template-dokumen'
     | '/publikasi/$slug'
     | '/publikasi/'
     | '/_authenticated/berkas/media'
@@ -1892,6 +1905,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/publikasi/$slug'
       preLoaderRoute: typeof PublikasiSlugRouteImport
       parentRoute: typeof PublikasiRoute
+    }
+    '/_authenticated/template-dokumen': {
+      id: '/_authenticated/template-dokumen'
+      path: '/template-dokumen'
+      fullPath: '/template-dokumen'
+      preLoaderRoute: typeof AuthenticatedTemplateDokumenRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/pengawas': {
       id: '/_authenticated/pengawas'
@@ -2780,6 +2800,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedManajemenPublikasiRoute: typeof AuthenticatedManajemenPublikasiRouteWithChildren
   AuthenticatedPengaturanSkRoute: typeof AuthenticatedPengaturanSkRoute
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
+  AuthenticatedTemplateDokumenRoute: typeof AuthenticatedTemplateDokumenRoute
   AuthenticatedBerkasMediaRoute: typeof AuthenticatedBerkasMediaRoute
   AuthenticatedBerkasNewRoute: typeof AuthenticatedBerkasNewRoute
   AuthenticatedDashboardProgresRoute: typeof AuthenticatedDashboardProgresRoute
@@ -2890,6 +2911,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedManajemenPublikasiRouteWithChildren,
   AuthenticatedPengaturanSkRoute: AuthenticatedPengaturanSkRoute,
   AuthenticatedPengawasRoute: AuthenticatedPengawasRoute,
+  AuthenticatedTemplateDokumenRoute: AuthenticatedTemplateDokumenRoute,
   AuthenticatedBerkasMediaRoute: AuthenticatedBerkasMediaRoute,
   AuthenticatedBerkasNewRoute: AuthenticatedBerkasNewRoute,
   AuthenticatedDashboardProgresRoute: AuthenticatedDashboardProgresRoute,

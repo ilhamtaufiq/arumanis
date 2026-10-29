@@ -402,6 +402,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'settings',
                 },
                 {
+                    title: 'Template Dokumen',
+                    url: '/template-dokumen',
+                    icon: FileSpreadsheet,
+                    menuKey: 'settings',
+                },
+                {
                     title: 'Pengaturan SK',
                     url: '/pengaturan-sk',
                     icon: FileText,
