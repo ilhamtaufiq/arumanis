@@ -12,33 +12,17 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { downloadBlob } from '@/lib/download-file';
-import { exportNphd, type NphdJenis, type NphdKegiatanSpam } from '../api/nphd';
+import { exportNphd } from '../api/nphd';
 import { useCreateDocumentRegister, useDocumentTypes } from '../hooks/useDocumentRegister';
 import { getPrimaryKontrak, getRegisterApiErrorMessage } from '../lib/register-dokumen';
 import type { Pekerjaan } from '../types';
 
 const TIPE_KODE = 'NPHD';
 
-/** Nilai awal per jenis naskah. Objek dan sebutan penerima mengikuti jenis yang dipilih. */
-const DEFAULT_JENIS: Record<NphdJenis, { objek: string; penerima: string }> = {
-    mck: {
-        objek: '1 Paket Pembangunan (MCK 2 unit/pintu dan Tangki Septik 2 unit)',
-        penerima: 'Penerima Manfaat MCK Individu',
-    },
-    spam: {
-        objek: 'Pompa Submersible 3 Hp dia 4 inch 1 unit; Sambungan Rumah 13 unit',
-        penerima: 'Pengelola SPAM',
-    },
-};
-
-const KEGIATAN_SPAM: { value: NphdKegiatanSpam; label: string }[] = [
-    { value: 'operasi', label: 'Operasi dan Pemeliharaan SPAM' },
-    { value: 'perpipaan', label: 'Pembangunan SPAM jaringan perpipaan' },
-    { value: 'bukan_perpipaan', label: 'Pembangunan SPAM bukan jaringan perpipaan' },
-];
+const OBJEK_AWAL = '1 Paket Pembangunan (MCK 2 unit/pintu dan Tangki Septik 2 unit)';
+const PENGELOLA_AWAL = 'Pengelola';
 
 type Props = {
     open: boolean;
@@ -47,24 +31,18 @@ type Props = {
 };
 
 type FormState = {
-    jenis: NphdJenis;
-    kegiatan: NphdKegiatanSpam;
     tanggal: string;
-    penerima: string;
-    pengelola1: string;
-    pengelola2: string;
+    pengelola: string;
+    ketua: string;
     objek: string;
     nilai: string;
 };
 
-const formAwal = (jenis: NphdJenis = 'mck'): FormState => ({
-    jenis,
-    kegiatan: 'operasi',
+const formAwal = (): FormState => ({
     tanggal: new Date().toISOString().split('T')[0],
-    penerima: DEFAULT_JENIS[jenis].penerima,
-    pengelola1: '',
-    pengelola2: '',
-    objek: DEFAULT_JENIS[jenis].objek,
+    pengelola: PENGELOLA_AWAL,
+    ketua: '',
+    objek: OBJEK_AWAL,
     nilai: '',
 });
 
@@ -73,7 +51,7 @@ const formAwal = (jenis: NphdJenis = 'mck'): FormState => ({
  * lalu dokumen diunduh dengan nomor itu.
  */
 export function NphdDialog({ open, onOpenChange, pekerjaan }: Props) {
-    const [form, setForm] = useState<FormState>(() => formAwal());
+    const [form, setForm] = useState<FormState>(formAwal);
     const [busy, setBusy] = useState(false);
     const { data: docTypes = [] } = useDocumentTypes(open);
     const createRegister = useCreateDocumentRegister();
@@ -83,14 +61,6 @@ export function NphdDialog({ open, onOpenChange, pekerjaan }: Props) {
 
     const set = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
         setForm((f) => ({ ...f, [key]: e.target.value }));
-
-    const pilihJenis = (jenis: NphdJenis) =>
-        setForm((f) => ({
-            ...f,
-            jenis,
-            objek: DEFAULT_JENIS[jenis].objek,
-            penerima: DEFAULT_JENIS[jenis].penerima,
-        }));
 
     const handleSubmit = async () => {
         if (!kontrak) {
@@ -120,15 +90,12 @@ export function NphdDialog({ open, onOpenChange, pekerjaan }: Props) {
                 tanggal: form.tanggal,
                 objek: form.objek.trim(),
                 nilai,
-                jenis: form.jenis,
-                kegiatan: form.jenis === 'spam' ? form.kegiatan : undefined,
-                pengelola_label: form.penerima.trim() || DEFAULT_JENIS[form.jenis].penerima,
-                pengelola_1: form.pengelola1.trim(),
-                pengelola_2: form.pengelola2.trim(),
+                pengelola_label: form.pengelola.trim() || PENGELOLA_AWAL,
+                ketua: form.ketua.trim(),
             });
             downloadBlob(blob, `NPHD_${register.nomor.replace(/[^A-Za-z0-9]+/g, '_')}.docx`);
             toast.success(`NPHD ${register.nomor} dibuat dan diunduh.`);
-            setForm(formAwal(form.jenis));
+            setForm(formAwal());
             onOpenChange(false);
         } catch (err) {
             toast.error(getRegisterApiErrorMessage(err, 'Gagal membuat NPHD'));
@@ -164,41 +131,6 @@ export function NphdDialog({ open, onOpenChange, pekerjaan }: Props) {
 
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                            <Label>Jenis naskah</Label>
-                            <Select value={form.jenis} onValueChange={(v) => pilihJenis(v as NphdJenis)}>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="mck">MCK</SelectItem>
-                                    <SelectItem value="spam">SPAM</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        {form.jenis === 'spam' ? (
-                            <div className="space-y-2">
-                                <Label>Kegiatan SPAM</Label>
-                                <Select
-                                    value={form.kegiatan}
-                                    onValueChange={(v) => setForm((f) => ({ ...f, kegiatan: v as NphdKegiatanSpam }))}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {KEGIATAN_SPAM.map((k) => (
-                                            <SelectItem key={k.value} value={k.value}>
-                                                {k.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        ) : null}
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div className="space-y-2">
                             <Label htmlFor="nphd-tanggal">Tanggal NPHD</Label>
                             <Input id="nphd-tanggal" type="date" value={form.tanggal} onChange={set('tanggal')} />
                         </div>
@@ -215,19 +147,14 @@ export function NphdDialog({ open, onOpenChange, pekerjaan }: Props) {
                         </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="nphd-penerima">Sebutan penerima manfaat</Label>
-                        <Input id="nphd-penerima" value={form.penerima} onChange={set('penerima')} />
-                    </div>
-
                     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                         <div className="space-y-2">
-                            <Label htmlFor="nphd-pengelola1">Nama penerima 1</Label>
-                            <Input id="nphd-pengelola1" value={form.pengelola1} onChange={set('pengelola1')} />
+                            <Label htmlFor="nphd-pengelola">Sebutan pengelola</Label>
+                            <Input id="nphd-pengelola" value={form.pengelola} onChange={set('pengelola')} />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="nphd-pengelola2">Nama penerima 2 (opsional)</Label>
-                            <Input id="nphd-pengelola2" value={form.pengelola2} onChange={set('pengelola2')} />
+                            <Label htmlFor="nphd-ketua">Nama ketua pengelola</Label>
+                            <Input id="nphd-ketua" value={form.ketua} onChange={set('ketua')} />
                         </div>
                     </div>
 

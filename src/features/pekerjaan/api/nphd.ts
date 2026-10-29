@@ -1,9 +1,5 @@
 import api from '@/lib/api-client';
 
-export type NphdJenis = 'mck' | 'spam';
-
-export type NphdKegiatanSpam = 'operasi' | 'perpipaan' | 'bukan_perpipaan';
-
 export type NphdExportParams = {
     /** Nomor NPHD dari Register Dokumen. */
     nomor: string;
@@ -11,12 +7,10 @@ export type NphdExportParams = {
     tanggal: string;
     objek: string;
     nilai: number;
-    jenis: NphdJenis;
-    /** Hanya untuk SPAM. */
-    kegiatan?: NphdKegiatanSpam;
+    /** Sebutan pengelola, misalnya `Pengelola SPAM`. Kosong berarti `Pengelola`. */
     pengelola_label: string;
-    pengelola_1?: string;
-    pengelola_2?: string;
+    /** Nama ketua pengelola. */
+    ketua?: string;
 };
 
 /** Unduh NPHD dan BA serah terima sebagai `.docx` untuk satu pekerjaan. */
