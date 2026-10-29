@@ -131,6 +131,7 @@ import { Route as AuthenticatedPermissionsIdEditRouteImport } from './routes/_au
 import { Route as AuthenticatedPenyediaIdEditRouteImport } from './routes/_authenticated/penyedia/$id.edit'
 import { Route as AuthenticatedPenerimaIdEditRouteImport } from './routes/_authenticated/penerima/$id.edit'
 import { Route as AuthenticatedPekerjaanIdProgressRouteImport } from './routes/_authenticated/pekerjaan/$id/progress'
+import { Route as AuthenticatedPekerjaanIdNphdRouteImport } from './routes/_authenticated/pekerjaan/$id/nphd'
 import { Route as AuthenticatedPekerjaanIdEditRouteImport } from './routes/_authenticated/pekerjaan/$id/edit'
 import { Route as AuthenticatedOutputIdEditRouteImport } from './routes/_authenticated/output/$id.edit'
 import { Route as AuthenticatedMenuPermissionsIdEditRouteImport } from './routes/_authenticated/menu-permissions/$id.edit'
@@ -836,6 +837,12 @@ const AuthenticatedPekerjaanIdProgressRoute =
     path: '/pekerjaan/$id/progress',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedPekerjaanIdNphdRoute =
+  AuthenticatedPekerjaanIdNphdRouteImport.update({
+    id: '/pekerjaan/$id/nphd',
+    path: '/pekerjaan/$id/nphd',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPekerjaanIdEditRoute =
   AuthenticatedPekerjaanIdEditRouteImport.update({
     id: '/pekerjaan/$id/edit',
@@ -1042,6 +1049,7 @@ export interface FileRoutesByFullPath {
   '/menu-permissions/$id/edit': typeof AuthenticatedMenuPermissionsIdEditRoute
   '/output/$id/edit': typeof AuthenticatedOutputIdEditRoute
   '/pekerjaan/$id/edit': typeof AuthenticatedPekerjaanIdEditRoute
+  '/pekerjaan/$id/nphd': typeof AuthenticatedPekerjaanIdNphdRoute
   '/pekerjaan/$id/progress': typeof AuthenticatedPekerjaanIdProgressRoute
   '/penerima/$id/edit': typeof AuthenticatedPenerimaIdEditRoute
   '/penyedia/$id/edit': typeof AuthenticatedPenyediaIdEditRoute
@@ -1177,6 +1185,7 @@ export interface FileRoutesByTo {
   '/menu-permissions/$id/edit': typeof AuthenticatedMenuPermissionsIdEditRoute
   '/output/$id/edit': typeof AuthenticatedOutputIdEditRoute
   '/pekerjaan/$id/edit': typeof AuthenticatedPekerjaanIdEditRoute
+  '/pekerjaan/$id/nphd': typeof AuthenticatedPekerjaanIdNphdRoute
   '/pekerjaan/$id/progress': typeof AuthenticatedPekerjaanIdProgressRoute
   '/penerima/$id/edit': typeof AuthenticatedPenerimaIdEditRoute
   '/penyedia/$id/edit': typeof AuthenticatedPenyediaIdEditRoute
@@ -1316,6 +1325,7 @@ export interface FileRoutesById {
   '/_authenticated/menu-permissions/$id/edit': typeof AuthenticatedMenuPermissionsIdEditRoute
   '/_authenticated/output/$id/edit': typeof AuthenticatedOutputIdEditRoute
   '/_authenticated/pekerjaan/$id/edit': typeof AuthenticatedPekerjaanIdEditRoute
+  '/_authenticated/pekerjaan/$id/nphd': typeof AuthenticatedPekerjaanIdNphdRoute
   '/_authenticated/pekerjaan/$id/progress': typeof AuthenticatedPekerjaanIdProgressRoute
   '/_authenticated/penerima/$id/edit': typeof AuthenticatedPenerimaIdEditRoute
   '/_authenticated/penyedia/$id/edit': typeof AuthenticatedPenyediaIdEditRoute
@@ -1455,6 +1465,7 @@ export interface FileRouteTypes {
     | '/menu-permissions/$id/edit'
     | '/output/$id/edit'
     | '/pekerjaan/$id/edit'
+    | '/pekerjaan/$id/nphd'
     | '/pekerjaan/$id/progress'
     | '/penerima/$id/edit'
     | '/penyedia/$id/edit'
@@ -1590,6 +1601,7 @@ export interface FileRouteTypes {
     | '/menu-permissions/$id/edit'
     | '/output/$id/edit'
     | '/pekerjaan/$id/edit'
+    | '/pekerjaan/$id/nphd'
     | '/pekerjaan/$id/progress'
     | '/penerima/$id/edit'
     | '/penyedia/$id/edit'
@@ -1728,6 +1740,7 @@ export interface FileRouteTypes {
     | '/_authenticated/menu-permissions/$id/edit'
     | '/_authenticated/output/$id/edit'
     | '/_authenticated/pekerjaan/$id/edit'
+    | '/_authenticated/pekerjaan/$id/nphd'
     | '/_authenticated/pekerjaan/$id/progress'
     | '/_authenticated/penerima/$id/edit'
     | '/_authenticated/penyedia/$id/edit'
@@ -2621,6 +2634,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPekerjaanIdProgressRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/pekerjaan/$id/nphd': {
+      id: '/_authenticated/pekerjaan/$id/nphd'
+      path: '/pekerjaan/$id/nphd'
+      fullPath: '/pekerjaan/$id/nphd'
+      preLoaderRoute: typeof AuthenticatedPekerjaanIdNphdRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/pekerjaan/$id/edit': {
       id: '/_authenticated/pekerjaan/$id/edit'
       path: '/pekerjaan/$id/edit'
@@ -2883,6 +2903,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMenuPermissionsIdEditRoute: typeof AuthenticatedMenuPermissionsIdEditRoute
   AuthenticatedOutputIdEditRoute: typeof AuthenticatedOutputIdEditRoute
   AuthenticatedPekerjaanIdEditRoute: typeof AuthenticatedPekerjaanIdEditRoute
+  AuthenticatedPekerjaanIdNphdRoute: typeof AuthenticatedPekerjaanIdNphdRoute
   AuthenticatedPekerjaanIdProgressRoute: typeof AuthenticatedPekerjaanIdProgressRoute
   AuthenticatedPenerimaIdEditRoute: typeof AuthenticatedPenerimaIdEditRoute
   AuthenticatedPenyediaIdEditRoute: typeof AuthenticatedPenyediaIdEditRoute
@@ -3005,6 +3026,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedMenuPermissionsIdEditRoute,
   AuthenticatedOutputIdEditRoute: AuthenticatedOutputIdEditRoute,
   AuthenticatedPekerjaanIdEditRoute: AuthenticatedPekerjaanIdEditRoute,
+  AuthenticatedPekerjaanIdNphdRoute: AuthenticatedPekerjaanIdNphdRoute,
   AuthenticatedPekerjaanIdProgressRoute: AuthenticatedPekerjaanIdProgressRoute,
   AuthenticatedPenerimaIdEditRoute: AuthenticatedPenerimaIdEditRoute,
   AuthenticatedPenyediaIdEditRoute: AuthenticatedPenyediaIdEditRoute,

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import type { ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useParams, Link, useNavigate, useSearch } from '@tanstack/react-router';
@@ -10,7 +10,6 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { formatCurrency } from '@/lib/format';
 import { cn, lazyImport } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { NphdDialog } from './NphdDialog';
 import {
     Card,
     CardContent,
@@ -85,7 +84,6 @@ export default function PekerjaanDetail() {
     const tahun = Number(tahunAnggaran) || new Date().getFullYear();
 
     // 1. Fetch Pekerjaan Detail
-    const [nphdOpen, setNphdOpen] = useState(false);
     const { data: pekerjaan, isLoading: loading, isError, refetch } = useQuery({
         queryKey: ['pekerjaan', id],
         queryFn: async () => {
@@ -188,13 +186,12 @@ export default function PekerjaanDetail() {
                         </p>
                     </div>
                     {isAdmin && pekerjaan ? (
-                        <Button variant="outline" className="w-full md:w-auto" onClick={() => setNphdOpen(true)}>
-                            <FileText className="h-4 w-4 mr-2" />
-                            Buat NPHD
+                        <Button variant="outline" asChild className="w-full md:w-auto">
+                            <Link to="/pekerjaan/$id/nphd" params={{ id: id! }}>
+                                <FileText className="h-4 w-4 mr-2" />
+                                Buat NPHD
+                            </Link>
                         </Button>
-                    ) : null}
-                    {isAdmin && pekerjaan ? (
-                        <NphdDialog open={nphdOpen} onOpenChange={setNphdOpen} pekerjaan={pekerjaan} />
                     ) : null}
                     {isAdmin && (
                         <Button asChild className="w-full md:w-auto">
