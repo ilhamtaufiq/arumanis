@@ -261,6 +261,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'pekerjaan',
                 },
                 {
+                    title: 'NPHD',
+                    url: '/nphd',
+                    icon: FileText,
+                    menuKey: 'pekerjaan',
+                },
+                {
                     title: 'Checklist Pekerjaan',
                     url: '/checklist',
                     icon: UserCheck,

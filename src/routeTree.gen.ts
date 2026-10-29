@@ -33,6 +33,7 @@ import { Route as AuthenticatedTemplateDokumenRouteImport } from './routes/_auth
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
 import { Route as AuthenticatedPengaturanSkRouteImport } from './routes/_authenticated/pengaturan-sk'
 import { Route as AuthenticatedPengaturanNomorSuratRouteImport } from './routes/_authenticated/pengaturan-nomor-surat'
+import { Route as AuthenticatedNphdRouteImport } from './routes/_authenticated/nphd'
 import { Route as AuthenticatedManajemenPublikasiRouteImport } from './routes/_authenticated/manajemen-publikasi'
 import { Route as AuthenticatedJurnalKegiatanRouteImport } from './routes/_authenticated/jurnal-kegiatan'
 import { Route as AuthenticatedGisLabRouteImport } from './routes/_authenticated/gis-lab'
@@ -269,6 +270,11 @@ const AuthenticatedPengaturanNomorSuratRoute =
     path: '/pengaturan-nomor-surat',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedNphdRoute = AuthenticatedNphdRouteImport.update({
+  id: '/nphd',
+  path: '/nphd',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedManajemenPublikasiRoute =
   AuthenticatedManajemenPublikasiRouteImport.update({
     id: '/manajemen-publikasi',
@@ -953,6 +959,7 @@ export interface FileRoutesByFullPath {
   '/gis-lab': typeof AuthenticatedGisLabRoute
   '/jurnal-kegiatan': typeof AuthenticatedJurnalKegiatanRoute
   '/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
+  '/nphd': typeof AuthenticatedNphdRoute
   '/pengaturan-nomor-surat': typeof AuthenticatedPengaturanNomorSuratRoute
   '/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
@@ -1089,6 +1096,7 @@ export interface FileRoutesByTo {
   '/error-logs': typeof AuthenticatedErrorLogsRoute
   '/gis-lab': typeof AuthenticatedGisLabRoute
   '/jurnal-kegiatan': typeof AuthenticatedJurnalKegiatanRoute
+  '/nphd': typeof AuthenticatedNphdRoute
   '/pengaturan-nomor-surat': typeof AuthenticatedPengaturanNomorSuratRoute
   '/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
@@ -1229,6 +1237,7 @@ export interface FileRoutesById {
   '/_authenticated/gis-lab': typeof AuthenticatedGisLabRoute
   '/_authenticated/jurnal-kegiatan': typeof AuthenticatedJurnalKegiatanRoute
   '/_authenticated/manajemen-publikasi': typeof AuthenticatedManajemenPublikasiRouteWithChildren
+  '/_authenticated/nphd': typeof AuthenticatedNphdRoute
   '/_authenticated/pengaturan-nomor-surat': typeof AuthenticatedPengaturanNomorSuratRoute
   '/_authenticated/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
@@ -1369,6 +1378,7 @@ export interface FileRouteTypes {
     | '/gis-lab'
     | '/jurnal-kegiatan'
     | '/manajemen-publikasi'
+    | '/nphd'
     | '/pengaturan-nomor-surat'
     | '/pengaturan-sk'
     | '/pengawas'
@@ -1505,6 +1515,7 @@ export interface FileRouteTypes {
     | '/error-logs'
     | '/gis-lab'
     | '/jurnal-kegiatan'
+    | '/nphd'
     | '/pengaturan-nomor-surat'
     | '/pengaturan-sk'
     | '/pengawas'
@@ -1644,6 +1655,7 @@ export interface FileRouteTypes {
     | '/_authenticated/gis-lab'
     | '/_authenticated/jurnal-kegiatan'
     | '/_authenticated/manajemen-publikasi'
+    | '/_authenticated/nphd'
     | '/_authenticated/pengaturan-nomor-surat'
     | '/_authenticated/pengaturan-sk'
     | '/_authenticated/pengawas'
@@ -1946,6 +1958,13 @@ declare module '@tanstack/react-router' {
       path: '/pengaturan-nomor-surat'
       fullPath: '/pengaturan-nomor-surat'
       preLoaderRoute: typeof AuthenticatedPengaturanNomorSuratRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/nphd': {
+      id: '/_authenticated/nphd'
+      path: '/nphd'
+      fullPath: '/nphd'
+      preLoaderRoute: typeof AuthenticatedNphdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/manajemen-publikasi': {
@@ -2818,6 +2837,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedGisLabRoute: typeof AuthenticatedGisLabRoute
   AuthenticatedJurnalKegiatanRoute: typeof AuthenticatedJurnalKegiatanRoute
   AuthenticatedManajemenPublikasiRoute: typeof AuthenticatedManajemenPublikasiRouteWithChildren
+  AuthenticatedNphdRoute: typeof AuthenticatedNphdRoute
   AuthenticatedPengaturanNomorSuratRoute: typeof AuthenticatedPengaturanNomorSuratRoute
   AuthenticatedPengaturanSkRoute: typeof AuthenticatedPengaturanSkRoute
   AuthenticatedPengawasRoute: typeof AuthenticatedPengawasRoute
@@ -2930,6 +2950,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedJurnalKegiatanRoute: AuthenticatedJurnalKegiatanRoute,
   AuthenticatedManajemenPublikasiRoute:
     AuthenticatedManajemenPublikasiRouteWithChildren,
+  AuthenticatedNphdRoute: AuthenticatedNphdRoute,
   AuthenticatedPengaturanNomorSuratRoute:
     AuthenticatedPengaturanNomorSuratRoute,
   AuthenticatedPengaturanSkRoute: AuthenticatedPengaturanSkRoute,
