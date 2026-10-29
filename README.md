@@ -259,7 +259,7 @@ Versi diselaraskan lewat `platform.version.json`. Ubah kontrak API di **kedua** 
 
 Maintainer: [@ilhamtaufiq](https://github.com/ilhamtaufiq). Issue teknis lewat GitHub Issues.
 
-1. Branch dari `dev`.
+1. Branch dari `main`.
 2. Domain baru → `src/features/<nama>/`, jangan tumpuk di `components/` global.
 3. Semua HTTP lewat `@/lib/api-client`.
 4. Cek: `bun run lint` · `bun run build` · smoke/audit bila relevan.
@@ -268,9 +268,11 @@ Maintainer: [@ilhamtaufiq](https://github.com/ilhamtaufiq). Issue teknis lewat G
 
 ---
 
-## Lisensi
+## Lisensi dan atribusi
 
-[MIT](LICENSE) · Copyright (c) ARUMANIS
+Kode Arumanis berlisensi [MIT](LICENSE) · Copyright (c) ARUMANIS.
+
+Aplikasi ini dibangun di atas library open source pihak ketiga. Daftar dependensi beserta versi dan lisensinya ada di [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Terima kasih kepada para pengembang dan komunitas yang membuatnya.
 
 <div align="center">
 
