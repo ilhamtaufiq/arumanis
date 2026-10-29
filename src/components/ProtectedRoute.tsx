@@ -35,6 +35,7 @@ const ADMIN_ONLY_ROUTES = [
     '/user-pekerjaan',
     '/berkas',
     '/settings',
+    '/template-dokumen',
 ];
 
 /**
