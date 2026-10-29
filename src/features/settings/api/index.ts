@@ -64,6 +64,7 @@ export interface AppSettingsFormData {
     kontrak_template_bap?: File;
     kontrak_template_cover_am?: File;
     kontrak_template_cover_san?: File;
+    kontrak_template_nphd?: File;
     logo?: File;
     favicon?: File;
     login_cover?: File;
@@ -462,6 +463,9 @@ export const updateAppSettings = async (data: AppSettingsFormData): Promise<AppS
     }
     if (data.kontrak_template_cover_san) {
         formData.append('kontrak_template_cover_san', data.kontrak_template_cover_san);
+    }
+    if (data.kontrak_template_nphd) {
+        formData.append('kontrak_template_nphd', data.kontrak_template_nphd);
     }
     if (data.logo) {
         formData.append('logo', data.logo);

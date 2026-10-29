@@ -3,14 +3,16 @@ export type KontrakTemplateKey =
     | 'kontrak_template_ringkasan'
     | 'kontrak_template_bap'
     | 'kontrak_template_cover_am'
-    | 'kontrak_template_cover_san';
+    | 'kontrak_template_cover_san'
+    | 'kontrak_template_nphd';
 
 export type KontrakTemplateFormField =
     | 'kontrak_template_spk'
     | 'kontrak_template_ringkasan'
     | 'kontrak_template_bap'
     | 'kontrak_template_cover_am'
-    | 'kontrak_template_cover_san';
+    | 'kontrak_template_cover_san'
+    | 'kontrak_template_nphd';
 
 export interface KontrakTemplateMeta {
     key: KontrakTemplateKey;
