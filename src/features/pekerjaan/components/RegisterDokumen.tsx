@@ -13,9 +13,11 @@ import {
     Trash2,
     Plus,
     PlusCircle,
-    Calendar
+    Calendar,
+    FileText
 } from 'lucide-react';
 import { Link } from '@tanstack/react-router';
+import { useAuthStore } from '@/stores/auth-stores';
 import { DatePickerField } from '@/components/shared/DatePickerField';
 import { cn, orEmpty } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -95,6 +97,8 @@ import {
 } from '../lib/register-dokumen';
 
 export default function RegisterDokumen() {
+    const { auth } = useAuthStore();
+    const isAdmin = auth.user?.roles?.includes('admin') ?? false;
     const { tahunAnggaran } = useAppSettingsValues();
     const currentCalendarYear = new Date().getFullYear();
     const yearOptions = useMemo(
@@ -865,6 +869,13 @@ export default function RegisterDokumen() {
                                                             >
                                                                 <Plus size={18} />
                                                             </Button>
+                                                            {isAdmin && item.has_kontrak ? (
+                                                                <Button variant="outline" size="icon" asChild title="Buat NPHD" className="h-8 w-8">
+                                                                    <Link to="/pekerjaan/$id/nphd" params={{ id: item.id.toString() }}>
+                                                                        <FileText size={16} />
+                                                                    </Link>
+                                                                </Button>
+                                                            ) : null}
                                                             <Button variant="outline" size="icon" asChild title="Detail Pekerjaan" className="h-8 w-8">
                                                                 <Link to="/pekerjaan/$id" params={{ id: item.id.toString() }}>
                                                                     <ExternalLink size={16} />
