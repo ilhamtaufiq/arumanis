@@ -255,6 +255,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'pekerjaan',
                 },
                 {
+                    title: 'Pengaturan Nomor Surat',
+                    url: '/pengaturan-nomor-surat',
+                    icon: Hash,
+                    menuKey: 'pekerjaan',
+                },
+                {
                     title: 'Checklist Pekerjaan',
                     url: '/checklist',
                     icon: UserCheck,
