@@ -49,6 +49,8 @@ export function KontrakActionsMenu({
     handlePreview,
 }: KontrakActionsProps) {
     const menuLabel = item.spk || item.pekerjaans?.[0]?.nama_paket || `Kontrak #${item.id}`
+    // NPHD dibuat per paket pekerjaan; kontrak yang punya lebih dari satu paket memakai paket pertama.
+    const paketNphd = item.pekerjaans?.[0]
 
     return (
         <DropdownMenu>
@@ -117,6 +119,21 @@ export function KontrakActionsMenu({
                         <span>Ubah Data</span>
                     </Link>
                 </DropdownMenuItem>
+
+                {isAdmin && paketNphd && (
+                    <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuLabel className="py-1 text-[10px] font-bold uppercase text-muted-foreground">
+                            NPHD
+                        </DropdownMenuLabel>
+                        <DropdownMenuItem asChild>
+                            <Link to="/pekerjaan/$id/nphd" params={{ id: paketNphd.id.toString() }}>
+                                <FileText className="mr-2 h-4 w-4 text-rose-600" />
+                                <span>Buat NPHD</span>
+                            </Link>
+                        </DropdownMenuItem>
+                    </>
+                )}
 
                 {isAdmin && (
                     <>
