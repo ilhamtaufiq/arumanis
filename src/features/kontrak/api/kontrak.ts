@@ -186,8 +186,9 @@ export const previewKontrakRingkasan = async (id: number, params: KontrakRingkas
     return response.data;
 };
 
+/** Buat cover kontrak dan simpan sebagai berkas `Cover Kontrak` di setiap pekerjaan kontrak. */
 export const exportKontrakCover = async (id: number) => {
-    const blob = await api.get<Blob>(`/kontrak/${id}/export-cover`, {
+    const blob = await api.post<Blob>(`/kontrak/${id}/cover`, undefined, {
         responseType: 'blob'
     });
     return blob;

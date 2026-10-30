@@ -366,7 +366,7 @@ export default function KontrakList() {
             const fileName = `Cover_Kontrak_${sanitizeKontrakFileName(kontrak.pekerjaans?.[0]?.nama_paket)}.docx`;
             downloadKontrakBlob(blob, fileName);
             toast.dismiss(toastId);
-            toast.success('Cover kontrak berhasil didownload');
+            toast.success('Cover kontrak berhasil dibuat dan disimpan di berkas pekerjaan');
         } catch (err) {
             console.error('Export cover failed:', err);
             const msg = err instanceof Error ? err.message : 'Gagal download cover kontrak';
