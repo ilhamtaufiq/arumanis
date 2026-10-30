@@ -143,6 +143,13 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
     const tipe = docTypes.find((t) => t.code.trim().toUpperCase() === TIPE_KODE);
     const kontrak = getPrimaryKontrak(pekerjaan);
 
+    // Nilai aset diisi dari nilai kontrak selama admin belum mengubahnya sendiri.
+    const [nilaiDiedit, setNilaiDiedit] = useState(false);
+    const nilaiKontrak = kontrak?.nilai_kontrak ?? 0;
+    useEffect(() => {
+        if (!nilaiDiedit && nilaiKontrak > 0) setForm((f) => ({ ...f, nilai: nilaiKontrak }));
+    }, [nilaiDiedit, nilaiKontrak]);
+
     const set = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
         setForm((f) => ({ ...f, [key]: e.target.value }));
 
@@ -219,8 +226,16 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
                             name="nilai"
                             placeholder="49.501.500"
                             value={form.nilai}
-                            onChange={(_, nilai) => setForm((f) => ({ ...f, nilai }))}
+                            onChange={(_, nilai) => {
+                                setNilaiDiedit(true);
+                                setForm((f) => ({ ...f, nilai }));
+                            }}
                         />
+                        <p className="text-xs text-muted-foreground">
+                            {nilaiKontrak > 0
+                                ? 'Diisi dari nilai kontrak. Boleh diubah sebelum membuat NPHD.'
+                                : 'Kontrak belum punya nilai. Isi nilai aset secara manual.'}
+                        </p>
                     </div>
                 </div>
 
