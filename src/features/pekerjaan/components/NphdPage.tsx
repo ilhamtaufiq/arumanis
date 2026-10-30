@@ -37,7 +37,10 @@ type FormState = {
 /** Objek hibah dari output pekerjaan, misalnya "1 paket MCK 2 unit/pintu; 2 unit Tangki Septik". */
 function objekDariOutput(outputs: Output[]): string {
     return outputs
-        .map((o) => `${o.volume} ${o.satuan} ${o.komponen}`.replace(/\s+/g, ' ').trim())
+        .map((o) => {
+            const volume = Number(o.volume).toLocaleString('id-ID', { maximumFractionDigits: 2 });
+            return `${volume} ${o.satuan} ${o.komponen}`.replace(/\s+/g, ' ').trim();
+        })
         .filter(Boolean)
         .join('; ');
 }
