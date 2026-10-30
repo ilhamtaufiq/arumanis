@@ -81,29 +81,56 @@ const GAYA_TABEL = {
     },
 }
 
+/** Ukuran huruf per sheet: makin banyak kolom, makin kecil, supaya semua kolom muat dalam lebar halaman. */
+function ukuranHuruf(kolom: number): number {
+    return Math.max(5, Math.min(7.5, (7.5 * 10) / Math.max(10, kolom)))
+}
+
+/** Lebar kolom proporsional terhadap isi terpanjang tiap kolom, dijumlahkan tepat selebar area cetak. */
+function lebarKolom(rows: Baris[], usable: number): Record<number, { cellWidth: number }> {
+    const n = rows.reduce((maks, r) => Math.max(maks, r.length), 0)
+    const bobot = Array.from({ length: n }, (_, c) => {
+        const terpanjang = rows.reduce((maks, r) => Math.max(maks, (r[c] ?? '').length), 0)
+        return Math.min(60, Math.max(4, terpanjang + 2))
+    })
+    const total = bobot.reduce((a, b) => a + b, 0)
+    return Object.fromEntries(bobot.map((b, c) => [c, { cellWidth: (usable * b) / total }]))
+}
+
 function tuliSheet(doc: jsPDF, sheet: SheetSiap, overflow: 'linebreak' | 'ellipsize') {
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
     doc.text(sheet.nama, MARGIN, MARGIN + 4)
     doc.setFont('helvetica', 'normal')
 
+    const usable = doc.internal.pageSize.getWidth() - 2 * MARGIN
+    const huruf = ukuranHuruf(sheet.kolom)
+    const gaya = {
+        ...GAYA_TABEL,
+        styles: { ...GAYA_TABEL.styles, overflow, fontSize: huruf, cellPadding: huruf < 6 ? 0.8 : 1.5 },
+    }
+
     let startY = MARGIN + 9
-    const gaya = { ...GAYA_TABEL, styles: { ...GAYA_TABEL.styles, overflow } }
     if (sheet.pembuka.length > 0) {
         autoTable(doc, {
             ...gaya,
             startY,
             margin: { left: MARGIN, right: MARGIN, bottom: MARGIN + 4 },
+            tableWidth: usable,
+            columnStyles: lebarKolom(sheet.pembuka, usable),
             body: sheet.pembuka,
         })
         const selesai = (doc as jsPDF & { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY
         startY = (selesai ?? startY) + 4
     }
 
+    const semuaBaris = sheet.head ? [sheet.head, ...sheet.body] : sheet.body
     autoTable(doc, {
         ...gaya,
         startY,
         margin: { left: MARGIN, right: MARGIN, bottom: MARGIN + 4 },
+        tableWidth: usable,
+        columnStyles: lebarKolom(semuaBaris, usable),
         head: sheet.head ? [sheet.head] : undefined,
         body: sheet.body,
         headStyles: { fillColor: [235, 235, 235], textColor: 20, fontStyle: 'bold', halign: 'center' },
