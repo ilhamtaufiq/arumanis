@@ -38,6 +38,7 @@ import { useBerkasList, useDeleteBerkas } from '@/features/berkas/hooks/useBerka
 import { ListPagination } from '@/components/shared/ListPagination';
 import { downloadBffApiFile, safeDownloadFilename } from '@/lib/download-file';
 import { normalizeStorageUrl } from '@/features/foto/lib/foto-url';
+import { unduhXlsxSebagaiPdf } from '../lib/export-xlsx-pdf';
 import {
     getPengawasVisibleBerkasJuduls,
     matchesPengawasSharedBerkasJudul,
@@ -162,6 +163,22 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
     };
 
     const [exportingPdf, setExportingPdf] = useState<number | null>(null);
+
+    const isBerkasExcel = (berkas: Berkas) =>
+        /\.xlsx?$/i.test(berkas.original_name || resolveBerkasFileName(berkas) || '');
+
+    /** Berkas Excel dicetak di browser: semua sheet, layout A4. */
+    const handleExportXlsxPdf = async (berkas: Berkas) => {
+        setExportingPdf(berkas.id);
+        try {
+            await unduhXlsxSebagaiPdf(berkas);
+            toast.success('PDF berkas Excel berhasil dibuat');
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : 'Gagal membuat PDF dari berkas Excel');
+        } finally {
+            setExportingPdf(null);
+        }
+    };
 
     const handleExportPdf = (id: number, jenisDokumen: string) => {
         try {
@@ -312,9 +329,13 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                onClick={() => handleExportPdf(berkas.id, berkas.jenis_dokumen)}
+                                                onClick={() =>
+                                                    isBerkasExcel(berkas)
+                                                        ? handleExportXlsxPdf(berkas)
+                                                        : handleExportPdf(berkas.id, berkas.jenis_dokumen)
+                                                }
                                                 disabled={exportingPdf === berkas.id}
-                                                title="Export ke PDF"
+                                                title={isBerkasExcel(berkas) ? 'Export ke PDF (semua sheet, A4)' : 'Export ke PDF'}
                                             >
                                                 {exportingPdf === berkas.id ? (
                                                     <Loader2 className="h-4 w-4 animate-spin" />
