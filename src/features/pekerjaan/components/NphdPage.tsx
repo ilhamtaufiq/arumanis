@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from '@tanstack/react-router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, FileText, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -14,22 +14,21 @@ import PageContainer from '@/components/layout/page-container';
 import { downloadBlob } from '@/lib/download-file';
 import { useAuthStore } from '@/stores/auth-stores';
 import { getPekerjaanById } from '../api/pekerjaan';
-import { exportNphd } from '../api/nphd';
+import { exportNphd, getNphdData, saveNphdData } from '../api/nphd';
 import { getOutput } from '@/features/output/api/output';
 import type { Output } from '@/features/output/types';
 import { useCreateDocumentRegister, useDocumentTypes } from '../hooks/useDocumentRegister';
 import { getPrimaryKontrak, getRegisterApiErrorMessage } from '../lib/register-dokumen';
+import { NphdPenerimaInput } from './NphdPenerimaInput';
+import { JENIS_PENGELOLA_AWAL, OBJEK_AWAL } from './nphd-defaults';
 import type { Pekerjaan } from '../types';
 
 const TIPE_KODE = 'NPHD';
 
-const OBJEK_AWAL = '1 Paket Pembangunan (MCK 2 unit/pintu dan Tangki Septik 2 unit)';
-const PENGELOLA_AWAL = 'Pengelola';
-
 type FormState = {
     tanggal: string;
-    pengelola: string;
-    ketua: string;
+    jenis: string;
+    penerima: string[];
     objek: string;
     nilai: number;
 };
@@ -47,15 +46,16 @@ function objekDariOutput(outputs: Output[]): string {
 
 const formAwal = (): FormState => ({
     tanggal: new Date().toISOString().split('T')[0],
-    pengelola: PENGELOLA_AWAL,
-    ketua: '',
+    jenis: JENIS_PENGELOLA_AWAL,
+    penerima: [],
     objek: OBJEK_AWAL,
     nilai: 0,
 });
 
 /**
  * Halaman pembuatan NPHD dan BA serah terima untuk satu pekerjaan. Nomor dicatat dulu di Register Dokumen
- * (tipe NPHD), lalu dokumen diunduh dengan nomor itu.
+ * (tipe NPHD), lalu dokumen diunduh dengan nomor itu. Jenis pengelola dan penerima manfaat diisi dari
+ * data yang sudah disimpan di halaman daftar NPHD.
  */
 export default function NphdPage() {
     const params = useParams({ strict: false });
@@ -71,9 +71,9 @@ export default function NphdPage() {
 
     const backTo = (
         <Button variant="ghost" asChild className="mb-2">
-            <Link to="/pekerjaan/$id" params={{ id: id! }}>
+            <Link to="/nphd">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Kembali ke detail pekerjaan
+                Kembali ke daftar NPHD
             </Link>
         </Button>
     );
@@ -127,11 +127,30 @@ export default function NphdPage() {
 }
 
 function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
+    const queryClient = useQueryClient();
     const [form, setForm] = useState<FormState>(formAwal);
     const [busy, setBusy] = useState(false);
     const [objekDiedit, setObjekDiedit] = useState(false);
+    const [pesertaDiedit, setPesertaDiedit] = useState(false);
+    const [nilaiDiedit, setNilaiDiedit] = useState(false);
     const { data: docTypes = [] } = useDocumentTypes(true);
     const createRegister = useCreateDocumentRegister();
+
+    const { data: tersimpan } = useQuery({
+        queryKey: ['nphd', 'data', pekerjaan.id],
+        queryFn: () => getNphdData(pekerjaan.id),
+    });
+
+    // Jenis pengelola dan penerima manfaat diisi dari data tersimpan selama admin belum mengubahnya.
+    useEffect(() => {
+        if (pesertaDiedit || !tersimpan) return;
+        setForm((f) => ({
+            ...f,
+            jenis: tersimpan.jenis_pengelola || JENIS_PENGELOLA_AWAL,
+            penerima: tersimpan.penerima_manfaat,
+        }));
+    }, [pesertaDiedit, tersimpan]);
+
     const { data: outputs } = useQuery({
         queryKey: ['nphd', 'output', pekerjaan.id],
         queryFn: async () => (await getOutput({ pekerjaan_id: pekerjaan.id, per_page: 100 })).data,
@@ -147,13 +166,12 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
     const kontrak = getPrimaryKontrak(pekerjaan);
 
     // Nilai aset diisi dari nilai kontrak selama admin belum mengubahnya sendiri.
-    const [nilaiDiedit, setNilaiDiedit] = useState(false);
     const nilaiKontrak = kontrak?.nilai_kontrak ?? 0;
     useEffect(() => {
         if (!nilaiDiedit && nilaiKontrak > 0) setForm((f) => ({ ...f, nilai: nilaiKontrak }));
     }, [nilaiDiedit, nilaiKontrak]);
 
-    const set = (key: keyof FormState) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    const set = (key: 'tanggal') => (e: React.ChangeEvent<HTMLInputElement>) =>
         setForm((f) => ({ ...f, [key]: e.target.value }));
 
     const muatObjekDariOutput = () => {
@@ -168,6 +186,15 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
         }
         if (!tipe) {
             toast.error('Tipe dokumen NPHD belum ada. Tambahkan dulu di Pengaturan Nomor Surat.');
+            return;
+        }
+        const daftarPenerima = form.penerima.map((p) => p.trim()).filter(Boolean);
+        if (!form.jenis.trim()) {
+            toast.error('Jenis pengelola wajib diisi.');
+            return;
+        }
+        if (daftarPenerima.length === 0) {
+            toast.error('Isi minimal satu nama penerima manfaat.');
             return;
         }
         const nilai = form.nilai;
@@ -189,12 +216,23 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
                 tanggal: form.tanggal,
                 objek: form.objek.trim(),
                 nilai,
-                pengelola_label: form.pengelola.trim() || PENGELOLA_AWAL,
-                ketua: form.ketua.trim(),
+                pengelola_label: form.jenis.trim(),
+                penerima: daftarPenerima.join(';'),
             });
             downloadBlob(blob, `NPHD_${register.nomor.replace(/[^A-Za-z0-9]+/g, '_')}.docx`);
             toast.success(`NPHD ${register.nomor} dibuat dan diunduh.`);
-            setForm(formAwal());
+
+            // Simpan jenis, penerima, dan nomor supaya halaman daftar dan form berikutnya ikut terisi.
+            try {
+                await saveNphdData(pekerjaan.id, {
+                    jenis_pengelola: form.jenis.trim(),
+                    penerima_manfaat: daftarPenerima,
+                    nomor_nphd: register.nomor,
+                });
+                await queryClient.invalidateQueries({ queryKey: ['nphd'] });
+            } catch {
+                toast.warning('NPHD sudah dibuat, tetapi data penerima gagal disimpan.');
+            }
         } catch (err) {
             toast.error(getRegisterApiErrorMessage(err, 'Gagal membuat NPHD'));
         } finally {
@@ -242,15 +280,31 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                    <div className="space-y-2">
-                        <Label htmlFor="nphd-pengelola">Sebutan pengelola</Label>
-                        <Input id="nphd-pengelola" value={form.pengelola} onChange={set('pengelola')} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="nphd-ketua">Nama ketua pengelola</Label>
-                        <Input id="nphd-ketua" value={form.ketua} onChange={set('ketua')} />
-                    </div>
+                <div className="space-y-2">
+                    <Label htmlFor="nphd-jenis">Jenis pengelola</Label>
+                    <Input
+                        id="nphd-jenis"
+                        value={form.jenis}
+                        onChange={(e) => {
+                            setPesertaDiedit(true);
+                            setForm((f) => ({ ...f, jenis: e.target.value }));
+                        }}
+                    />
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="nphd-penerima">Nama penerima manfaat</Label>
+                    <NphdPenerimaInput
+                        id="nphd-penerima"
+                        value={form.penerima}
+                        onChange={(penerima) => {
+                            setPesertaDiedit(true);
+                            setForm((f) => ({ ...f, penerima }));
+                        }}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        Setiap nama ditulis sebagai daftar di dokumen. Bisa diisi lebih dari satu orang.
+                    </p>
                 </div>
 
                 <div className="space-y-2">

@@ -1,16 +1,25 @@
 import { useMemo, useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { useQuery } from '@tanstack/react-query';
-import { FileText, Search } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { FileText, Pencil, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table';
 import PageContainer from '@/components/layout/page-container';
 import { useAuthStore } from '@/stores/auth-stores';
 import { getPekerjaan } from '../api/pekerjaan';
+import { listNphdData, type NphdData } from '../api/nphd';
 import type { Pekerjaan } from '../types';
+import { NphdDataDialog } from './NphdDataDialog';
 
 const PER_PAGE = 100;
 
@@ -33,20 +42,33 @@ export default function NphdListPage() {
     const { auth } = useAuthStore();
     const isAdmin = auth.user?.roles?.includes('admin') ?? false;
     const [cari, setCari] = useState('');
+    const [dipilih, setDipilih] = useState<Pekerjaan | null>(null);
 
-    const { data = [], isLoading, isError } = useQuery({
+    const { data: paket = [], isLoading, isError } = useQuery({
         queryKey: ['nphd', 'paket-berkontrak'],
         queryFn: fetchPaketBerkontrak,
         enabled: isAdmin,
     });
 
+    const { data: nphdSemua = [] } = useQuery({
+        queryKey: ['nphd', 'data-semua'],
+        queryFn: listNphdData,
+        enabled: isAdmin,
+    });
+
+    const dataPerPaket = useMemo(() => {
+        const peta = new Map<number, NphdData>();
+        for (const d of nphdSemua) peta.set(d.pekerjaan_id, d);
+        return peta;
+    }, [nphdSemua]);
+
     const tampil = useMemo(() => {
         const kata = cari.trim().toLowerCase();
-        if (!kata) return data;
-        return data.filter((p) =>
+        if (!kata) return paket;
+        return paket.filter((p) =>
             [p.nama_paket, p.desa?.nama_desa, p.kecamatan?.nama_kecamatan].some((v) => v?.toLowerCase().includes(kata)),
         );
-    }, [data, cari]);
+    }, [paket, cari]);
 
     if (!isAdmin) {
         return (
@@ -65,7 +87,7 @@ export default function NphdListPage() {
                         NPHD
                     </h1>
                     <p className="text-muted-foreground text-sm md:text-base">
-                        Paket pekerjaan yang sudah berkontrak. Pilih paket untuk membuat NPHD dan BA serah terima.
+                        Paket pekerjaan yang sudah berkontrak. Isi jenis pengelola dan penerima manfaat dulu, lalu buat NPHD.
                     </p>
                 </div>
 
@@ -81,44 +103,92 @@ export default function NphdListPage() {
 
                 {isLoading ? (
                     <div className="space-y-3">
-                        <Skeleton className="h-20 w-full" />
-                        <Skeleton className="h-20 w-full" />
-                        <Skeleton className="h-20 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
                     </div>
                 ) : isError ? (
                     <p className="text-destructive">Gagal memuat daftar paket.</p>
                 ) : tampil.length === 0 ? (
                     <p className="text-muted-foreground">
-                        {data.length === 0 ? 'Belum ada paket pekerjaan yang berkontrak.' : 'Tidak ada paket yang cocok.'}
+                        {paket.length === 0 ? 'Belum ada paket pekerjaan yang berkontrak.' : 'Tidak ada paket yang cocok.'}
                     </p>
                 ) : (
-                    <div className="space-y-3">
-                        {tampil.map((p) => (
-                            <Card key={p.id}>
-                                <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-                                    <div className="min-w-0 space-y-1">
-                                        <p className="font-medium break-words">{p.nama_paket}</p>
-                                        <p className="text-sm text-muted-foreground">
-                                            {[p.desa?.nama_desa, p.kecamatan?.nama_kecamatan].filter(Boolean).join(', ') || '-'}
-                                        </p>
-                                        <div className="flex flex-wrap gap-2">
-                                            <Badge variant="secondary">
-                                                {p.kontrak_count ?? 0} kontrak
-                                            </Badge>
-                                        </div>
-                                    </div>
-                                    <Button asChild className="shrink-0 gap-2">
-                                        <Link to="/pekerjaan/$id/nphd" params={{ id: String(p.id) }}>
-                                            <FileText className="h-4 w-4" />
-                                            Buat NPHD
-                                        </Link>
-                                    </Button>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                    <Card>
+                        <CardContent className="p-0">
+                            <div className="overflow-x-auto">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-12">No</TableHead>
+                                            <TableHead className="min-w-[260px]">Nama Paket Pekerjaan</TableHead>
+                                            <TableHead className="min-w-[160px]">Nomor NPHD</TableHead>
+                                            <TableHead className="min-w-[200px]">Jenis Pengelola</TableHead>
+                                            <TableHead className="min-w-[240px]">Nama Penerima Manfaat</TableHead>
+                                            <TableHead className="text-right">Aksi</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {tampil.map((p, index) => {
+                                            const data = dataPerPaket.get(p.id);
+                                            return (
+                                                <TableRow key={p.id}>
+                                                    <TableCell className="align-top">{index + 1}</TableCell>
+                                                    <TableCell className="align-top">
+                                                        <p className="font-medium break-words">{p.nama_paket}</p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            {[p.desa?.nama_desa, p.kecamatan?.nama_kecamatan].filter(Boolean).join(', ') || '-'}
+                                                        </p>
+                                                    </TableCell>
+                                                    <TableCell className="align-top">{data?.nomor_nphd || <span className="text-muted-foreground">Belum dibuat</span>}</TableCell>
+                                                    <TableCell className="align-top">{data?.jenis_pengelola || <span className="text-muted-foreground">-</span>}</TableCell>
+                                                    <TableCell className="align-top">
+                                                        {data?.penerima_manfaat.length ? (
+                                                            <ul className="list-disc pl-4 space-y-0.5">
+                                                                {data.penerima_manfaat.map((nama) => (
+                                                                    <li key={nama} className="break-words">{nama}</li>
+                                                                ))}
+                                                            </ul>
+                                                        ) : (
+                                                            <span className="text-muted-foreground">-</span>
+                                                        )}
+                                                    </TableCell>
+                                                    <TableCell className="align-top">
+                                                        <div className="flex justify-end gap-2">
+                                                            <Button variant="outline" size="sm" className="gap-1.5" onClick={() => setDipilih(p)}>
+                                                                <Pencil className="h-4 w-4" />
+                                                                Input data
+                                                            </Button>
+                                                            <Button size="sm" asChild className="gap-1.5">
+                                                                <Link to="/pekerjaan/$id/nphd" params={{ id: String(p.id) }}>
+                                                                    <FileText className="h-4 w-4" />
+                                                                    Buat NPHD
+                                                                </Link>
+                                                            </Button>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })}
+                                    </TableBody>
+                                </Table>
+                            </div>
+                        </CardContent>
+                    </Card>
                 )}
             </div>
+
+            {dipilih ? (
+                <NphdDataDialog
+                    open={!!dipilih}
+                    onOpenChange={(open) => {
+                        if (!open) setDipilih(null);
+                    }}
+                    pekerjaanId={dipilih.id}
+                    namaPaket={dipilih.nama_paket}
+                    data={dataPerPaket.get(dipilih.id)}
+                />
+            ) : null}
         </PageContainer>
     );
 }
