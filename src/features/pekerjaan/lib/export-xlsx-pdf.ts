@@ -43,18 +43,26 @@ function siapkanSheet(sheet: XLSX.WorkSheet, nama: string): SheetSiap | null {
     }, 0)
     if (kolom === 0) return null
 
-    const potong = baris.map((r) => r.slice(0, kolom))
+    // Buang kolom yang seluruh isinya kosong. Kolom kosong di sheet hasil ekspor sering sangat banyak,
+    // dan kalau ikut dihitung lebarnya, kolom isi jadi sempit lalu barisnya menjadi sangat tinggi.
+    const terisi: number[] = []
+    for (let c = 0; c < kolom; c++) {
+        if (baris.some((r) => r[c] !== undefined && r[c] !== '')) terisi.push(c)
+    }
+    const potong = baris.map((r) => terisi.map((c) => r[c] ?? ''))
+    const jumlahKolom = terisi.length
+    if (jumlahKolom === 0) return null
     // Header adalah baris pertama yang punya minimal tiga sel terisi. Baris sebelumnya jadi pembuka.
     const indexHeader = potong.findIndex((r) => r.filter((c) => c !== '').length >= 3)
     if (indexHeader === -1) {
-        return { nama, pembuka: [], head: null, body: potong, kolom }
+        return { nama, pembuka: [], head: null, body: potong, kolom: jumlahKolom }
     }
     return {
         nama,
         pembuka: potong.slice(0, indexHeader),
         head: potong[indexHeader],
         body: potong.slice(indexHeader + 1),
-        kolom,
+        kolom: jumlahKolom,
     }
 }
 
@@ -73,16 +81,17 @@ const GAYA_TABEL = {
     },
 }
 
-function tuliSheet(doc: jsPDF, sheet: SheetSiap) {
+function tuliSheet(doc: jsPDF, sheet: SheetSiap, overflow: 'linebreak' | 'ellipsize') {
     doc.setFontSize(11)
     doc.setFont('helvetica', 'bold')
     doc.text(sheet.nama, MARGIN, MARGIN + 4)
     doc.setFont('helvetica', 'normal')
 
     let startY = MARGIN + 9
+    const gaya = { ...GAYA_TABEL, styles: { ...GAYA_TABEL.styles, overflow } }
     if (sheet.pembuka.length > 0) {
         autoTable(doc, {
-            ...GAYA_TABEL,
+            ...gaya,
             startY,
             margin: { left: MARGIN, right: MARGIN, bottom: MARGIN + 4 },
             body: sheet.pembuka,
@@ -92,13 +101,26 @@ function tuliSheet(doc: jsPDF, sheet: SheetSiap) {
     }
 
     autoTable(doc, {
-        ...GAYA_TABEL,
+        ...gaya,
         startY,
         margin: { left: MARGIN, right: MARGIN, bottom: MARGIN + 4 },
         head: sheet.head ? [sheet.head] : undefined,
         body: sheet.body,
         headStyles: { fillColor: [235, 235, 235], textColor: 20, fontStyle: 'bold', halign: 'center' },
     })
+}
+
+/**
+ * Teks dibungkus per sel selama muat di satu halaman. Kalau ada baris yang tingginya melebihi halaman
+ * (autotable gagal dengan stack overflow), sheet itu dicetak dengan teks dipotong satu baris.
+ */
+function overflowUntuk(sheet: SheetSiap, orientasi: 'portrait' | 'landscape'): 'linebreak' | 'ellipsize' {
+    try {
+        tuliSheet(new jsPDF({ orientation: orientasi, unit: 'mm', format: 'a4' }), sheet, 'linebreak')
+        return 'linebreak'
+    } catch {
+        return 'ellipsize'
+    }
 }
 
 /** Ubah isi workbook menjadi PDF A4: setiap sheet mulai di halaman baru, semua sheet ikut. */
@@ -113,10 +135,11 @@ export function workbookKePdf(wb: XLSX.WorkBook, judul: string): jsPDF {
         throw new Error('Berkas tidak punya isi yang bisa dicetak.')
     }
 
-    const doc = new jsPDF({ orientation: orientasiUntuk(sheets[0].kolom), unit: 'mm', format: 'a4' })
+    const doc = new jsPDF({ orientation: orientasiUntuk(sheets[0].kolom), unit: 'mm', format: 'a4', compress: true })
     sheets.forEach((sheet, index) => {
-        if (index > 0) doc.addPage('a4', orientasiUntuk(sheet.kolom))
-        tuliSheet(doc, sheet)
+        const orientasi = orientasiUntuk(sheet.kolom)
+        if (index > 0) doc.addPage('a4', orientasi)
+        tuliSheet(doc, sheet, overflowUntuk(sheet, orientasi))
     })
 
     const total = doc.getNumberOfPages()
