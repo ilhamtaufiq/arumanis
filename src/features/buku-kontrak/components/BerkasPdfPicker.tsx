@@ -44,7 +44,8 @@ export function BerkasPdfPicker({ open, onOpenChange, pekerjaanId, onPilih }: Pr
         enabled: open && pekerjaanId !== null,
     })
 
-    const pdf = berkasList.filter((b) => /\.pdf$/i.test(namaBerkas(b)))
+    // PDF dikenali dari tipe MIME, atau dari nama file bila tipe MIME tidak ada.
+    const pdf = berkasList.filter((b) => b.mime_type === 'application/pdf' || /\.pdf$/i.test(namaBerkas(b)))
 
     const toggle = (id: number) =>
         setTerpilih((s) => {

@@ -10,6 +10,8 @@ export interface Berkas {
     file_name?: string | null;
     /** Nama asli saat upload (media.name); null untuk upload lama. */
     original_name?: string | null;
+    /** Tipe MIME file di penyimpanan, misalnya `application/pdf`. */
+    mime_type?: string | null;
     pekerjaan?: Pekerjaan;
     created_at: string;
     updated_at: string;

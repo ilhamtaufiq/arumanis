@@ -8,6 +8,7 @@ import PageContainer from '@/components/layout/page-container'
 import { createBerkas } from '@/features/berkas/api'
 import type { Berkas } from '@/features/berkas/types'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
+import type { Pekerjaan } from '@/features/pekerjaan/types'
 import { normalizeStorageUrl } from '@/features/foto/lib/foto-url'
 import { getApiErrorMessage } from '@/lib/api-error-message'
 import { bacaPdf, gabungkanPdf, type PilihanHalaman, type SumberPdf } from '../lib/pdf-utils'
@@ -35,7 +36,19 @@ export default function BukuKontrakPage() {
 
     const { data: pekerjaanList = [] } = useQuery({
         queryKey: ['buku-kontrak', 'pekerjaan'],
-        queryFn: async () => (await getPekerjaan({ per_page: 100, status: 'active' })).data,
+        queryFn: async () => {
+            // Ambil semua halaman pekerjaan aktif, bukan hanya 100 pertama.
+            const semua: Pekerjaan[] = []
+            let page = 1
+            let lastPage = 1
+            do {
+                const res = await getPekerjaan({ page, per_page: 100, status: 'active' })
+                semua.push(...res.data)
+                lastPage = res.meta?.last_page ?? page
+                page += 1
+            } while (page <= lastPage)
+            return semua
+        },
     })
     const pilihanPekerjaan = useMemo(
         () =>
