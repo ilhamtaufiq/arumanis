@@ -18,7 +18,7 @@ import { exportNphd, getNphdData, saveNphdData } from '../api/nphd';
 import { getOutput } from '@/features/output/api/output';
 import type { Output } from '@/features/output/types';
 import { useCreateDocumentRegister, useDocumentTypes } from '../hooks/useDocumentRegister';
-import { getPrimaryKontrak, getRegisterApiErrorMessage } from '../lib/register-dokumen';
+import { findRegisterByType, getPrimaryKontrak, getRegisterApiErrorMessage } from '../lib/register-dokumen';
 import { NphdPenerimaInput } from './NphdPenerimaInput';
 import { JENIS_PENGELOLA_AWAL, OBJEK_AWAL } from './nphd-defaults';
 import type { Pekerjaan } from '../types';
@@ -205,12 +205,21 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
 
         setBusy(true);
         try {
-            const register = await createRegister.mutateAsync({
-                kontrak_id: kontrak.id,
-                type_id: tipe.id,
-                tanggal: form.tanggal,
-                description: 'NPHD',
-            });
+            // Nomor NPHD yang sudah tercatat di Register Dokumen dipakai ulang. Nomor baru hanya dibuat
+            // kalau paket ini belum punya register NPHD, supaya satu paket tidak mendapat nomor berulang.
+            const sudahAda = findRegisterByType(pekerjaan, tipe.id);
+            const register = sudahAda
+                ? sudahAda
+                : await createRegister.mutateAsync({
+                      kontrak_id: kontrak.id,
+                      type_id: tipe.id,
+                      tanggal: form.tanggal,
+                      description: 'NPHD',
+                  });
+            if (!sudahAda) {
+                // Muat ulang data pekerjaan supaya register baru terbaca oleh klik berikutnya.
+                await queryClient.invalidateQueries({ queryKey: ['pekerjaan'] });
+            }
             const blob = await exportNphd(pekerjaan.id, {
                 nomor: register.nomor,
                 tanggal: form.tanggal,
@@ -220,7 +229,11 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
                 penerima: daftarPenerima.join(';'),
             });
             downloadBlob(blob, `NPHD_${register.nomor.replace(/[^A-Za-z0-9]+/g, '_')}.docx`);
-            toast.success(`NPHD ${register.nomor} dibuat dan diunduh.`);
+            toast.success(
+                sudahAda
+                    ? `NPHD ${register.nomor} diunduh dengan nomor yang sudah ada.`
+                    : `NPHD ${register.nomor} dibuat dan diunduh.`,
+            );
 
             // Simpan jenis, penerima, dan nomor supaya halaman daftar dan form berikutnya ikut terisi.
             try {
