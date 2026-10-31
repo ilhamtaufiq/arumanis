@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowDown, ArrowUp, BookOpen, Loader2, Save, Trash2, Upload } from 'lucide-react'
+import { ArrowDown, ArrowUp, BookOpen, FolderOpen, Loader2, Save, Trash2, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { SearchableSelect } from '@/components/ui/searchable-select'
 import PageContainer from '@/components/layout/page-container'
 import { createBerkas } from '@/features/berkas/api'
+import type { Berkas } from '@/features/berkas/types'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
+import { normalizeStorageUrl } from '@/features/foto/lib/foto-url'
 import { getApiErrorMessage } from '@/lib/api-error-message'
 import { bacaPdf, gabungkanPdf, type PilihanHalaman, type SumberPdf } from '../lib/pdf-utils'
 import { renderThumbnail } from '../lib/pdf-thumbnail'
+import { BerkasPdfPicker } from './BerkasPdfPicker'
 
 /** Jenis dokumen berkas hasil buku kontrak. */
 export const JENIS_BUKU_KONTRAK = 'Buku Kontrak'
@@ -24,6 +27,7 @@ export default function BukuKontrakPage() {
     const [thumbs, setThumbs] = useState<Record<string, string>>({})
     const [pekerjaanId, setPekerjaanId] = useState('')
     const [membaca, setMembaca] = useState(false)
+    const [pickerOpen, setPickerOpen] = useState(false)
     const [menyimpan, setMenyimpan] = useState(false)
 
     const { data: pekerjaanList = [] } = useQuery({
@@ -72,12 +76,12 @@ export default function BukuKontrakPage() {
         0,
     )
 
-    const handleTambahFile = async (daftar: FileList | null) => {
-        if (!daftar) return
+    /** Tambahkan file ke daftar sumber. Dipakai untuk upload dari perangkat dan untuk berkas pekerjaan. */
+    const tambahFile = async (daftar: File[]) => {
         setMembaca(true)
         try {
             const baru: SumberPdf[] = []
-            for (const file of Array.from(daftar)) {
+            for (const file of daftar) {
                 if (file.type !== 'application/pdf' && !/\.pdf$/i.test(file.name)) {
                     toast.error(`${file.name} bukan berkas PDF.`)
                     continue
@@ -91,8 +95,34 @@ export default function BukuKontrakPage() {
             if (baru.length > 0) setSumber((s) => [...s, ...baru])
         } finally {
             setMembaca(false)
-            if (inputRef.current) inputRef.current.value = ''
         }
+    }
+
+    const handleTambahFile = async (daftar: FileList | null) => {
+        if (!daftar) return
+        await tambahFile(Array.from(daftar))
+        if (inputRef.current) inputRef.current.value = ''
+    }
+
+    /** Unduh berkas PDF yang dipilih dari berkas pekerjaan, lalu tambahkan seperti upload biasa. */
+    const ambilDariBerkas = async (dipilih: Berkas[]) => {
+        setMembaca(true)
+        const files: File[] = []
+        try {
+            for (const b of dipilih) {
+                try {
+                    const res = await fetch(normalizeStorageUrl(b.berkas_url))
+                    if (!res.ok) throw new Error(`status ${res.status}`)
+                    const nama = b.original_name || b.file_name || `berkas_${b.id}.pdf`
+                    files.push(new File([await res.blob()], nama, { type: 'application/pdf' }))
+                } catch {
+                    toast.error(`${b.original_name || b.file_name || `berkas ${b.id}`} tidak bisa diunduh.`)
+                }
+            }
+        } finally {
+            setMembaca(false)
+        }
+        await tambahFile(files)
     }
 
     const pindah = (index: number, arah: -1 | 1) =>
@@ -185,7 +215,17 @@ export default function BukuKontrakPage() {
                 <div className="flex flex-wrap items-center gap-3">
                     <Button variant="outline" className="gap-2" onClick={() => inputRef.current?.click()} disabled={membaca}>
                         {membaca ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                        Tambah PDF
+                        Upload PDF
+                    </Button>
+                    <Button
+                        variant="outline"
+                        className="gap-2"
+                        onClick={() => setPickerOpen(true)}
+                        disabled={membaca || pekerjaanId === ''}
+                        title={pekerjaanId === '' ? 'Pilih pekerjaan tujuan dulu' : undefined}
+                    >
+                        <FolderOpen className="h-4 w-4" />
+                        Pilih dari berkas pekerjaan
                     </Button>
                     <input
                         ref={inputRef}
@@ -262,6 +302,13 @@ export default function BukuKontrakPage() {
                     </Button>
                 </div>
             </div>
+
+            <BerkasPdfPicker
+                open={pickerOpen}
+                onOpenChange={setPickerOpen}
+                pekerjaanId={pekerjaanId === '' ? null : Number(pekerjaanId)}
+                onPilih={(dipilih) => void ambilDariBerkas(dipilih)}
+            />
         </PageContainer>
     )
 }
