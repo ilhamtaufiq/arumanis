@@ -14,6 +14,9 @@ import { bacaPdf, gabungkanPdf, type PilihanHalaman, type SumberPdf } from '../l
 import { renderThumbnail } from '../lib/pdf-thumbnail'
 import { BerkasPdfPicker } from './BerkasPdfPicker'
 
+/** Batas ukuran upload berkas di backend (`media::MAX_FILE_BYTES`, 50 MB). */
+const BATAS_UPLOAD_BYTES = 51_200 * 1024
+
 /** Jenis dokumen berkas hasil buku kontrak. */
 export const JENIS_BUKU_KONTRAK = 'Buku Kontrak'
 
@@ -169,7 +172,12 @@ export default function BukuKontrakPage() {
         setMenyimpan(true)
         try {
             const bytes = await gabungkanPdf(sumber, pilihan)
-            const file = new File([new Blob([bytes], { type: 'application/pdf' })], `Buku Kontrak - ${nama}.pdf`, {
+            if (bytes.byteLength > BATAS_UPLOAD_BYTES) {
+                const mb = (bytes.byteLength / (1024 * 1024)).toFixed(1)
+                toast.error(`Hasil gabungan ${mb} MB melebihi batas upload 50 MB. Kurangi halaman atau berkas.`)
+                return
+            }
+            const file =new File([new Blob([bytes], { type: 'application/pdf' })], `Buku Kontrak - ${nama}.pdf`, {
                 type: 'application/pdf',
             })
             const fd = new FormData()
