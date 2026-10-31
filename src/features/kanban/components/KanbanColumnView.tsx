@@ -30,11 +30,11 @@ export function KanbanColumnView({
 
     return (
         <div
-            className={
-                'flex flex-col h-full max-h-full w-[min(85vw,320px)] shrink-0 snap-center rounded-2xl border ' +
-                'bg-background/90 shadow-sm backdrop-blur-sm ' +
-                'sm:w-[300px] sm:snap-start lg:w-[320px]'
-            }
+            className={cn(
+                'flex flex-col h-full max-h-full w-[min(85vw,320px)] shrink-0 snap-center rounded-2xl border bg-background/90 shadow-sm backdrop-blur-sm transition-[box-shadow,border-color] duration-200',
+                'sm:w-[300px] sm:snap-start lg:w-[320px]',
+                isOver && 'border-primary/60 ring-2 ring-primary/25',
+            )}
         >
             <div
                 className="relative border-b px-3 py-3 sm:px-4 sm:py-3.5"
@@ -87,14 +87,23 @@ export function KanbanColumnView({
             >
                 <SortableContext items={cards.map((card) => card.id)} strategy={verticalListSortingStrategy}>
                     {cards.length === 0 ? (
-                        <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed bg-muted/20 px-3 py-8 text-center sm:px-4 sm:py-10">
+                        <div
+                            className={cn(
+                                'flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed px-3 py-8 text-center transition-colors sm:px-4 sm:py-10',
+                                isOver ? 'border-primary/50 bg-primary/5' : 'bg-muted/20',
+                            )}
+                        >
                             <Inbox className="mb-2 h-7 w-7 text-muted-foreground/70 sm:h-8 sm:w-8" />
-                            <p className="text-sm font-medium text-muted-foreground">Kolom kosong</p>
-                            <p className="mt-1 max-w-[16rem] text-xs text-muted-foreground">
-                                {canManage
-                                    ? 'Tahan kartu lalu tarik ke sini, atau tambah baru'
-                                    : 'Belum ada kartu di kolom ini'}
+                            <p className="text-sm font-medium text-muted-foreground">
+                                {isOver ? 'Lepas kartu di sini' : 'Kolom kosong'}
                             </p>
+                            {!isOver && (
+                                <p className="mt-1 max-w-[16rem] text-xs text-muted-foreground">
+                                    {canManage
+                                        ? 'Seret kartu ke sini, atau tambah kartu baru'
+                                        : 'Belum ada kartu di kolom ini'}
+                                </p>
+                            )}
                         </div>
                     ) : (
                         cards.map((card) => (

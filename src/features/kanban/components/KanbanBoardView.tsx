@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import {
     DndContext,
     DragOverlay,
+    KeyboardSensor,
     PointerSensor,
     TouchSensor,
     closestCorners,
@@ -9,6 +10,7 @@ import {
     useSensors,
     type DragEndEvent,
 } from '@dnd-kit/core'
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { Loader2 } from 'lucide-react'
 import { findCardColumnId, getColumnCards, resolveDropTarget, sortColumns } from '../lib/kanban-board'
 import type { KanbanBoard, KanbanCard } from '../types'
@@ -44,6 +46,10 @@ export function KanbanBoardView({
         useSensor(TouchSensor, {
             // Long-press so vertical scroll on mobile still works
             activationConstraint: { delay: 220, tolerance: 8 },
+        }),
+        // Keyboard: fokus handle kartu, tekan Spasi untuk mengambil, panah untuk memindah, Spasi untuk meletakkan.
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
         }),
     )
 

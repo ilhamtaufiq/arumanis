@@ -1,3 +1,4 @@
+import { useRef, type MouseEvent } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { formatDistanceToNow } from 'date-fns'
@@ -65,6 +66,16 @@ export function KanbanCardV2Item({ card, column, canManage, accentColor = '#6474
         transition,
     }
 
+    // Klik dibedakan dari seret: bila pointer bergeser cukup jauh, jangan buka dialog.
+    const pointerAwal = useRef<{ x: number; y: number } | null>(null)
+
+    const bukaJikaKlik = (e: MouseEvent<HTMLElement>) => {
+        const awal = pointerAwal.current
+        pointerAwal.current = null
+        if (awal && Math.hypot(e.clientX - awal.x, e.clientY - awal.y) > 5) return
+        onOpen(card)
+    }
+
     const meta = getCardMeta(card)
     const priority = priorityBadgeConfig[meta.priority]
     const PriorityIcon = priority.icon
@@ -82,9 +93,23 @@ export function KanbanCardV2Item({ card, column, canManage, accentColor = '#6474
         <article
             ref={setNodeRef}
             style={style}
+            role='button'
+            tabIndex={0}
+            aria-label={`Buka kartu: ${card.title}`}
+            onPointerDown={(e) => {
+                pointerAwal.current = { x: e.clientX, y: e.clientY }
+            }}
+            onClick={bukaJikaKlik}
+            onKeyDown={(e) => {
+                if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+                    e.preventDefault()
+                    onOpen(card)
+                }
+            }}
             className={cn(
-                'group relative flex flex-col gap-3 rounded-xl border bg-card p-4 text-card-foreground shadow-xs',
-                isDragging && 'z-10 rotate-1 shadow-lg ring-2 ring-primary/25',
+                'group relative flex cursor-pointer flex-col gap-3 rounded-xl border bg-card p-4 text-card-foreground shadow-xs transition-[box-shadow,border-color] duration-200',
+                'hover:border-foreground/20 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                isDragging && 'z-10 rotate-1 cursor-grabbing shadow-lg ring-2 ring-primary/25',
             )}
         >
             <div
@@ -93,23 +118,21 @@ export function KanbanCardV2Item({ card, column, canManage, accentColor = '#6474
             />
 
             <div className='min-w-0 space-y-1.5 pl-1'>
-                <div className='flex items-center justify-between gap-3'>
-                    <div className='flex min-w-0 items-center gap-1.5'>
+                <div className='flex items-start justify-between gap-3'>
+                    <div className='flex min-w-0 items-start gap-1.5'>
                         {canManage && (
                             <button
                                 type='button'
-                                className='touch-none cursor-grab rounded p-0.5 text-muted-foreground transition-opacity hover:bg-muted hover:text-foreground active:cursor-grabbing sm:opacity-0 sm:group-hover:opacity-100'
-                                aria-label='Geser kartu'
+                                className='-ml-0.5 mt-px touch-none cursor-grab rounded p-0.5 text-muted-foreground transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing sm:opacity-0 sm:group-hover:opacity-100'
+                                aria-label={`Geser kartu ${card.title}. Tekan Spasi untuk mengambil, panah untuk memindah.`}
+                                onClick={(e) => e.stopPropagation()}
                                 {...attributes}
                                 {...listeners}
                             >
                                 <GripVertical className='h-4 w-4' />
                             </button>
                         )}
-                        <h3
-                            className='min-w-0 flex-1 cursor-pointer truncate text-sm leading-none font-medium'
-                            onClick={() => onOpen(card)}
-                        >
+                        <h3 className='min-w-0 flex-1 line-clamp-2 break-words text-sm leading-snug font-medium'>
                             {card.title}
                         </h3>
                     </div>
