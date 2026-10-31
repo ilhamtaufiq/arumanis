@@ -34,7 +34,10 @@ describe('workbookKePdf', () => {
     it('sheet lebar memakai landscape, sheet sempit memakai portrait', () => {
         const lebar = buatWorkbook({
             'Sempit': [['No', 'Uraian'], [1, 'Pipa']],
-            'Lebar': [['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'], [1, 2, 3, 4, 5, 6, 7, 8]],
+            'Lebar': [
+                ['Uraian pekerjaan yang sangat panjang sekali', 'Keterangan tambahan yang juga sangat panjang', 'Lokasi kegiatan dan alamat lengkapnya', 'Catatan pelaksanaan di lapangan sekarang', 'Penanggung jawab kegiatan di lokasi', 'Tanggal dan waktu pelaksanaan lengkap'],
+                [1, 2, 3, 4, 5, 6],
+            ],
         })
         const doc = workbookKePdf(lebar, 'rab.xlsx')
         doc.setPage(1)

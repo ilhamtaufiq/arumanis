@@ -61,7 +61,8 @@ async function gambarKePng(bytes: ArrayBuffer): Promise<ArrayBuffer> {
 }
 
 async function sheetKePdf(file: File): Promise<ArrayBuffer> {
-    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' })
+    // cellStyles wajib agar lebar kolom (<cols>) ikut terbaca.
+    const wb = XLSX.read(await file.arrayBuffer(), { type: 'array', cellStyles: true })
     const doc = workbookKePdf(wb, file.name)
     return doc.output('arraybuffer')
 }
