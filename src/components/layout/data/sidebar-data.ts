@@ -14,6 +14,7 @@ import {
     Hash,
     Megaphone,
     FileText,
+    BookOpen,
     HardDrive,
     History as HistoryIcon,
     Inbox,
@@ -264,6 +265,12 @@ export const sidebarData: SidebarData = {
                     title: 'NPHD',
                     url: '/nphd',
                     icon: FileText,
+                    menuKey: 'pekerjaan',
+                },
+                {
+                    title: 'Buku Kontrak',
+                    url: '/buku-kontrak',
+                    icon: BookOpen,
                     menuKey: 'pekerjaan',
                 },
                 {

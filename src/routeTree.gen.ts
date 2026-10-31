@@ -42,6 +42,7 @@ import { Route as AuthenticatedDraftPekerjaanRouteImport } from './routes/_authe
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedChecklistRouteImport } from './routes/_authenticated/checklist'
 import { Route as AuthenticatedCatatanRouteImport } from './routes/_authenticated/catatan'
+import { Route as AuthenticatedBukuKontrakRouteImport } from './routes/_authenticated/buku-kontrak'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
 import { Route as AuthenticatedUsulanKegiatanIndexRouteImport } from './routes/_authenticated/usulan-kegiatan/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
@@ -318,6 +319,12 @@ const AuthenticatedCatatanRoute = AuthenticatedCatatanRouteImport.update({
   path: '/catatan',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedBukuKontrakRoute =
+  AuthenticatedBukuKontrakRouteImport.update({
+    id: '/buku-kontrak',
+    path: '/buku-kontrak',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
   id: '/audit-logs',
   path: '/audit-logs',
@@ -951,6 +958,7 @@ export interface FileRoutesByFullPath {
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
+  '/buku-kontrak': typeof AuthenticatedBukuKontrakRoute
   '/catatan': typeof AuthenticatedCatatanRoute
   '/checklist': typeof AuthenticatedChecklistRoute
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
@@ -1089,6 +1097,7 @@ export interface FileRoutesByTo {
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/audit-logs': typeof AuthenticatedAuditLogsRoute
+  '/buku-kontrak': typeof AuthenticatedBukuKontrakRoute
   '/catatan': typeof AuthenticatedCatatanRoute
   '/checklist': typeof AuthenticatedChecklistRoute
   '/dashboard': typeof AuthenticatedDashboardRouteWithChildren
@@ -1229,6 +1238,7 @@ export interface FileRoutesById {
   '/tujuan-manfaat-hasil': typeof TujuanManfaatHasilRoute
   '/unauthorized': typeof UnauthorizedRoute
   '/_authenticated/audit-logs': typeof AuthenticatedAuditLogsRoute
+  '/_authenticated/buku-kontrak': typeof AuthenticatedBukuKontrakRoute
   '/_authenticated/catatan': typeof AuthenticatedCatatanRoute
   '/_authenticated/checklist': typeof AuthenticatedChecklistRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRouteWithChildren
@@ -1370,6 +1380,7 @@ export interface FileRouteTypes {
     | '/tujuan-manfaat-hasil'
     | '/unauthorized'
     | '/audit-logs'
+    | '/buku-kontrak'
     | '/catatan'
     | '/checklist'
     | '/dashboard'
@@ -1508,6 +1519,7 @@ export interface FileRouteTypes {
     | '/tujuan-manfaat-hasil'
     | '/unauthorized'
     | '/audit-logs'
+    | '/buku-kontrak'
     | '/catatan'
     | '/checklist'
     | '/dashboard'
@@ -1647,6 +1659,7 @@ export interface FileRouteTypes {
     | '/tujuan-manfaat-hasil'
     | '/unauthorized'
     | '/_authenticated/audit-logs'
+    | '/_authenticated/buku-kontrak'
     | '/_authenticated/catatan'
     | '/_authenticated/checklist'
     | '/_authenticated/dashboard'
@@ -2021,6 +2034,13 @@ declare module '@tanstack/react-router' {
       path: '/catatan'
       fullPath: '/catatan'
       preLoaderRoute: typeof AuthenticatedCatatanRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/buku-kontrak': {
+      id: '/_authenticated/buku-kontrak'
+      path: '/buku-kontrak'
+      fullPath: '/buku-kontrak'
+      preLoaderRoute: typeof AuthenticatedBukuKontrakRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/audit-logs': {
@@ -2829,6 +2849,7 @@ const AuthenticatedInformasiIdRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedAuditLogsRoute: typeof AuthenticatedAuditLogsRoute
+  AuthenticatedBukuKontrakRoute: typeof AuthenticatedBukuKontrakRoute
   AuthenticatedCatatanRoute: typeof AuthenticatedCatatanRoute
   AuthenticatedChecklistRoute: typeof AuthenticatedChecklistRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRouteWithChildren
@@ -2941,6 +2962,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAuditLogsRoute: AuthenticatedAuditLogsRoute,
+  AuthenticatedBukuKontrakRoute: AuthenticatedBukuKontrakRoute,
   AuthenticatedCatatanRoute: AuthenticatedCatatanRoute,
   AuthenticatedChecklistRoute: AuthenticatedChecklistRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRouteWithChildren,
