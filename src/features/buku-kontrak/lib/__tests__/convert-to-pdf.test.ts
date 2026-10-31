@@ -29,3 +29,23 @@ describe('namaUntukKonversi', () => {
         expect(didukungMime(null)).toBe(false)
     })
 })
+
+describe('ekstensiDariIsi', () => {
+    it('mengenali PDF, PNG, dan JPEG dari tanda awal', async () => {
+        const { ekstensiDariIsi } = await import('../convert-to-pdf')
+        expect(await ekstensiDariIsi(new Blob(['%PDF-1.7 isi']))).toBe('pdf')
+        expect(await ekstensiDariIsi(new Blob([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0, 0])]))).toBe('png')
+        expect(await ekstensiDariIsi(new Blob([new Uint8Array([0xff, 0xd8, 0xff, 0xe0])]))).toBe('jpg')
+    })
+
+    it('mengenali docx dari penanda di dalam arsip ZIP', async () => {
+        const { ekstensiDariIsi } = await import('../convert-to-pdf')
+        expect(await ekstensiDariIsi(new Blob(['PK\x03\x04 word/document.xml']))).toBe('docx')
+        expect(await ekstensiDariIsi(new Blob(['PK\x03\x04 xl/workbook.xml']))).toBe('xlsx')
+    })
+
+    it('mengembalikan null untuk isi yang tidak dikenali', async () => {
+        const { ekstensiDariIsi } = await import('../convert-to-pdf')
+        expect(await ekstensiDariIsi(new Blob(['teks biasa tanpa penanda']))).toBeNull()
+    })
+})

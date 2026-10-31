@@ -21,7 +21,7 @@ import { normalizeStorageUrl } from '@/features/foto/lib/foto-url'
 import { getApiErrorMessage } from '@/lib/api-error-message'
 import { gabungkanPdf, type PilihanHalaman, type SumberPdf } from '../lib/pdf-utils'
 import { renderThumbnail } from '../lib/pdf-thumbnail'
-import { didukung, EKSTENSI_DIDUKUNG, namaUntukKonversi, ubahKePdf } from '../lib/convert-to-pdf'
+import { didukung, EKSTENSI_DIDUKUNG, siapkanFileKonversi, ubahKePdf } from '../lib/convert-to-pdf'
 import { BerkasPdfPicker } from './BerkasPdfPicker'
 import { PekerjaanPicker, type PekerjaanTerpilih } from './PekerjaanPicker'
 
@@ -131,7 +131,7 @@ export default function BukuKontrakPage() {
         try {
             const baru: SumberPdf[] = []
             for (const berkas of daftar) {
-                const file = new File([berkas], namaUntukKonversi(berkas.name, berkas.type), { type: berkas.type })
+                const file = await siapkanFileKonversi(berkas, berkas.name, berkas.type)
                 if (!didukung(file.name)) {
                     toast.error(`${berkas.name}: format belum didukung.`)
                     continue
@@ -168,8 +168,7 @@ export default function BukuKontrakPage() {
                 try {
                     const res = await fetch(normalizeStorageUrl(b.berkas_url))
                     if (!res.ok) throw new Error(`status ${res.status}`)
-                    const namaFile = namaUntukKonversi(nama, b.mime_type, b.file_name)
-                    files.push(new File([await res.blob()], namaFile))
+                    files.push(await siapkanFileKonversi(await res.blob(), nama, b.mime_type, b.file_name))
                 } catch {
                     toast.error(`${nama} tidak bisa diunduh.`)
                 }

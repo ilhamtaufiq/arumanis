@@ -46,11 +46,12 @@ export function BerkasPdfPicker({ open, onOpenChange, pekerjaanId, onPilih }: Pr
     })
 
     // Semua format yang bisa diubah ke PDF: PDF, gambar, spreadsheet, dan dokumen.
-    const pdf = berkasList.filter(
-        (b) =>
-            didukungMime(b.mime_type) ||
-            didukung(namaUntukKonversi(namaBerkas(b), b.mime_type, b.file_name)),
-    )
+    // Berkas yang metadatanya tidak jelas tetap ditampilkan. Jenisnya dicek dari isi saat diambil.
+    const pdf = berkasList.filter((b) => {
+        const nama = namaUntukKonversi(namaBerkas(b), b.mime_type, b.file_name)
+        const takBertipe = !didukungMime(b.mime_type) && !nama.includes('.')
+        return didukungMime(b.mime_type) || didukung(nama) || takBertipe
+    })
 
     const toggle = (id: number) =>
         setTerpilih((s) => {

@@ -142,3 +142,44 @@ export async function ubahKePdf(file: File): Promise<SumberPdf> {
     const stem = file.name.replace(/\.[^.]+$/, '')
     return sumberDariPdfBytes(`${stem}.pdf`, bytes)
 }
+
+/** Ekstensi dari isi file (tanda awal dan penanda di dalam arsip), untuk berkas tanpa metadata yang benar. */
+export async function ekstensiDariIsi(blob: Blob): Promise<string | null> {
+    const buf = new Uint8Array(await blob.arrayBuffer())
+    const awal = (s: string) => s.split('').every((ch, i) => buf[i] === ch.charCodeAt(0))
+    if (awal('%PDF')) return 'pdf'
+    if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpg'
+    if (awal('\x89PNG')) return 'png'
+    if (awal('GIF8')) return 'gif'
+    if (awal('BM')) return 'bmp'
+    if (awal('RIFF') && buf.length > 12 && String.fromCharCode(...buf.slice(8, 12)) === 'WEBP') return 'webp'
+    if (awal('{\\rtf')) return 'rtf'
+    // Arsip ZIP (docx, xlsx, pptx, odt, ...) dan OLE (doc, xls, ppt): cari penanda di dalamnya.
+    const teks = new TextDecoder('latin1').decode(buf)
+    if (awal('PK')) {
+        if (teks.includes('word/')) return 'docx'
+        if (teks.includes('xl/')) return 'xlsx'
+        if (teks.includes('ppt/')) return 'pptx'
+        if (teks.includes('application/vnd.oasis.opendocument.text')) return 'odt'
+        if (teks.includes('application/vnd.oasis.opendocument.spreadsheet')) return 'ods'
+        if (teks.includes('application/vnd.oasis.opendocument.presentation')) return 'odp'
+    }
+    if (awal('\xd0\xcf\x11\xe0')) {
+        if (teks.includes('WordDocument')) return 'doc'
+        if (teks.includes('Workbook') || teks.includes('Book')) return 'xls'
+        if (teks.includes('PowerPoint Document')) return 'ppt'
+    }
+    return null
+}
+
+/**
+ * Siapkan File untuk konversi: nama diperbaiki dari metadata, lalu dari isi file bila masih tidak dikenali.
+ */
+export async function siapkanFileKonversi(blob: Blob, nama: string, mime?: string | null, cadangan?: string | null): Promise<File> {
+    let namaFile = namaUntukKonversi(nama, mime, cadangan)
+    if (!didukung(namaFile)) {
+        const ext = await ekstensiDariIsi(blob)
+        if (ext) namaFile = `${nama}.${ext}`
+    }
+    return new File([blob], namaFile, { type: mime ?? blob.type })
+}
