@@ -24,6 +24,46 @@ export function didukung(nama: string): boolean {
     return EKSTENSI_DIDUKUNG.includes(ekstensiNama(nama))
 }
 
+/** Ekstensi dari tipe MIME, untuk berkas yang namanya tidak punya ekstensi valid. */
+const EKSTENSI_MIME: Record<string, string> = {
+    'application/pdf': 'pdf',
+    'image/jpeg': 'jpg',
+    'image/png': 'png',
+    'image/webp': 'webp',
+    'image/gif': 'gif',
+    'image/bmp': 'bmp',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    'application/msword': 'doc',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+    'application/vnd.ms-excel': 'xls',
+    'text/csv': 'csv',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+    'application/vnd.ms-powerpoint': 'ppt',
+    'application/vnd.oasis.opendocument.text': 'odt',
+    'application/vnd.oasis.opendocument.spreadsheet': 'ods',
+    'application/vnd.oasis.opendocument.presentation': 'odp',
+    'application/rtf': 'rtf',
+    'text/rtf': 'rtf',
+    'text/plain': 'txt',
+}
+
+/** Tipe berkas bisa dikonversi dari MIME saja, tanpa bergantung pada nama. */
+export function didukungMime(mime: string | null | undefined): boolean {
+    return !!mime && mime.toLowerCase() in EKSTENSI_MIME
+}
+
+/**
+ * Nama berkas yang ekstensinya bisa dipakai untuk konversi. Nama seperti "SUKET DESA KEC. X" punya
+ * titik di tengah, sehingga bagian setelah titik tidak dianggap ekstensi. Urutannya: ekstensi dari nama,
+ * lalu dari nama cadangan (misalnya file_name), lalu dari tipe MIME.
+ */
+export function namaUntukKonversi(nama: string, mime?: string | null, cadangan?: string | null): string {
+    if (didukung(nama)) return nama
+    if (cadangan && didukung(cadangan)) return `${nama}.${ekstensiNama(cadangan)}`
+    const ext = mime ? EKSTENSI_MIME[mime.toLowerCase()] : undefined
+    return ext ? `${nama}.${ext}` : nama
+}
+
 const A4_PORTRAIT: [number, number] = [595.28, 841.89]
 const A4_LANDSCAPE: [number, number] = [841.89, 595.28]
 const MARGIN = 24

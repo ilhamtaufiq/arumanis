@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { getBerkasList } from '@/features/berkas/api'
 import type { Berkas } from '@/features/berkas/types'
-import { didukung } from '../lib/convert-to-pdf'
+import { didukung, didukungMime, namaUntukKonversi } from '../lib/convert-to-pdf'
 
 type Props = {
     open: boolean
@@ -46,7 +46,11 @@ export function BerkasPdfPicker({ open, onOpenChange, pekerjaanId, onPilih }: Pr
     })
 
     // Semua format yang bisa diubah ke PDF: PDF, gambar, spreadsheet, dan dokumen.
-    const pdf = berkasList.filter((b) => b.mime_type === 'application/pdf' || didukung(namaBerkas(b)))
+    const pdf = berkasList.filter(
+        (b) =>
+            didukungMime(b.mime_type) ||
+            didukung(namaUntukKonversi(namaBerkas(b), b.mime_type, b.file_name)),
+    )
 
     const toggle = (id: number) =>
         setTerpilih((s) => {
