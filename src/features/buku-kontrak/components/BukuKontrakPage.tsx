@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import {
     ArrowDown,
     ArrowUp,
@@ -14,17 +14,16 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { SearchableSelect } from '@/components/ui/searchable-select'
 import PageContainer from '@/components/layout/page-container'
 import { createBerkas } from '@/features/berkas/api'
 import type { Berkas } from '@/features/berkas/types'
-import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
-import type { Pekerjaan } from '@/features/pekerjaan/types'
 import { normalizeStorageUrl } from '@/features/foto/lib/foto-url'
 import { getApiErrorMessage } from '@/lib/api-error-message'
-import { bacaPdf, gabungkanPdf, type PilihanHalaman, type SumberPdf } from '../lib/pdf-utils'
+import { gabungkanPdf, type PilihanHalaman, type SumberPdf } from '../lib/pdf-utils'
 import { renderThumbnail } from '../lib/pdf-thumbnail'
+import { didukung, EKSTENSI_DIDUKUNG, ubahKePdf } from '../lib/convert-to-pdf'
 import { BerkasPdfPicker } from './BerkasPdfPicker'
+import { PekerjaanPicker, type PekerjaanTerpilih } from './PekerjaanPicker'
 
 /** Batas ukuran upload berkas di backend (`media::MAX_FILE_BYTES`, 50 MB). */
 const BATAS_UPLOAD_BYTES = 51_200 * 1024
@@ -45,36 +44,10 @@ export default function BukuKontrakPage() {
     const [dipilih, setDipilih] = useState<Pilihan | null>(null)
     const [pratinjau, setPratinjau] = useState<string | null>(null)
     const [pratinjauMemuat, setPratinjauMemuat] = useState(false)
-    const [pekerjaanId, setPekerjaanId] = useState('')
+    const [pekerjaan, setPekerjaan] = useState<PekerjaanTerpilih | null>(null)
     const [membaca, setMembaca] = useState(false)
     const [menyimpan, setMenyimpan] = useState(false)
     const [pickerOpen, setPickerOpen] = useState(false)
-
-    const { data: pekerjaanList = [] } = useQuery({
-        queryKey: ['buku-kontrak', 'pekerjaan'],
-        queryFn: async () => {
-            // Ambil semua halaman pekerjaan aktif, bukan hanya 100 pertama.
-            const semua: Pekerjaan[] = []
-            let page = 1
-            let lastPage = 1
-            do {
-                const res = await getPekerjaan({ page, per_page: 100, status: 'active' })
-                semua.push(...res.data)
-                lastPage = res.meta?.last_page ?? page
-                page += 1
-            } while (page <= lastPage)
-            return semua
-        },
-    })
-    const pilihanPekerjaan = useMemo(
-        () =>
-            pekerjaanList.map((p) => ({
-                value: String(p.id),
-                label: p.nama_paket,
-                keywords: p.kode_rekening ?? undefined,
-            })),
-        [pekerjaanList],
-    )
 
     // Render thumbnail satu per satu di latar belakang. Halaman yang sudah jadi tidak diulang.
     const sudahDirender = useRef<Set<string>>(new Set())
@@ -149,20 +122,24 @@ export default function BukuKontrakPage() {
         0,
     )
 
-    /** Tambahkan file ke daftar sumber. Dipakai untuk upload dari perangkat dan untuk berkas pekerjaan. */
+    /**
+     * Tambahkan file ke daftar sumber. Setiap file diubah dulu ke PDF: PDF dipakai apa adanya,
+     * gambar, spreadsheet, dan dokumen ikut dikonversi. Dipakai untuk upload dan berkas pekerjaan.
+     */
     const tambahFile = async (daftar: File[]) => {
         setMembaca(true)
         try {
             const baru: SumberPdf[] = []
             for (const file of daftar) {
-                if (file.type !== 'application/pdf' && !/\.pdf$/i.test(file.name)) {
-                    toast.error(`${file.name} bukan berkas PDF.`)
+                if (!didukung(file.name)) {
+                    toast.error(`${file.name}: format belum didukung.`)
                     continue
                 }
                 try {
-                    baru.push(await bacaPdf(file))
-                } catch {
-                    toast.error(`${file.name} tidak bisa dibaca (rusak atau terkunci password).`)
+                    baru.push(await ubahKePdf(file))
+                } catch (error) {
+                    const alasan = error instanceof Error ? error.message : 'gagal diubah'
+                    toast.error(`${file.name} tidak bisa diubah ke PDF: ${alasan}`)
                 }
             }
             if (baru.length > 0) {
@@ -180,19 +157,19 @@ export default function BukuKontrakPage() {
         if (inputRef.current) inputRef.current.value = ''
     }
 
-    /** Unduh berkas PDF yang dipilih dari berkas pekerjaan, lalu tambahkan seperti upload biasa. */
+    /** Unduh berkas dari berkas pekerjaan ke memori, lalu tambahkan seperti upload biasa. */
     const ambilDariBerkas = async (pilih: Berkas[]) => {
         setMembaca(true)
         const files: File[] = []
         try {
             for (const b of pilih) {
+                const nama = b.original_name || b.file_name || `berkas_${b.id}`
                 try {
                     const res = await fetch(normalizeStorageUrl(b.berkas_url))
                     if (!res.ok) throw new Error(`status ${res.status}`)
-                    const nama = b.original_name || b.file_name || `berkas_${b.id}.pdf`
-                    files.push(new File([await res.blob()], nama, { type: 'application/pdf' }))
+                    files.push(new File([await res.blob()], nama))
                 } catch {
-                    toast.error(`${b.original_name || b.file_name || `berkas ${b.id}`} tidak bisa diunduh.`)
+                    toast.error(`${nama} tidak bisa diunduh.`)
                 }
             }
         } finally {
@@ -228,7 +205,7 @@ export default function BukuKontrakPage() {
     const sertakanSemua = () => setDikecualikan(new Set())
 
     const handleSimpan = async () => {
-        if (!pekerjaanId) {
+        if (!pekerjaan) {
             toast.error('Pilih pekerjaan tujuan dulu.')
             return
         }
@@ -244,7 +221,6 @@ export default function BukuKontrakPage() {
             return
         }
 
-        const nama = pekerjaanList.find((p) => String(p.id) === pekerjaanId)?.nama_paket ?? 'pekerjaan'
         setMenyimpan(true)
         try {
             const bytes = await gabungkanPdf(sumber, pilihan)
@@ -253,11 +229,11 @@ export default function BukuKontrakPage() {
                 toast.error(`Hasil gabungan ${mb} MB melebihi batas upload 50 MB. Kurangi halaman atau berkas.`)
                 return
             }
-            const file = new File([new Blob([bytes], { type: 'application/pdf' })], `Buku Kontrak - ${nama}.pdf`, {
+            const file = new File([new Blob([bytes], { type: 'application/pdf' })], `Buku Kontrak - ${pekerjaan.nama}.pdf`, {
                 type: 'application/pdf',
             })
             const fd = new FormData()
-            fd.append('pekerjaan_id', pekerjaanId)
+            fd.append('pekerjaan_id', String(pekerjaan.id))
             fd.append('jenis_dokumen', JENIS_BUKU_KONTRAK)
             fd.append('file', file)
             await createBerkas(fd)
@@ -282,34 +258,26 @@ export default function BukuKontrakPage() {
                         Buku Kontrak
                     </h1>
                     <p className="text-muted-foreground text-sm md:text-base">
-                        Tambahkan beberapa PDF, atur urutan dan halaman, lalu simpan hasil gabungannya sebagai berkas pekerjaan.
+                        Tambahkan beberapa berkas, atur urutan dan halaman, lalu simpan hasil gabungannya sebagai berkas pekerjaan.
                     </p>
                 </div>
 
                 <div className="space-y-2">
                     <p className="text-sm font-medium">Pekerjaan tujuan</p>
-                    <SearchableSelect
-                        options={pilihanPekerjaan}
-                        value={pekerjaanId}
-                        onValueChange={setPekerjaanId}
-                        placeholder="Pilih pekerjaan..."
-                        searchPlaceholder="Cari nama paket atau kode rekening..."
-                        emptyMessage="Pekerjaan tidak ditemukan."
-                        className="w-full max-w-xl"
-                    />
+                    <PekerjaanPicker value={pekerjaan} onChange={setPekerjaan} />
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
                     <Button variant="outline" className="gap-2" onClick={() => inputRef.current?.click()} disabled={membaca}>
                         {membaca ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                        Upload PDF
+                        Upload file
                     </Button>
                     <Button
                         variant="outline"
                         className="gap-2"
                         onClick={() => setPickerOpen(true)}
-                        disabled={membaca || pekerjaanId === ''}
-                        title={pekerjaanId === '' ? 'Pilih pekerjaan tujuan dulu' : undefined}
+                        disabled={membaca || pekerjaan === null}
+                        title={pekerjaan === null ? 'Pilih pekerjaan tujuan dulu' : undefined}
                     >
                         <FolderOpen className="h-4 w-4" />
                         Pilih dari berkas pekerjaan
@@ -317,7 +285,7 @@ export default function BukuKontrakPage() {
                     <input
                         ref={inputRef}
                         type="file"
-                        accept="application/pdf,.pdf"
+                        accept={EKSTENSI_DIDUKUNG.map((e) => `.${e}`).join(',')}
                         multiple
                         className="hidden"
                         onChange={(e) => void handleTambahFile(e.target.files)}
@@ -329,7 +297,7 @@ export default function BukuKontrakPage() {
 
                 {sumber.length === 0 ? (
                     <p className="rounded-lg border border-dashed p-10 text-center text-muted-foreground">
-                        Belum ada PDF. Tambahkan file untuk mulai.
+                        Belum ada berkas. Upload file atau pilih dari berkas pekerjaan untuk mulai.
                     </p>
                 ) : (
                     <div className="flex h-[75vh] min-h-[480px] flex-col overflow-hidden rounded-lg border md:flex-row">
@@ -457,7 +425,7 @@ export default function BukuKontrakPage() {
             <BerkasPdfPicker
                 open={pickerOpen}
                 onOpenChange={setPickerOpen}
-                pekerjaanId={pekerjaanId === '' ? null : Number(pekerjaanId)}
+                pekerjaanId={pekerjaan?.id ?? null}
                 onPilih={(pilih) => void ambilDariBerkas(pilih)}
             />
         </PageContainer>

@@ -26,6 +26,17 @@ export async function bacaPdf(file: File): Promise<SumberPdf> {
     }
 }
 
+/** Sumber PDF dari bytes yang sudah ada, misalnya hasil konversi atau unduhan berkas. */
+export async function sumberDariPdfBytes(nama: string, bytes: ArrayBuffer): Promise<SumberPdf> {
+    const doc = await PDFDocument.load(bytes)
+    return {
+        id: crypto.randomUUID(),
+        nama,
+        bytes,
+        jumlahHalaman: doc.getPageCount(),
+    }
+}
+
 /**
  * Gabungkan halaman terpilih sesuai urutan `pilihan`. Hasilnya satu PDF baru, dan sumber tidak diubah.
  */

@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { getBerkasList } from '@/features/berkas/api'
 import type { Berkas } from '@/features/berkas/types'
+import { didukung } from '../lib/convert-to-pdf'
 
 type Props = {
     open: boolean
@@ -44,8 +45,8 @@ export function BerkasPdfPicker({ open, onOpenChange, pekerjaanId, onPilih }: Pr
         enabled: open && pekerjaanId !== null,
     })
 
-    // PDF dikenali dari tipe MIME, atau dari nama file bila tipe MIME tidak ada.
-    const pdf = berkasList.filter((b) => b.mime_type === 'application/pdf' || /\.pdf$/i.test(namaBerkas(b)))
+    // Semua format yang bisa diubah ke PDF: PDF, gambar, spreadsheet, dan dokumen.
+    const pdf = berkasList.filter((b) => b.mime_type === 'application/pdf' || didukung(namaBerkas(b)))
 
     const toggle = (id: number) =>
         setTerpilih((s) => {
@@ -66,7 +67,9 @@ export function BerkasPdfPicker({ open, onOpenChange, pekerjaanId, onPilih }: Pr
             <DialogContent className="flex max-h-[85vh] flex-col sm:max-w-[560px]">
                 <DialogHeader>
                     <DialogTitle>Ambil PDF dari berkas pekerjaan</DialogTitle>
-                    <DialogDescription>Hanya berkas PDF yang ditampilkan.</DialogDescription>
+                    <DialogDescription>
+                        PDF, gambar, Excel, dan dokumen ditampilkan. Format selain PDF akan diubah otomatis.
+                    </DialogDescription>
                 </DialogHeader>
 
                 <div className="min-h-0 flex-1 space-y-2 overflow-y-auto py-2">
