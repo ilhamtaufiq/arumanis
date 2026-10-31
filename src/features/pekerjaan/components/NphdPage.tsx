@@ -207,7 +207,10 @@ function NphdForm({ pekerjaan }: { pekerjaan: Pekerjaan }) {
         try {
             // Nomor NPHD yang sudah tercatat di Register Dokumen dipakai ulang. Nomor baru hanya dibuat
             // kalau paket ini belum punya register NPHD, supaya satu paket tidak mendapat nomor berulang.
-            const sudahAda = findRegisterByType(pekerjaan, tipe.id);
+            // Data pekerjaan diambil ulang dari server: cache halaman bisa belum memuat register yang baru dibuat
+            // dari Register Dokumen, sehingga nomor yang sudah ada tidak terbaca dan dibuat ulang.
+            const terbaru = (await getPekerjaanById(pekerjaan.id)).data;
+            const sudahAda = findRegisterByType(terbaru, tipe.id);
             const register = sudahAda
                 ? sudahAda
                 : await createRegister.mutateAsync({
