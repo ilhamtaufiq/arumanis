@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
+import { ApiError } from '@/lib/api-client.types'
 import {
     fetchOnlyOfficeConfig,
     type OnlyOfficeEditorConfig,
@@ -68,7 +69,16 @@ export function useOnlyOfficeEditor({
                     ? 'view'
                     : requestedMode
 
-                const config = await fetchOnlyOfficeConfig(mediaId, effectiveMode)
+                let config: OnlyOfficeEditorConfig
+                try {
+                    config = await fetchOnlyOfficeConfig(mediaId, effectiveMode)
+                } catch (err) {
+                    // Dokumen yang tidak bisa diedit (misalnya PDF, atau akses hanya lihat) menolak mode edit dengan 403.
+                    // Tampilkan dalam mode lihat saja, supaya halaman tidak buntu.
+                    const ditolakEdit = err instanceof ApiError && err.status === 403 && effectiveMode === 'edit'
+                    if (!ditolakEdit) throw err
+                    config = await fetchOnlyOfficeConfig(mediaId, 'view')
+                }
                 setEditorConfig(config)
                 setMode(config.mode)
             } catch (err) {
