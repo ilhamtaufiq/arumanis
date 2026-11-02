@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { Link, useParams } from '@tanstack/react-router'
 import { ArrowLeft, Download, RefreshCw } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -34,6 +35,18 @@ import {
 import type { SipdPekerjaanLookup } from '@/features/sipd-renja/lib/pekerjaan-status'
 import { unduhRincianXlsx } from '@/features/sipd-renja/lib/export-rincian-xlsx'
 import {
+    terapkanFilterUrut,
+    type FilterKategori,
+    type UrutRincian,
+} from '@/features/sipd-renja/lib/rincian-view'
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select'
+import {
     adalahAkunLokasi,
     cariLokasi,
     ringkasStatLokasi,
@@ -58,6 +71,8 @@ export function SipdRincianPage() {
     const { tahunAnggaran } = useAppSettingsValues()
     const id = Number(idSubBl)
     const [search, setSearch] = useState('')
+    const [filterKategori, setFilterKategori] = useState<FilterKategori>('semua')
+    const [urutRincian, setUrutRincian] = useState<UrutRincian>('urutan')
     const queryClient = useQueryClient()
 
     const rincianQuery = useQuery({
@@ -193,6 +208,10 @@ export function SipdRincianPage() {
             return haystack.includes(needle)
         })
     }, [rows, search])
+    const tampilRows = useMemo(
+        () => terapkanFilterUrut(filteredRows, lokasiByRinci, { kategori: filterKategori, urut: urutRincian }),
+        [filteredRows, lokasiByRinci, filterKategori, urutRincian],
+    )
 
     const totalSesudah = rows.reduce((sum, row) => sum + Number(row.total_harga || 0), 0)
     const totalSebelum = rows.reduce((sum, row) => sum + Number(row.total_harga_murni || 0), 0)
@@ -284,7 +303,7 @@ export function SipdRincianPage() {
 
                 <Card>
                     <CardHeader className="pb-3">
-                        <CardTitle className="text-base">Statistik lokasi</CardTitle>
+                        <CardTitle className="text-base">Statistik lokasi · Kegiatan Fisik</CardTitle>
                         <CardDescription>
                             Jumlah baris rincian Belanja Barang untuk Dijual/Diserahkan kepada Masyarakat per desa dan kecamatan.
                             {' '}
@@ -292,62 +311,49 @@ export function SipdRincianPage() {
                             <span className="font-medium text-foreground">{statLokasi.tanpaLokasi}</span> tidak cocok dengan master.
                         </CardDescription>
                     </CardHeader>
-                    <CardContent className="grid gap-4 pt-0 md:grid-cols-2">
-                        <div className="overflow-x-auto">
+                    <CardContent className="grid gap-6 pt-0 lg:grid-cols-2">
+                        <div>
                             <p className="mb-2 text-xs font-medium uppercase text-muted-foreground">Per kecamatan</p>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Kecamatan</TableHead>
-                                        <TableHead className="text-right">Jumlah lokasi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {statLokasi.perKecamatan.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={2} className="text-center text-muted-foreground">
-                                                Belum ada lokasi yang cocok.
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        statLokasi.perKecamatan.map((k) => (
-                                            <TableRow key={k.kecamatan}>
-                                                <TableCell>{k.kecamatan}</TableCell>
-                                                <TableCell className="text-right tabular-nums">{k.jumlah}</TableCell>
-                                            </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                            {statLokasi.perKecamatan.length === 0 ? (
+                                <p className="py-10 text-center text-sm text-muted-foreground">Belum ada lokasi yang cocok.</p>
+                            ) : (
+                                <div style={{ height: Math.max(180, statLokasi.perKecamatan.length * 36 + 40) }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart data={statLokasi.perKecamatan} layout="vertical" margin={{ left: 8, right: 24 }}>
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                            <XAxis type="number" allowDecimals={false} />
+                                            <YAxis type="category" dataKey="kecamatan" width={130} tick={{ fontSize: 12 }} />
+                                            <Tooltip />
+                                            <Bar dataKey="jumlah" name="Jumlah lokasi" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            )}
                         </div>
-                        <div className="overflow-x-auto">
+                        <div>
                             <p className="mb-2 text-xs font-medium uppercase text-muted-foreground">Per desa</p>
-                            <Table>
-                                <TableHeader>
-                                    <TableRow>
-                                        <TableHead>Desa</TableHead>
-                                        <TableHead>Kecamatan</TableHead>
-                                        <TableHead className="text-right">Jumlah lokasi</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {statLokasi.perDesa.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={3} className="text-center text-muted-foreground">
-                                                Belum ada desa yang cocok.
-                                            </TableCell>
-                                        </TableRow>
-                                    ) : (
-                                        statLokasi.perDesa.map((d) => (
-                                            <TableRow key={`${d.desa}|${d.kecamatan ?? ''}`}>
-                                                <TableCell>{d.desa}</TableCell>
-                                                <TableCell className="text-muted-foreground">{d.kecamatan ?? '-'}</TableCell>
-                                                <TableCell className="text-right tabular-nums">{d.jumlah}</TableCell>
-                                            </TableRow>
-                                        ))
-                                    )}
-                                </TableBody>
-                            </Table>
+                            {statLokasi.perDesa.length === 0 ? (
+                                <p className="py-10 text-center text-sm text-muted-foreground">Belum ada desa yang cocok.</p>
+                            ) : (
+                                <div style={{ height: Math.max(180, statLokasi.perDesa.length * 32 + 40) }}>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <BarChart
+                                            data={statLokasi.perDesa.map((d) => ({
+                                                ...d,
+                                                label: d.kecamatan ? `${d.desa} (${d.kecamatan})` : d.desa,
+                                            }))}
+                                            layout="vertical"
+                                            margin={{ left: 8, right: 24 }}
+                                        >
+                                            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                            <XAxis type="number" allowDecimals={false} />
+                                            <YAxis type="category" dataKey="label" width={200} tick={{ fontSize: 12 }} />
+                                            <Tooltip />
+                                            <Bar dataKey="jumlah" name="Jumlah lokasi" fill="hsl(var(--chart-2, var(--primary)))" radius={[0, 4, 4, 0]} />
+                                        </BarChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>
@@ -387,18 +393,42 @@ export function SipdRincianPage() {
                             <div>
                                 <CardTitle className="text-base">Baris rincian</CardTitle>
                                 <CardDescription>
-                                    {filteredRows.length} dari {rows.length} baris ditampilkan
+                                    {tampilRows.length} dari {rows.length} baris ditampilkan
                                 </CardDescription>
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
+                            <Select value={filterKategori} onValueChange={(v) => setFilterKategori(v as FilterKategori)}>
+                                <SelectTrigger className="h-9 w-[170px]" aria-label="Filter kategori">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="semua">Semua kategori</SelectItem>
+                                    <SelectItem value="fisik">Kegiatan Fisik</SelectItem>
+                                    <SelectItem value="penunjang">Penunjang</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <Select value={urutRincian} onValueChange={(v) => setUrutRincian(v as UrutRincian)}>
+                                <SelectTrigger className="h-9 w-[190px]" aria-label="Urutkan">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="urutan">Urutan asli</SelectItem>
+                                    <SelectItem value="rekening">Kode rekening (A-Z)</SelectItem>
+                                    <SelectItem value="total-desc">Total terbesar</SelectItem>
+                                    <SelectItem value="total-asc">Total terkecil</SelectItem>
+                                    <SelectItem value="desa">Desa (A-Z)</SelectItem>
+                                    <SelectItem value="uraian">Uraian (A-Z)</SelectItem>
+                                </SelectContent>
+                            </Select>
                             <Button
                                 variant="outline"
                                 size="sm"
                                 disabled={rows.length === 0}
                                 onClick={() => {
                                     try {
-                                        unduhRincianXlsx(filteredRows, lokasiByRinci, statLokasi, {
+                                        unduhRincianXlsx(tampilRows, lokasiByRinci, statLokasi, {
                                             subKegiatan: namaSubGiat || 'Sub Kegiatan',
+                                            kodeSubGiat: kode || null,
                                             tahun: (parent?.tahun as number | string | undefined) ?? null,
                                         })
                                     } catch {
@@ -495,7 +525,7 @@ export function SipdRincianPage() {
                                                 Memuat rincian...
                                             </TableCell>
                                         </TableRow>
-                                    ) : filteredRows.length === 0 ? (
+                                    ) : tampilRows.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={RINCIAN_COL_COUNT} className="py-8 text-center text-muted-foreground">
                                                 {rows.length === 0
@@ -504,7 +534,7 @@ export function SipdRincianPage() {
                                             </TableCell>
                                         </TableRow>
                                     ) : (
-                                        filteredRows.map((row, index) => (
+                                        tampilRows.map((row, index) => (
                                             <SipdRincianTableRow
                                                 key={row.id_rinci_sub_bl || index}
                                                 row={row}
@@ -514,6 +544,7 @@ export function SipdRincianPage() {
                                                 occupiedPekerjaanIds={occupiedPekerjaanIds}
                                                 onSetLink={handleSetLink}
                                                 sipdParent={sipdParent}
+                                                kodeSubGiat={kode}
                                             />
                                         ))
                                     )}

@@ -15,6 +15,7 @@ import {
 } from '@/features/sipd-renja/lib/values-changed'
 import type { SipdRincianRow } from '@/features/sipd-renja/types'
 import type { HasilLokasi } from '@/features/sipd-renja/lib/lokasi-wilayah'
+import { formatKodeRekening, kategoriRincian } from '@/features/sipd-renja/lib/rincian-view'
 import {
     buildBuatPaketSearch,
     type SipdParentContext,
@@ -44,6 +45,7 @@ export function SipdRincianTableRow({
     onSetLink,
     sipdParent,
     lokasi,
+    kodeSubGiat,
 }: {
     row: SipdRincianRow
     pekerjaanList: SipdPekerjaanLookup[]
@@ -55,6 +57,8 @@ export function SipdRincianTableRow({
     sipdParent: SipdParentContext
     /** Desa dan kecamatan hasil pencocokan teks lokasi dengan master Arumanis. */
     lokasi: HasilLokasi | null
+    /** Kode sub kegiatan induk, dipakai untuk format "Rincian X Rekening Y". */
+    kodeSubGiat?: string | null
 }) {
     const koefClass = sipdRincianCellClass(row.koefisien_murni, row.koefisien)
     const hargaClass = sipdRincianCellClass(row.harga_satuan_murni, row.harga_satuan)
@@ -159,8 +163,11 @@ export function SipdRincianTableRow({
                 )}
             </TableCell>
             <TableCell className="align-top text-xs">
-                <div>{row.kode_akun || '-'}</div>
+                <div className="font-mono text-xs">{formatKodeRekening(kodeSubGiat, row.kode_akun) || '-'}</div>
                 <div className="text-muted-foreground">{row.nama_akun || ''}</div>
+                <Badge variant="outline" className="mt-1 text-[10px]">
+                    {kategoriRincian(row)}
+                </Badge>
             </TableCell>
             <TableCell className="max-w-[180px] whitespace-normal align-top text-xs">
                 <div>{row.nama_standar_harga || '-'}</div>

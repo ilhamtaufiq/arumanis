@@ -2,10 +2,12 @@ import * as XLSX from 'xlsx'
 import { downloadBlob } from '@/lib/download-file'
 import type { SipdRincianRow } from '@/features/sipd-renja/types'
 import type { HasilLokasi, StatLokasi } from '@/features/sipd-renja/lib/lokasi-wilayah'
+import { formatKodeRekening, kategoriRincian } from '@/features/sipd-renja/lib/rincian-view'
 
 export type ExportRincianMeta = {
     subKegiatan: string
     tahun?: number | string | null
+    kodeSubGiat?: string | null
 }
 
 const num = (v: unknown): number | string => {
@@ -32,8 +34,9 @@ export function buatWorkbookRincian(
         'Keterangan',
         'Desa',
         'Kecamatan',
-        'Kode Rekening',
+        'Rincian / Rekening',
         'Nama Rekening',
+        'Kategori',
         'Nama Standar Harga',
         'Spesifikasi',
         'Koef. Sebelum',
@@ -51,8 +54,9 @@ export function buatWorkbookRincian(
             r.ket_bl_teks ?? '',
             lokasi?.desa ?? '',
             lokasi?.kecamatan ?? '',
-            r.kode_akun ?? '',
+            formatKodeRekening(meta.kodeSubGiat, r.kode_akun),
             r.nama_akun ?? '',
+            kategoriRincian(r),
             r.nama_standar_harga ?? '',
             r.spek ?? '',
             num(r.koefisien_murni),
@@ -65,7 +69,7 @@ export function buatWorkbookRincian(
     })
     const sheetRincian = XLSX.utils.aoa_to_sheet([[judul], [], header, ...isi])
     sheetRincian['!cols'] = [
-        { wch: 5 }, { wch: 36 }, { wch: 28 }, { wch: 18 }, { wch: 18 }, { wch: 16 }, { wch: 28 }, { wch: 24 },
+        { wch: 5 }, { wch: 36 }, { wch: 28 }, { wch: 18 }, { wch: 18 }, { wch: 40 }, { wch: 28 }, { wch: 16 }, { wch: 24 },
         { wch: 24 }, { wch: 12 }, { wch: 18 }, { wch: 18 }, { wch: 12 }, { wch: 18 }, { wch: 18 },
     ]
     sheetRincian['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: header.length - 1 } }]
