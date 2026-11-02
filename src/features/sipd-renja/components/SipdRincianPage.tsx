@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from '@tanstack/react-router'
-import { ArrowLeft, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Download, RefreshCw } from 'lucide-react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import PageContainer from '@/components/layout/page-container'
@@ -32,6 +32,7 @@ import {
     removeSipdPekerjaanLink,
 } from '@/features/sipd-renja/api/links'
 import type { SipdPekerjaanLookup } from '@/features/sipd-renja/lib/pekerjaan-status'
+import { unduhRincianXlsx } from '@/features/sipd-renja/lib/export-rincian-xlsx'
 import {
     adalahAkunLokasi,
     cariLokasi,
@@ -389,6 +390,25 @@ export function SipdRincianPage() {
                                     {filteredRows.length} dari {rows.length} baris ditampilkan
                                 </CardDescription>
                             </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                disabled={rows.length === 0}
+                                onClick={() => {
+                                    try {
+                                        unduhRincianXlsx(filteredRows, lokasiByRinci, statLokasi, {
+                                            subKegiatan: namaSubGiat || 'Sub Kegiatan',
+                                            tahun: (parent?.tahun as number | string | undefined) ?? null,
+                                        })
+                                    } catch {
+                                        toast.error('Gagal membuat file XLSX.')
+                                    }
+                                }}
+                            >
+                                <Download className="mr-2 h-4 w-4" />
+                                Export XLSX
+                            </Button>
                             <Input
                                 value={search}
                                 onChange={(event) => setSearch(event.target.value)}
@@ -396,6 +416,7 @@ export function SipdRincianPage() {
                                 className="max-w-sm"
                                 aria-label="Cari baris rincian"
                             />
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent className="p-0">
