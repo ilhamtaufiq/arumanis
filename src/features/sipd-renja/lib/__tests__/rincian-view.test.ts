@@ -22,15 +22,13 @@ describe('kategoriRincian', () => {
 })
 
 describe('formatKodeRekening', () => {
-    it('memakai format Rincian ... Rekening ...', () => {
-        expect(formatKodeRekening('1.03.03.2.01.0028', '5.1.02.04.001.00001')).toBe(
-            'Rincian 1.03.03.2.01.0028 Rekening 5.1.02.04.001.00001',
-        )
+    it('menggabungkan kode rincian dan kode akun dengan titik, tanpa label', () => {
+        expect(formatKodeRekening('1.03.03.2.01.0028', '5.1.02.04.001.00001')).toBe('1.03.03.2.01.0028.5.1.02.04.001.00001')
     })
 
     it('bagian kosong dilewati', () => {
-        expect(formatKodeRekening(null, '5.1.02.04.001.00001')).toBe('Rekening 5.1.02.04.001.00001')
-        expect(formatKodeRekening('1.03.03.2.01.0028', '')).toBe('Rincian 1.03.03.2.01.0028')
+        expect(formatKodeRekening(null, '5.1.02.04.001.00001')).toBe('5.1.02.04.001.00001')
+        expect(formatKodeRekening('1.03.03.2.01.0028', '')).toBe('1.03.03.2.01.0028')
         expect(formatKodeRekening('', '')).toBe('')
     })
 })

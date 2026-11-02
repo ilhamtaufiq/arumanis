@@ -12,12 +12,12 @@ export function kategoriRincian(row: { nama_akun?: string | null }): typeof KATE
     return adalahAkunLokasi(row.nama_akun) ? KATEGORI_FISIK : KATEGORI_PENUNJANG
 }
 
-/** "Rincian 1.03.03.2.01.0028 Rekening 5.1.02.04.001.00001". Bagian yang kosong dilewati. */
+/** Kode gabungan tanpa label: "1.03.03.2.01.0028.5.1.02.04.001.00001". Bagian yang kosong dilewati. */
 export function formatKodeRekening(kodeRincian: string | null | undefined, kodeAkun: string | null | undefined): string {
-    const bagian: string[] = []
-    if (kodeRincian && kodeRincian.trim()) bagian.push(`Rincian ${kodeRincian.trim()}`)
-    if (kodeAkun && kodeAkun.trim()) bagian.push(`Rekening ${kodeAkun.trim()}`)
-    return bagian.join(' ')
+    return [kodeRincian, kodeAkun]
+        .map((k) => (k ?? '').trim())
+        .filter(Boolean)
+        .join('.')
 }
 
 const angka = (v: unknown) => Number(v ?? 0) || 0
