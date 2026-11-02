@@ -14,6 +14,7 @@ import {
     sipdRincianCellClass,
 } from '@/features/sipd-renja/lib/values-changed'
 import type { SipdRincianRow } from '@/features/sipd-renja/types'
+import type { HasilLokasi } from '@/features/sipd-renja/lib/lokasi-wilayah'
 import {
     buildBuatPaketSearch,
     type SipdParentContext,
@@ -42,6 +43,7 @@ export function SipdRincianTableRow({
     occupiedPekerjaanIds,
     onSetLink,
     sipdParent,
+    lokasi,
 }: {
     row: SipdRincianRow
     pekerjaanList: SipdPekerjaanLookup[]
@@ -51,6 +53,8 @@ export function SipdRincianTableRow({
     onSetLink: (idRinciSubBl: number, pekerjaanId: number | null) => void
     /** Konteks sub kegiatan untuk prefill "Buat paket". */
     sipdParent: SipdParentContext
+    /** Desa dan kecamatan hasil pencocokan teks lokasi dengan master Arumanis. */
+    lokasi: HasilLokasi | null
 }) {
     const koefClass = sipdRincianCellClass(row.koefisien_murni, row.koefisien)
     const hargaClass = sipdRincianCellClass(row.harga_satuan_murni, row.harga_satuan)
@@ -82,6 +86,12 @@ export function SipdRincianTableRow({
             </TableCell>
             <TableCell className="max-w-[180px] whitespace-normal align-top text-muted-foreground">
                 {row.ket_bl_teks || '-'}
+            </TableCell>
+            <TableCell className="whitespace-normal align-top text-sm">
+                {lokasi?.desa ? lokasi.desa : <span className="text-muted-foreground">-</span>}
+            </TableCell>
+            <TableCell className="whitespace-normal align-top text-sm">
+                {lokasi?.kecamatan ? lokasi.kecamatan : <span className="text-muted-foreground">-</span>}
             </TableCell>
             <TableCell className="max-w-[200px] whitespace-normal align-top">
                 {linkedPekerjaan && arumanisStatus ? (

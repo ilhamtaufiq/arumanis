@@ -32,10 +32,12 @@ import {
     removeSipdPekerjaanLink,
 } from '@/features/sipd-renja/api/links'
 import type { SipdPekerjaanLookup } from '@/features/sipd-renja/lib/pekerjaan-status'
+import { cariLokasi, type HasilLokasi } from '@/features/sipd-renja/lib/lokasi-wilayah'
+import { getMasterDesaUntukSipd } from '@/features/sipd-renja/api/wilayah'
 import { SipdRincianTableRow } from '@/features/sipd-renja/components/SipdRincianTableRow'
 import type { SipdRincianRow } from '@/features/sipd-renja/types'
 
-const RINCIAN_COL_COUNT = 12
+const RINCIAN_COL_COUNT = 14
 
 const BEFORE_GROUP_HEAD =
     'border-l-2 border-l-slate-300 bg-slate-100 text-center font-semibold text-slate-800 dark:border-l-slate-600 dark:bg-slate-800 dark:text-slate-100'
@@ -142,6 +144,24 @@ export function SipdRincianPage() {
 
     const rows = orEmpty(rincianQuery.data?.data as SipdRincianRow[] | undefined)
     const syncedAt = rincianQuery.data?.synced_at
+
+    // Master desa Arumanis untuk mencocokkan lokasi di teks SIPD menjadi kolom Desa dan Kecamatan.
+    const masterDesaQuery = useQuery({
+        queryKey: ['sipd-renja', 'master-desa'],
+        queryFn: getMasterDesaUntukSipd,
+        staleTime: 10 * 60 * 1000,
+    })
+    const lokasiByRinci = useMemo(() => {
+        const peta = new Map<number, HasilLokasi>()
+        const master = masterDesaQuery.data ?? []
+        const daftar = (rincianQuery.data?.data ?? []) as SipdRincianRow[]
+        for (const row of daftar) {
+            const id = Number(row.id_rinci_sub_bl)
+            if (!Number.isFinite(id)) continue
+            peta.set(id, cariLokasi([row.subs_bl_teks, row.ket_bl_teks], master))
+        }
+        return peta
+    }, [rincianQuery.data, masterDesaQuery.data])
 
     const filteredRows = useMemo(() => {
         const needle = search.trim().toLowerCase()
@@ -311,6 +331,20 @@ export function SipdRincianPage() {
                                         <TableHead rowSpan={2} className="min-w-[140px] align-bottom">
                                             Keterangan
                                         </TableHead>
+                                        <TableHead
+                                            rowSpan={2}
+                                            className="min-w-[120px] align-bottom"
+                                            title="Dicocokkan dari teks Uraian/Keterangan dengan master desa"
+                                        >
+                                            Desa
+                                        </TableHead>
+                                        <TableHead
+                                            rowSpan={2}
+                                            className="min-w-[130px] align-bottom"
+                                            title="Dicocokkan dari teks Uraian/Keterangan dengan master kecamatan"
+                                        >
+                                            Kecamatan
+                                        </TableHead>
                                         <TableHead rowSpan={2} className="min-w-[130px] align-bottom">
                                             Status Arumanis
                                         </TableHead>
@@ -377,6 +411,7 @@ export function SipdRincianPage() {
                                                 row={row}
                                                 pekerjaanList={pekerjaanList}
                                                 linkedPekerjaan={linkedByRinci.get(Number(row.id_rinci_sub_bl)) ?? null}
+                                                lokasi={lokasiByRinci.get(Number(row.id_rinci_sub_bl)) ?? null}
                                                 occupiedPekerjaanIds={occupiedPekerjaanIds}
                                                 onSetLink={handleSetLink}
                                                 sipdParent={sipdParent}
