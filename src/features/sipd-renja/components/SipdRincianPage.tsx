@@ -32,7 +32,7 @@ import {
     removeSipdPekerjaanLink,
 } from '@/features/sipd-renja/api/links'
 import type { SipdPekerjaanLookup } from '@/features/sipd-renja/lib/pekerjaan-status'
-import { cariLokasi, type HasilLokasi } from '@/features/sipd-renja/lib/lokasi-wilayah'
+import { adalahAkunLokasi, cariLokasi, type HasilLokasi } from '@/features/sipd-renja/lib/lokasi-wilayah'
 import { getMasterDesaUntukSipd } from '@/features/sipd-renja/api/wilayah'
 import { SipdRincianTableRow } from '@/features/sipd-renja/components/SipdRincianTableRow'
 import type { SipdRincianRow } from '@/features/sipd-renja/types'
@@ -158,6 +158,8 @@ export function SipdRincianPage() {
         for (const row of daftar) {
             const id = Number(row.id_rinci_sub_bl)
             if (!Number.isFinite(id)) continue
+            // Desa dan kecamatan hanya untuk rekening Belanja Barang untuk Dijual/Diserahkan kepada Masyarakat.
+            if (!adalahAkunLokasi(row.nama_akun)) continue
             peta.set(id, cariLokasi([row.subs_bl_teks, row.ket_bl_teks], master))
         }
         return peta

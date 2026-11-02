@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { cariLokasi, type MasterDesa } from '../lokasi-wilayah'
+import { adalahAkunLokasi, cariLokasi, type MasterDesa } from '../lokasi-wilayah'
 
 const master: MasterDesa[] = [
     { id: 1, nama: 'Sukarama', kecamatan: 'Bojongpicung' },
@@ -45,5 +45,19 @@ describe('cariLokasi', () => {
 
     it('gabungan beberapa kolom teks dibaca bersama', () => {
         expect(cariLokasi(['Pembangunan MCK', 'Desa Joglo Kecamatan Bojongpicung'], master)).toEqual({ desa: 'Joglo', kecamatan: 'Bojongpicung' })
+    })
+})
+
+describe('adalahAkunLokasi', () => {
+    it('mengenali rekening Belanja Barang untuk Dijual/Diserahkan kepada Masyarakat', () => {
+        expect(adalahAkunLokasi('Belanja Barang untuk Dijual/Diserahkan kepada Masyarakat')).toBe(true)
+        expect(adalahAkunLokasi('  belanja barang untuk dijual / diserahkan kepada masyarakat ')).toBe(true)
+    })
+
+    it('rekening lain dan nilai kosong ditolak', () => {
+        expect(adalahAkunLokasi('Belanja Barang Operasional')).toBe(false)
+        expect(adalahAkunLokasi('Belanja Modal Peralatan')).toBe(false)
+        expect(adalahAkunLokasi(null)).toBe(false)
+        expect(adalahAkunLokasi('')).toBe(false)
     })
 })

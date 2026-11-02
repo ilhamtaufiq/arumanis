@@ -86,3 +86,10 @@ export function cariLokasi(teksLokasi: Array<string | null | undefined>, master:
     const daftarKec = [...kecamatanDisebut].sort((a, b) => namaMaster(b).length - namaMaster(a).length)
     return { desa: null, kecamatan: daftarKec[0] ?? null }
 }
+
+const AKUN_LOKASI = 'belanja barang untuk dijual diserahkan kepada masyarakat'
+
+/** Hanya rincian dengan rekening ini yang diisi desa dan kecamatan. */
+export function adalahAkunLokasi(namaAkun: string | null | undefined): boolean {
+    return !!namaAkun && normalisasiNama(namaAkun) === AKUN_LOKASI
+}
