@@ -32,7 +32,12 @@ import {
     removeSipdPekerjaanLink,
 } from '@/features/sipd-renja/api/links'
 import type { SipdPekerjaanLookup } from '@/features/sipd-renja/lib/pekerjaan-status'
-import { adalahAkunLokasi, cariLokasi, type HasilLokasi } from '@/features/sipd-renja/lib/lokasi-wilayah'
+import {
+    adalahAkunLokasi,
+    cariLokasi,
+    ringkasStatLokasi,
+    type HasilLokasi,
+} from '@/features/sipd-renja/lib/lokasi-wilayah'
 import { getMasterDesaUntukSipd } from '@/features/sipd-renja/api/wilayah'
 import { SipdRincianTableRow } from '@/features/sipd-renja/components/SipdRincianTableRow'
 import type { SipdRincianRow } from '@/features/sipd-renja/types'
@@ -164,6 +169,7 @@ export function SipdRincianPage() {
         }
         return peta
     }, [rincianQuery.data, masterDesaQuery.data])
+    const statLokasi = useMemo(() => ringkasStatLokasi([...lokasiByRinci.values()]), [lokasiByRinci])
 
     const filteredRows = useMemo(() => {
         const needle = search.trim().toLowerCase()
@@ -274,6 +280,76 @@ export function SipdRincianPage() {
                         </CardContent>
                     </Card>
                 </div>
+
+                <Card>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base">Statistik lokasi</CardTitle>
+                        <CardDescription>
+                            Jumlah baris rincian Belanja Barang untuk Dijual/Diserahkan kepada Masyarakat per desa dan kecamatan.
+                            {' '}
+                            <span className="font-medium text-foreground">{statLokasi.berlokasi}</span> baris berlokasi,{' '}
+                            <span className="font-medium text-foreground">{statLokasi.tanpaLokasi}</span> tidak cocok dengan master.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 pt-0 md:grid-cols-2">
+                        <div className="overflow-x-auto">
+                            <p className="mb-2 text-xs font-medium uppercase text-muted-foreground">Per kecamatan</p>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Kecamatan</TableHead>
+                                        <TableHead className="text-right">Jumlah lokasi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {statLokasi.perKecamatan.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={2} className="text-center text-muted-foreground">
+                                                Belum ada lokasi yang cocok.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        statLokasi.perKecamatan.map((k) => (
+                                            <TableRow key={k.kecamatan}>
+                                                <TableCell>{k.kecamatan}</TableCell>
+                                                <TableCell className="text-right tabular-nums">{k.jumlah}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <p className="mb-2 text-xs font-medium uppercase text-muted-foreground">Per desa</p>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Desa</TableHead>
+                                        <TableHead>Kecamatan</TableHead>
+                                        <TableHead className="text-right">Jumlah lokasi</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {statLokasi.perDesa.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={3} className="text-center text-muted-foreground">
+                                                Belum ada desa yang cocok.
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        statLokasi.perDesa.map((d) => (
+                                            <TableRow key={`${d.desa}|${d.kecamatan ?? ''}`}>
+                                                <TableCell>{d.desa}</TableCell>
+                                                <TableCell className="text-muted-foreground">{d.kecamatan ?? '-'}</TableCell>
+                                                <TableCell className="text-right tabular-nums">{d.jumlah}</TableCell>
+                                            </TableRow>
+                                        ))
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </CardContent>
+                </Card>
 
                 <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                     {syncedAt ? (

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { adalahAkunLokasi, cariLokasi, type MasterDesa } from '../lokasi-wilayah'
+import { adalahAkunLokasi, cariLokasi, ringkasStatLokasi, type MasterDesa } from '../lokasi-wilayah'
 
 const master: MasterDesa[] = [
     { id: 1, nama: 'Sukarama', kecamatan: 'Bojongpicung' },
@@ -59,5 +59,42 @@ describe('adalahAkunLokasi', () => {
         expect(adalahAkunLokasi('Belanja Modal Peralatan')).toBe(false)
         expect(adalahAkunLokasi(null)).toBe(false)
         expect(adalahAkunLokasi('')).toBe(false)
+    })
+})
+
+describe('ringkasStatLokasi', () => {
+    it('menghitung baris per kecamatan dan per desa, diurutkan dari terbanyak', () => {
+        const stat = ringkasStatLokasi([
+            { desa: 'Sukarama', kecamatan: 'Bojongpicung' },
+            { desa: 'Sukarama', kecamatan: 'Bojongpicung' },
+            { desa: 'Joglo', kecamatan: 'Bojongpicung' },
+            { desa: 'Sindangjaya', kecamatan: 'Cianjur' },
+            { desa: null, kecamatan: 'Bojongpicung' },
+            { desa: null, kecamatan: null },
+            null,
+        ])
+        expect(stat.berlokasi).toBe(5)
+        expect(stat.tanpaLokasi).toBe(2)
+        expect(stat.perKecamatan).toEqual([
+            { kecamatan: 'Bojongpicung', jumlah: 4 },
+            { kecamatan: 'Cianjur', jumlah: 1 },
+        ])
+        expect(stat.perDesa).toEqual([
+            { desa: 'Sukarama', kecamatan: 'Bojongpicung', jumlah: 2 },
+            { desa: 'Joglo', kecamatan: 'Bojongpicung', jumlah: 1 },
+            { desa: 'Sindangjaya', kecamatan: 'Cianjur', jumlah: 1 },
+        ])
+    })
+
+    it('desa dengan nama sama di kecamatan berbeda dihitung terpisah', () => {
+        const stat = ringkasStatLokasi([
+            { desa: 'Cibeber', kecamatan: 'Cibeber' },
+            { desa: 'Cibeber', kecamatan: 'Cianjur' },
+        ])
+        expect(stat.perDesa.length).toBe(2)
+    })
+
+    it('daftar kosong menghasilkan nol', () => {
+        expect(ringkasStatLokasi([])).toEqual({ berlokasi: 0, tanpaLokasi: 0, perKecamatan: [], perDesa: [] })
     })
 })

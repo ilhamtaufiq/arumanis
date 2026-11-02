@@ -93,3 +93,53 @@ const AKUN_LOKASI = 'belanja barang untuk dijual diserahkan kepada masyarakat'
 export function adalahAkunLokasi(namaAkun: string | null | undefined): boolean {
     return !!namaAkun && normalisasiNama(namaAkun) === AKUN_LOKASI
 }
+
+export type StatLokasi = {
+    /** Baris rincian yang sudah dicocokkan dengan desa atau kecamatan. */
+    berlokasi: number
+    /** Baris rincian yang tidak cocok dengan master apa pun. */
+    tanpaLokasi: number
+    perKecamatan: Array<{ kecamatan: string; jumlah: number }>
+    perDesa: Array<{ desa: string; kecamatan: string | null; jumlah: number }>
+}
+
+const TANPA_KECAMATAN = '(tanpa kecamatan)'
+
+/**
+ * Hitung jumlah baris rincian per kecamatan dan per desa dari hasil pencocokan lokasi.
+ * Hasil diurutkan dari jumlah terbanyak, lalu nama.
+ */
+export function ringkasStatLokasi(daftar: Array<HasilLokasi | null | undefined>): StatLokasi {
+    const perKec = new Map<string, number>()
+    const perDesa = new Map<string, { desa: string; kecamatan: string | null; jumlah: number }>()
+    let berlokasi = 0
+    let tanpaLokasi = 0
+
+    for (const h of daftar) {
+        if (!h || (!h.desa && !h.kecamatan)) {
+            tanpaLokasi += 1
+            continue
+        }
+        berlokasi += 1
+        const kec = h.kecamatan ?? TANPA_KECAMATAN
+        perKec.set(kec, (perKec.get(kec) ?? 0) + 1)
+        if (h.desa) {
+            const kunci = `${h.desa}|${h.kecamatan ?? ''}`
+            const entri = perDesa.get(kunci) ?? { desa: h.desa, kecamatan: h.kecamatan, jumlah: 0 }
+            entri.jumlah += 1
+            perDesa.set(kunci, entri)
+        }
+    }
+
+    const urut = <T extends { jumlah: number }>(a: T, b: T, nama: (x: T) => string) =>
+        b.jumlah - a.jumlah || nama(a).localeCompare(nama(b))
+
+    return {
+        berlokasi,
+        tanpaLokasi,
+        perKecamatan: [...perKec.entries()]
+            .map(([kecamatan, jumlah]) => ({ kecamatan, jumlah }))
+            .sort((a, b) => urut(a, b, (x) => x.kecamatan)),
+        perDesa: [...perDesa.values()].sort((a, b) => urut(a, b, (x) => x.desa)),
+    }
+}
