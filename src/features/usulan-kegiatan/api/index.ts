@@ -19,7 +19,8 @@ export const createUsulanKegiatan = async (data: FormData) => {
 };
 
 export const updateUsulanKegiatan = async (id: number, data: FormData) => {
-    return api.post<{ data: UsulanKegiatan }>(`/usulan-kegiatan/${id}?_method=PUT`, data, {
+    // Backend menerima PUT langsung (tanpa override `_method`), jadi tidak perlu POST.
+    return api.put<{ data: UsulanKegiatan }>(`/usulan-kegiatan/${id}`, data, {
         headers: {
             'Content-Type': 'multipart/form-data',
         },
