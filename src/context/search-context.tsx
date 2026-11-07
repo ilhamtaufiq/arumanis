@@ -17,7 +17,8 @@ export function SearchProvider({ children }: SearchProviderProps) {
     useEffect(() => {
         const down = (e: KeyboardEvent) => {
             // Alt+A: buka command dialog cari paket pekerjaan & menu (tanpa menu).
-            if (e.key === 'a' && e.altKey) {
+            // e.code ikut dicek supaya tetap jalan di layout keyboard lain (misalnya macOS, yang mengubah e.key).
+            if (e.altKey && (e.code === 'KeyA' || e.key.toLowerCase() === 'a')) {
                 e.preventDefault()
                 setOpen(true)
             }
