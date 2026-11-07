@@ -24,6 +24,16 @@ import { filterSidebarNavGroups } from '@/lib/sidebar-nav'
 
 const noop = () => undefined
 
+/** Grup atau menu yang tidak ditampilkan di pencarian Alt+A (sidebar tidak terpengaruh). */
+const MENU_DISEMBUNYIKAN_DARI_ALT_A = new Set([
+    'Dokumentasi',
+    'Desa',
+    'Output',
+    'Penerima',
+    'Progres Pekerjaan',
+    'Peta Progress',
+])
+
 export function CommandMenu() {
     const navigate = useNavigate()
     const { setTheme } = useTheme()
@@ -74,7 +84,13 @@ export function CommandMenu() {
         () => (izinSudahDimuat ? filterSidebarNavGroups(sidebarData.navGroups, {
             canAccessMenu,
             showAdvancedFeatures,
-        }) : []),
+        })
+            .filter((group) => !MENU_DISEMBUNYIKAN_DARI_ALT_A.has(group.title))
+            .map((group) => ({
+                ...group,
+                items: group.items.filter((item) => !MENU_DISEMBUNYIKAN_DARI_ALT_A.has(item.title)),
+            }))
+            .filter((group) => group.items.length > 0) : []),
         [canAccessMenu, showAdvancedFeatures, izinSudahDimuat, izinMenu],
     )
 
