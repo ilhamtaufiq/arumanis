@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { Plus, Search } from 'lucide-react'
+import { Copy, FileText, Hash, Loader2, Plus, Search, X } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -19,6 +19,7 @@ import { ListPagination } from '@/components/shared/ListPagination'
 import { ListRowActions } from '@/components/shared/ListRowActions'
 import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { getApiErrorMessage } from '@/lib/api-error-message'
+import { useDebounce } from '@/hooks/use-debounce'
 import { useDeleteSurat, useSuratList } from '../hooks/useSurat'
 import type { Surat } from '../types'
 import { SuratFormDialog } from './SuratFormDialog'
@@ -37,8 +38,9 @@ export default function SuratPage() {
 
     const [tahun, setTahun] = useState(tahunIni)
     const [search, setSearch] = useState('')
-    const [cari, setCari] = useState('')
     const [page, setPage] = useState(1)
+    // Pencarian berjalan otomatis setelah berhenti mengetik, tanpa harus menekan tombol Cari.
+    const cari = useDebounce(search.trim(), 300)
     const [formOpen, setFormOpen] = useState(false)
     const [editing, setEditing] = useState<Surat | null>(null)
     const [deleting, setDeleting] = useState<Surat | null>(null)
@@ -47,10 +49,21 @@ export default function SuratPage() {
     const deleteMutation = useDeleteSurat()
     const rows = data?.data ?? []
     const meta = data?.meta
+    // Daftar diurutkan dari tanggal terbaru, jadi baris pertama halaman 1 tanpa pencarian adalah nomor terbaru.
+    const terbaru = page === 1 && !cari ? rows[0] : undefined
 
-    const terapkanCari = () => {
-        setCari(search.trim())
+    const ubahCari = (nilai: string) => {
+        setSearch(nilai)
         setPage(1)
+    }
+
+    const salinNomor = async (nomor: string) => {
+        try {
+            await navigator.clipboard.writeText(nomor)
+            toast.success(`Nomor ${nomor} disalin`)
+        } catch {
+            toast.error('Nomor tidak bisa disalin. Salin manual dari tabel.')
+        }
     }
 
     const bukaBaru = () => {
@@ -85,6 +98,33 @@ export default function SuratPage() {
                 </Button>
             }
         >
+            <div className="grid gap-3 sm:grid-cols-2">
+                <Card>
+                    <CardContent className="flex items-center gap-3 py-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <FileText className="h-5 w-5" aria-hidden />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-xs text-muted-foreground">Surat tahun {tahun}</p>
+                            <p className="text-xl font-semibold tabular-nums">{meta?.total ?? '—'}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="flex items-center gap-3 py-4">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                            <Hash className="h-5 w-5" aria-hidden />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-xs text-muted-foreground">Nomor terbaru</p>
+                            <p className="truncate font-mono text-sm font-medium" title={terbaru?.nomor}>
+                                {terbaru ? terbaru.nomor : '—'}
+                            </p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
             <div className="flex flex-wrap items-center gap-2">
                 <Select
                     value={String(tahun)}
@@ -105,22 +145,36 @@ export default function SuratPage() {
                     </SelectContent>
                 </Select>
                 <form
-                    className="flex min-w-0 flex-1 gap-2"
-                    onSubmit={(e) => {
-                        e.preventDefault()
-                        terapkanCari()
-                    }}
+                    className="relative min-w-0 flex-1"
+                    onSubmit={(e) => e.preventDefault()}
+                    role="search"
                 >
+                    <Search
+                        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                        aria-hidden
+                    />
                     <Input
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
+                        onChange={(e) => ubahCari(e.target.value)}
                         placeholder="Cari nomor, perihal, atau tujuan"
                         aria-label="Cari surat"
+                        className="pl-9 pr-16"
                     />
-                    <Button type="submit" variant="outline" disabled={isFetching}>
-                        <Search className="h-4 w-4" />
-                        <span className="sr-only sm:not-sr-only sm:ml-2">Cari</span>
-                    </Button>
+                    <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1">
+                        {isFetching && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-label="Memuat" />}
+                        {search && (
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6"
+                                onClick={() => ubahCari('')}
+                                aria-label="Hapus pencarian"
+                            >
+                                <X className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
                 </form>
             </div>
 
@@ -131,13 +185,28 @@ export default function SuratPage() {
                             <TableSkeleton rows={6} columns={6} />
                         </div>
                     ) : rows.length === 0 ? (
-                        <p className="py-12 text-center text-sm text-muted-foreground">
-                            {cari
-                                ? `Tidak ada surat yang cocok dengan "${cari}" pada ${tahun}.`
-                                : `Belum ada surat pada ${tahun}.`}
-                        </p>
+                        <div className="flex flex-col items-center gap-3 py-12 text-center">
+                            <p className="text-sm text-muted-foreground">
+                                {cari
+                                    ? `Tidak ada surat yang cocok dengan "${cari}" pada ${tahun}.`
+                                    : `Belum ada surat pada ${tahun}.`}
+                            </p>
+                            {cari ? (
+                                <Button type="button" variant="outline" size="sm" onClick={() => ubahCari('')}>
+                                    Hapus pencarian
+                                </Button>
+                            ) : (
+                                <Button type="button" size="sm" onClick={bukaBaru}>
+                                    <Plus className="mr-2 h-4 w-4" />
+                                    Buat surat pertama
+                                </Button>
+                            )}
+                        </div>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div
+                            className={`overflow-x-auto transition-opacity ${isFetching ? 'opacity-60' : ''}`}
+                            aria-busy={isFetching}
+                        >
                             <Table>
                                 <TableHeader>
                                     <TableRow>
@@ -156,7 +225,20 @@ export default function SuratPage() {
                                             <TableCell className="tabular-nums">{surat.sequence_number}</TableCell>
                                             <TableCell className="font-medium">
                                                 <div className="space-y-1">
-                                                    <span className="break-all">{surat.nomor}</span>
+                                                    <div className="flex items-center gap-1">
+                                                        <span className="break-all font-mono text-sm">{surat.nomor}</span>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-6 w-6 shrink-0 text-muted-foreground"
+                                                            onClick={() => void salinNomor(surat.nomor)}
+                                                            aria-label={`Salin nomor ${surat.nomor}`}
+                                                            title="Salin nomor"
+                                                        >
+                                                            <Copy className="h-3.5 w-3.5" />
+                                                        </Button>
+                                                    </div>
                                                     <Badge variant="secondary" className="block w-fit">
                                                         {surat.jenis.code}
                                                     </Badge>
