@@ -1,0 +1,21 @@
+[package]
+name = "arumanis-desktop"
+version = "0.1.0"
+edition = "2021"
+description = "Arumanis versi desktop (GPUI): kerangka dengan login dan daftar pekerjaan dari apiamis"
+license = "MIT"
+publish = false
+
+# Crate ini berdiri sendiri (bukan bagian dari workspace lain).
+[workspace]
+
+[dependencies]
+gpui = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+ureq = { version = "2", features = ["json"] }
+
+# xattr 0.2.3 memakai libc::ENOATTR, yang tidak ada di libc Linux (sama dengan ENODATA).
+# Dipatch ke salinan lokal dengan konstanta itu diganti. Dibutuhkan oleh gpui -> zed-async-tar.
+[patch.crates-io]
+xattr = { path = "vendor/xattr" }
