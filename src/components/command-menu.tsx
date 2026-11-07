@@ -34,6 +34,10 @@ export function CommandMenu() {
     const debouncedQuery = useDebounce(searchQuery, 300)
     const roles = useAuthStore((state) => state.auth.user?.roles)
     const canAccessMenu = useMenuPermissionStore((state) => state.canAccessMenu)
+    // canAccessMenu adalah fungsi yang referensinya tetap saat izin dimuat. Karena itu dependensi memo
+    // harus ikut isLoaded dan allowedMenus, supaya menu tidak tertinggal kosong dari izin awal.
+    const izinSudahDimuat = useMenuPermissionStore((state) => state.isLoaded)
+    const izinMenu = useMenuPermissionStore((state) => state.allowedMenus)
     const showAdvancedFeatures = canViewAdvancedMvpFeatures(roles)
 
     const { data: searchResults, isLoading } = useQuery({
@@ -67,11 +71,11 @@ export function CommandMenu() {
     }, [searchResults])
 
     const commandNavGroups = useMemo(
-        () => filterSidebarNavGroups(sidebarData.navGroups, {
+        () => (izinSudahDimuat ? filterSidebarNavGroups(sidebarData.navGroups, {
             canAccessMenu,
             showAdvancedFeatures,
-        }),
-        [canAccessMenu, showAdvancedFeatures],
+        }) : []),
+        [canAccessMenu, showAdvancedFeatures, izinSudahDimuat, izinMenu],
     )
 
     // Filter menu by query so menu items stay searchable while typing.
