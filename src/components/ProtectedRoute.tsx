@@ -30,6 +30,7 @@ const ADMIN_ONLY_ROUTES = [
     '/roles',
     '/permissions',
     '/route-permissions',
+    '/api-keys',
     '/menu-permissions',
     '/kegiatan-role',
     '/user-pekerjaan',

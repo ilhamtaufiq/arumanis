@@ -385,6 +385,12 @@ export const sidebarData: SidebarData = {
                     menuKey: 'route_permissions',
                 },
                 {
+                    title: 'API Keys',
+                    url: '/api-keys',
+                    icon: Shield,
+                    menuKey: 'api_keys',
+                },
+                {
                     title: 'Kegiatan Role',
                     url: '/kegiatan-role',
                     icon: Shield,

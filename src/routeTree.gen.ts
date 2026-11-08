@@ -88,6 +88,7 @@ import { Route as AuthenticatedDataQualityIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedCalendarIndexRouteImport } from './routes/_authenticated/calendar/index'
 import { Route as AuthenticatedBuatLaporanIndexRouteImport } from './routes/_authenticated/buat-laporan/index'
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
+import { Route as AuthenticatedApiKeysIndexRouteImport } from './routes/_authenticated/api-keys/index'
 import { Route as AuthenticatedActionInboxIndexRouteImport } from './routes/_authenticated/action-inbox/index'
 import { Route as KelembagaanSpamFormTokenRouteImport } from './routes/kelembagaan-spam/form.$token'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
@@ -588,6 +589,12 @@ const AuthenticatedBerkasIndexRoute =
     path: '/berkas/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedApiKeysIndexRoute =
+  AuthenticatedApiKeysIndexRouteImport.update({
+    id: '/api-keys/',
+    path: '/api-keys/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedActionInboxIndexRoute =
   AuthenticatedActionInboxIndexRouteImport.update({
     id: '/action-inbox/',
@@ -1007,6 +1014,7 @@ export interface FileRoutesByFullPath {
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/action-inbox/': typeof AuthenticatedActionInboxIndexRoute
+  '/api-keys/': typeof AuthenticatedApiKeysIndexRoute
   '/berkas/': typeof AuthenticatedBerkasIndexRoute
   '/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
   '/calendar/': typeof AuthenticatedCalendarIndexRoute
@@ -1145,6 +1153,7 @@ export interface FileRoutesByTo {
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/action-inbox': typeof AuthenticatedActionInboxIndexRoute
+  '/api-keys': typeof AuthenticatedApiKeysIndexRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
   '/buat-laporan': typeof AuthenticatedBuatLaporanIndexRoute
   '/calendar': typeof AuthenticatedCalendarIndexRoute
@@ -1287,6 +1296,7 @@ export interface FileRoutesById {
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/_authenticated/action-inbox/': typeof AuthenticatedActionInboxIndexRoute
+  '/_authenticated/api-keys/': typeof AuthenticatedApiKeysIndexRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
   '/_authenticated/buat-laporan/': typeof AuthenticatedBuatLaporanIndexRoute
   '/_authenticated/calendar/': typeof AuthenticatedCalendarIndexRoute
@@ -1429,6 +1439,7 @@ export interface FileRouteTypes {
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/action-inbox/'
+    | '/api-keys/'
     | '/berkas/'
     | '/buat-laporan/'
     | '/calendar/'
@@ -1567,6 +1578,7 @@ export interface FileRouteTypes {
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/action-inbox'
+    | '/api-keys'
     | '/berkas'
     | '/buat-laporan'
     | '/calendar'
@@ -1708,6 +1720,7 @@ export interface FileRouteTypes {
     | '/_authenticated/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/_authenticated/action-inbox/'
+    | '/_authenticated/api-keys/'
     | '/_authenticated/berkas/'
     | '/_authenticated/buat-laporan/'
     | '/_authenticated/calendar/'
@@ -2358,6 +2371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBerkasIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/api-keys/': {
+      id: '/_authenticated/api-keys/'
+      path: '/api-keys'
+      fullPath: '/api-keys/'
+      preLoaderRoute: typeof AuthenticatedApiKeysIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/action-inbox/': {
       id: '/_authenticated/action-inbox/'
       path: '/action-inbox'
@@ -2891,6 +2911,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSipdRenjaSyncKegiatanRoute: typeof AuthenticatedSipdRenjaSyncKegiatanRoute
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
   AuthenticatedActionInboxIndexRoute: typeof AuthenticatedActionInboxIndexRoute
+  AuthenticatedApiKeysIndexRoute: typeof AuthenticatedApiKeysIndexRoute
   AuthenticatedBerkasIndexRoute: typeof AuthenticatedBerkasIndexRoute
   AuthenticatedBuatLaporanIndexRoute: typeof AuthenticatedBuatLaporanIndexRoute
   AuthenticatedCalendarIndexRoute: typeof AuthenticatedCalendarIndexRoute
@@ -3010,6 +3031,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedSipdRenjaSyncKegiatanRoute,
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
   AuthenticatedActionInboxIndexRoute: AuthenticatedActionInboxIndexRoute,
+  AuthenticatedApiKeysIndexRoute: AuthenticatedApiKeysIndexRoute,
   AuthenticatedBerkasIndexRoute: AuthenticatedBerkasIndexRoute,
   AuthenticatedBuatLaporanIndexRoute: AuthenticatedBuatLaporanIndexRoute,
   AuthenticatedCalendarIndexRoute: AuthenticatedCalendarIndexRoute,
