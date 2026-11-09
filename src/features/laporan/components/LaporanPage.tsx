@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { ArrowRight, ClipboardCheck, Download, FileSpreadsheet, ImageIcon, Loader2 } from 'lucide-react'
+import { ArrowRight, CalendarClock, ClipboardCheck, Download, FileSpreadsheet, ImageIcon, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { Header } from '@/components/layout/header'
 import { Main } from '@/components/layout/main'
@@ -25,6 +25,8 @@ import {
     exportSubKegiatanPdf,
 } from '../lib/laporan-export'
 import { PosterCapaianDialog } from './PosterCapaianDialog'
+import { getMasaPemeliharaan } from '../api/masa-pemeliharaan'
+import { exportMasaPemeliharaanExcel, exportMasaPemeliharaanPdf } from '../lib/laporan-export'
 
 /** Pusat unduhan laporan: rekap progres, keuangan, program (Excel langsung + link halaman penuh). */
 export function LaporanPage() {
@@ -60,6 +62,13 @@ export function LaporanPage() {
             const list = (res?.data ?? []) as never[]
             if (kind === 'pdf') await exportRekapProgressPdf(list, tahunAnggaran)
             else await exportRekapProgressExcel(list, tahunAnggaran)
+        })
+
+    const exportMasa = (kind: 'excel' | 'pdf') =>
+        runExport(`masa-${kind}`, async () => {
+            const res = await getMasaPemeliharaan()
+            if (kind === 'pdf') await exportMasaPemeliharaanPdf(res.data, res.masa_pemeliharaan_hari)
+            else await exportMasaPemeliharaanExcel(res.data, res.masa_pemeliharaan_hari)
         })
 
     const stats = statsQuery.data
@@ -196,6 +205,34 @@ export function LaporanPage() {
                                 </CardContent>
                                 <CardFooter className='text-xs text-muted-foreground'>
                                     PDF berkop + Excel langsung
+                                </CardFooter>
+                            </Card>
+
+                            <Card>
+                                <CardHeader>
+                                    <CalendarClock className='size-7 text-emerald-600' />
+                                    <CardTitle className='mt-2'>Masa Pemeliharaan</CardTitle>
+                                    <CardDescription>
+                                        Akhir masa dari tanggal BASTP setiap paket, dihitung dengan masa dari pengaturan kontrak.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className='flex flex-wrap gap-2'>
+                                    <Button size='sm' disabled={busy !== null} onClick={() => void exportMasa('excel')}>
+                                        {busy === 'masa-excel' ? <Loader2 className='animate-spin' /> : <Download />}
+                                        Excel
+                                    </Button>
+                                    <Button
+                                        size='sm'
+                                        variant='secondary'
+                                        disabled={busy !== null}
+                                        onClick={() => void exportMasa('pdf')}
+                                    >
+                                        {busy === 'masa-pdf' ? <Loader2 className='animate-spin' /> : <Download />}
+                                        PDF
+                                    </Button>
+                                </CardContent>
+                                <CardFooter className='text-xs text-muted-foreground'>
+                                    Sumber tanggal: register dokumen BASTP per paket
                                 </CardFooter>
                             </Card>
 

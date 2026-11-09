@@ -8,6 +8,7 @@ import {
 import { exportChecklistExcel, exportChecklistPdf } from '@/features/checklist/api/checklist'
 import { exportPostPekerjaanExcel, exportPostPekerjaanPdf } from '@/features/post-pekerjaan/api/post-pekerjaan'
 import { buildReportPdf } from './laporan-pdf'
+import type { MasaPemeliharaanRow } from '../api/masa-pemeliharaan'
 
 async function writeExcelFile(filename: string, sheetName: string, rows: Record<string, unknown>[]) {
     const XLSX = await import('xlsx')
@@ -268,4 +269,52 @@ export async function exportPostPekerjaan(kind: 'excel' | 'pdf', tahun: string):
         ? await exportPostPekerjaanExcel({ tahun })
         : await exportPostPekerjaanPdf({ tahun })
     unduhBlob(blob, `post_pekerjaan_${tahun}_${stamp()}.${kind === 'excel' ? 'xlsx' : 'pdf'}`)
+}
+
+/** Unduh PDF rekap masa pemeliharaan: satu baris per paket dengan BASTP. */
+export async function exportMasaPemeliharaanPdf(rows: MasaPemeliharaanRow[], masaHari: number): Promise<void> {
+    await buildReportPdf({
+        title: 'REKAP MASA PEMELIHARAAN',
+        subtitle: `Masa pemeliharaan ${masaHari} hari sejak tanggal BASTP`,
+        filename: `Rekap_Masa_Pemeliharaan_${stamp()}.pdf`,
+        table: {
+            head: [['No', 'Nama Paket', 'No. BASTP', 'Tgl BASTP', 'Akhir Masa', 'Status']],
+            body: rows.map((r, i) => [
+                String(i + 1),
+                r.nama_paket ?? '-',
+                r.nomor_bastp ?? '-',
+                tanggalId(r.tanggal_bastp),
+                tanggalId(r.tanggal_akhir),
+                r.status === 'berjalan' ? 'Berjalan' : 'Berakhir',
+            ]),
+            columnStyles: {
+                0: { cellWidth: 12, halign: 'center' },
+                1: { cellWidth: 'auto' },
+                2: { cellWidth: 38 },
+                3: { cellWidth: 28, halign: 'center' },
+                4: { cellWidth: 28, halign: 'center' },
+                5: { cellWidth: 22, halign: 'center' },
+            },
+        },
+    })
+}
+
+/** Unduh Excel rekap masa pemeliharaan dengan tanggal asli (bukan teks) agar bisa difilter di Excel. */
+export async function exportMasaPemeliharaanExcel(rows: MasaPemeliharaanRow[], masaHari: number): Promise<void> {
+    const data = rows.map((r, index) => ({
+        No: index + 1,
+        'Nama Paket Pekerjaan': r.nama_paket ?? '-',
+        'No. BASTP': r.nomor_bastp ?? '-',
+        'Tanggal BASTP': r.tanggal_bastp,
+        'Masa Pemeliharaan (hari)': masaHari,
+        'Akhir Masa Pemeliharaan': r.tanggal_akhir,
+        Status: r.status === 'berjalan' ? 'Berjalan' : 'Berakhir',
+    }))
+    await writeExcelFile(`Rekap_Masa_Pemeliharaan_${stamp()}.xlsx`, 'Masa Pemeliharaan', data)
+}
+
+/** Tanggal YYYY-MM-DD ke format Indonesia, misalnya 9 Juli 2026. */
+function tanggalId(iso: string): string {
+    const [y, m, d] = iso.split('-').map(Number)
+    return new Date(y, m - 1, d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 }
