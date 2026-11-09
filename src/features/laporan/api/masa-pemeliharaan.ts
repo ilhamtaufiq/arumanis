@@ -11,10 +11,12 @@ export type MasaPemeliharaanRow = {
 }
 
 export type MasaPemeliharaanResponse = {
+    tahun: string | null
     masa_pemeliharaan_hari: number
     data: MasaPemeliharaanRow[]
 }
 
-export const getMasaPemeliharaan = async (): Promise<MasaPemeliharaanResponse> => {
-    return api.get<MasaPemeliharaanResponse>('/laporan/masa-pemeliharaan')
+/** Rekap untuk satu tahun anggaran. Tahun diambil dari header aplikasi (`tahunAnggaran`). */
+export const getMasaPemeliharaan = async (tahun: string): Promise<MasaPemeliharaanResponse> => {
+    return api.get<MasaPemeliharaanResponse>('/laporan/masa-pemeliharaan', { params: { tahun } })
 }

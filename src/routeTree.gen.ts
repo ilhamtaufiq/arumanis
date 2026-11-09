@@ -109,6 +109,7 @@ import { Route as AuthenticatedMenuPermissionsNewRouteImport } from './routes/_a
 import { Route as AuthenticatedManajemenPublikasiKomentarRouteImport } from './routes/_authenticated/manajemen-publikasi/komentar'
 import { Route as AuthenticatedManajemenPublikasiCreateRouteImport } from './routes/_authenticated/manajemen-publikasi/create'
 import { Route as AuthenticatedManajemenPublikasiSlugRouteImport } from './routes/_authenticated/manajemen-publikasi/$slug'
+import { Route as AuthenticatedLaporanMasaPemeliharaanRouteImport } from './routes/_authenticated/laporan/masa-pemeliharaan'
 import { Route as AuthenticatedKontrakNewRouteImport } from './routes/_authenticated/kontrak/new'
 import { Route as AuthenticatedKegiatanNewRouteImport } from './routes/_authenticated/kegiatan/new'
 import { Route as AuthenticatedKegiatanRoleNewRouteImport } from './routes/_authenticated/kegiatan-role/new'
@@ -712,6 +713,12 @@ const AuthenticatedManajemenPublikasiSlugRoute =
     path: '/$slug',
     getParentRoute: () => AuthenticatedManajemenPublikasiRoute,
   } as any)
+const AuthenticatedLaporanMasaPemeliharaanRoute =
+  AuthenticatedLaporanMasaPemeliharaanRouteImport.update({
+    id: '/laporan/masa-pemeliharaan',
+    path: '/laporan/masa-pemeliharaan',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedKontrakNewRoute = AuthenticatedKontrakNewRouteImport.update({
   id: '/kontrak/new',
   path: '/kontrak/new',
@@ -994,6 +1001,7 @@ export interface FileRoutesByFullPath {
   '/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
+  '/laporan/masa-pemeliharaan': typeof AuthenticatedLaporanMasaPemeliharaanRoute
   '/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
   '/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
@@ -1133,6 +1141,7 @@ export interface FileRoutesByTo {
   '/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/kontrak/new': typeof AuthenticatedKontrakNewRoute
+  '/laporan/masa-pemeliharaan': typeof AuthenticatedLaporanMasaPemeliharaanRoute
   '/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
   '/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
@@ -1276,6 +1285,7 @@ export interface FileRoutesById {
   '/_authenticated/kegiatan-role/new': typeof AuthenticatedKegiatanRoleNewRoute
   '/_authenticated/kegiatan/new': typeof AuthenticatedKegiatanNewRoute
   '/_authenticated/kontrak/new': typeof AuthenticatedKontrakNewRoute
+  '/_authenticated/laporan/masa-pemeliharaan': typeof AuthenticatedLaporanMasaPemeliharaanRoute
   '/_authenticated/manajemen-publikasi/$slug': typeof AuthenticatedManajemenPublikasiSlugRoute
   '/_authenticated/manajemen-publikasi/create': typeof AuthenticatedManajemenPublikasiCreateRoute
   '/_authenticated/manajemen-publikasi/komentar': typeof AuthenticatedManajemenPublikasiKomentarRoute
@@ -1419,6 +1429,7 @@ export interface FileRouteTypes {
     | '/kegiatan-role/new'
     | '/kegiatan/new'
     | '/kontrak/new'
+    | '/laporan/masa-pemeliharaan'
     | '/manajemen-publikasi/$slug'
     | '/manajemen-publikasi/create'
     | '/manajemen-publikasi/komentar'
@@ -1558,6 +1569,7 @@ export interface FileRouteTypes {
     | '/kegiatan-role/new'
     | '/kegiatan/new'
     | '/kontrak/new'
+    | '/laporan/masa-pemeliharaan'
     | '/manajemen-publikasi/$slug'
     | '/manajemen-publikasi/create'
     | '/manajemen-publikasi/komentar'
@@ -1700,6 +1712,7 @@ export interface FileRouteTypes {
     | '/_authenticated/kegiatan-role/new'
     | '/_authenticated/kegiatan/new'
     | '/_authenticated/kontrak/new'
+    | '/_authenticated/laporan/masa-pemeliharaan'
     | '/_authenticated/manajemen-publikasi/$slug'
     | '/_authenticated/manajemen-publikasi/create'
     | '/_authenticated/manajemen-publikasi/komentar'
@@ -2518,6 +2531,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedManajemenPublikasiSlugRouteImport
       parentRoute: typeof AuthenticatedManajemenPublikasiRoute
     }
+    '/_authenticated/laporan/masa-pemeliharaan': {
+      id: '/_authenticated/laporan/masa-pemeliharaan'
+      path: '/laporan/masa-pemeliharaan'
+      fullPath: '/laporan/masa-pemeliharaan'
+      preLoaderRoute: typeof AuthenticatedLaporanMasaPemeliharaanRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/kontrak/new': {
       id: '/_authenticated/kontrak/new'
       path: '/kontrak/new'
@@ -2895,6 +2915,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedKegiatanRoleNewRoute: typeof AuthenticatedKegiatanRoleNewRoute
   AuthenticatedKegiatanNewRoute: typeof AuthenticatedKegiatanNewRoute
   AuthenticatedKontrakNewRoute: typeof AuthenticatedKontrakNewRoute
+  AuthenticatedLaporanMasaPemeliharaanRoute: typeof AuthenticatedLaporanMasaPemeliharaanRoute
   AuthenticatedMenuPermissionsNewRoute: typeof AuthenticatedMenuPermissionsNewRoute
   AuthenticatedNotificationsBroadcastRoute: typeof AuthenticatedNotificationsBroadcastRoute
   AuthenticatedOutputNewRoute: typeof AuthenticatedOutputNewRoute
@@ -3011,6 +3032,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedKegiatanRoleNewRoute: AuthenticatedKegiatanRoleNewRoute,
   AuthenticatedKegiatanNewRoute: AuthenticatedKegiatanNewRoute,
   AuthenticatedKontrakNewRoute: AuthenticatedKontrakNewRoute,
+  AuthenticatedLaporanMasaPemeliharaanRoute:
+    AuthenticatedLaporanMasaPemeliharaanRoute,
   AuthenticatedMenuPermissionsNewRoute: AuthenticatedMenuPermissionsNewRoute,
   AuthenticatedNotificationsBroadcastRoute:
     AuthenticatedNotificationsBroadcastRoute,

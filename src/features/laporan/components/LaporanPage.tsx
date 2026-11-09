@@ -66,7 +66,7 @@ export function LaporanPage() {
 
     const exportMasa = (kind: 'excel' | 'pdf') =>
         runExport(`masa-${kind}`, async () => {
-            const res = await getMasaPemeliharaan()
+            const res = await getMasaPemeliharaan(tahunAnggaran)
             if (kind === 'pdf') await exportMasaPemeliharaanPdf(res.data, res.masa_pemeliharaan_hari)
             else await exportMasaPemeliharaanExcel(res.data, res.masa_pemeliharaan_hari)
         })
@@ -229,6 +229,12 @@ export function LaporanPage() {
                                     >
                                         {busy === 'masa-pdf' ? <Loader2 className='animate-spin' /> : <Download />}
                                         PDF
+                                    </Button>
+                                    <Button variant='outline' size='sm' asChild>
+                                        <Link to='/laporan/masa-pemeliharaan'>
+                                            Pantau
+                                            <ArrowRight />
+                                        </Link>
                                     </Button>
                                 </CardContent>
                                 <CardFooter className='text-xs text-muted-foreground'>
