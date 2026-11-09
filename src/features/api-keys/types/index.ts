@@ -1,8 +1,9 @@
-export type ApiKeyScope = 'spam-units:read' | 'peripaan:read'
+export type ApiKeyScope = 'spam-units:read' | 'peripaan:read' | 'pekerjaan:read'
 
 export const API_KEY_SCOPES: { value: ApiKeyScope; label: string }[] = [
     { value: 'spam-units:read', label: 'Unit SPAM (baca)' },
     { value: 'peripaan:read', label: 'Peta perpipaan (baca)' },
+    { value: 'pekerjaan:read', label: 'Paket pekerjaan (baca)' },
 ]
 
 export type ApiKeyStatus = 'aktif' | 'dicabut' | 'kedaluwarsa'

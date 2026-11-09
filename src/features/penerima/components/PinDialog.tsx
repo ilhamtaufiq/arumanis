@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Lock } from 'lucide-react';
 import { toast } from 'sonner';
+import { verifyPenerimaPin } from '../api';
 
 interface PinDialogProps {
     open: boolean;
@@ -20,27 +21,37 @@ interface PinDialogProps {
 
 export function PinDialog({ open, onOpenChange, onSuccess }: PinDialogProps) {
     const [pin, setPin] = useState('');
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         if (open) {
-            // Setup default PIN in localStorage if not exists
-            if (!localStorage.getItem('penerima_pin')) {
-                localStorage.setItem('penerima_pin', '123456');
-            }
             setPin('');
         }
     }, [open]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const savedPin = localStorage.getItem('penerima_pin') || '123456';
-        if (pin === savedPin) {
-            sessionStorage.setItem('penerima_session_pin', pin);
-            toast.success('Akses dibuka');
-            onSuccess();
-            onOpenChange(false);
-        } else {
-            toast.error('PIN salah');
+        if (submitting) return;
+        const trimmed = pin.trim();
+        if (!trimmed) {
+            toast.error('PIN wajib diisi');
+            return;
+        }
+        setSubmitting(true);
+        try {
+            const res = await verifyPenerimaPin(trimmed);
+            if (res?.data?.valid === true) {
+                sessionStorage.setItem('penerima_session_pin', trimmed);
+                toast.success('Akses dibuka');
+                onSuccess();
+                onOpenChange(false);
+            } else {
+                toast.error('PIN salah');
+            }
+        } catch {
+            toast.error('Tidak dapat memverifikasi PIN. Periksa koneksi Anda lalu coba lagi.');
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -54,7 +65,7 @@ export function PinDialog({ open, onOpenChange, onSuccess }: PinDialogProps) {
                             Masukkan PIN Keamanan
                         </DialogTitle>
                         <DialogDescription>
-                            Data NIK dan Alamat penerima disensor untuk privasi. Masukkan PIN Anda untuk melihat data asli. PIN default adalah 123456.
+                            Data NIK dan Alamat penerima disensor untuk privasi. Masukkan PIN Anda untuk melihat data asli.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
@@ -72,7 +83,9 @@ export function PinDialog({ open, onOpenChange, onSuccess }: PinDialogProps) {
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Batal
                         </Button>
-                        <Button type="submit">Verifikasi</Button>
+                        <Button type="submit" disabled={submitting}>
+                            {submitting ? 'Memverifikasi...' : 'Verifikasi'}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>

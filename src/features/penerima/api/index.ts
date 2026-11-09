@@ -8,9 +8,14 @@ import type {
 } from '../types';
 
 // Helper to get PIN from sessionStorage or state in frontend session
-const getPinHeader = () => {
+const getPinHeader = (): Record<string, string> => {
     const pin = typeof sessionStorage !== 'undefined' ? sessionStorage.getItem('penerima_session_pin') : null;
     return pin ? { 'X-PIN': pin } : {};
+};
+
+/** Verifikasi PIN ke server (sumber kebenaran: app_settings.penerima_pin). */
+export const verifyPenerimaPin = async (pin: string) => {
+    return api.post<{ data: { valid: boolean } }>('/penerima/verify-pin', { pin });
 };
 
 export const getPenerimaList = async (params?: PenerimaParams) => {

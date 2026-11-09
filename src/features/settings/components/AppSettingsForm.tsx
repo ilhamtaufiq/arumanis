@@ -44,7 +44,8 @@ export default function AppSettingsForm() {
     const [pengawasBerkasShowNego, setPengawasBerkasShowNego] = useState(false);
     const [maintenanceMode, setMaintenanceMode] = useState(false);
     const [maintenanceBypassEmails, setMaintenanceBypassEmails] = useState('ilhamtaufiq@gmail.com');
-    const [penerimaPin, setPenerimaPin] = useState('123456');
+    // PIN baru saja: kosong berarti tidak diubah. Nilai PIN yang tersimpan ada di server, tidak di browser.
+    const [penerimaPin, setPenerimaPin] = useState('');
     const [showPin, setShowPin] = useState(false);
 
     const mailDraftRef = useRef<MailSettingsDraft | null>(null);
@@ -109,9 +110,6 @@ export default function AppSettingsForm() {
             setPengawasBerkasShowGambar(getSettingValue(data.data, 'pengawas_berkas_show_gambar') === '1');
             setPengawasBerkasShowNego(getSettingValue(data.data, 'pengawas_berkas_show_nego') === '1');
 
-            // Read PIN from localStorage (set by PinDialog or default)
-            const savedPin = localStorage.getItem('penerima_pin');
-            if (savedPin) setPenerimaPin(savedPin);
         }
     }, [data]);
 
@@ -172,7 +170,8 @@ export default function AppSettingsForm() {
             pengawas_berkas_show_nego: pengawasBerkasShowNego ? '1' : '0',
             maintenance_mode: maintenanceMode ? '1' : '0',
             maintenance_bypass_emails: maintenanceBypassEmails.trim() || 'ilhamtaufiq@gmail.com',
-            penerima_pin: penerimaPin.trim() || '123456',
+            // Hanya dikirim bila admin mengetik PIN baru; kalau kosong, PIN di server tidak disentuh.
+            penerima_pin: penerimaPin.trim() || undefined,
             logo: logoFile || undefined,
             favicon: faviconFile || undefined,
             login_cover: loginCoverFile || undefined,
@@ -206,10 +205,7 @@ export default function AppSettingsForm() {
                     : 'Pengaturan berhasil disimpan',
             );
 
-            // Sync PIN to localStorage so PinDialog verification stays in sync
-            if (payload.penerima_pin) {
-                localStorage.setItem('penerima_pin', payload.penerima_pin);
-            }
+            setPenerimaPin('');
             setLogoFile(null);
             setFaviconFile(null);
             setLoginCoverFile(null);
@@ -479,7 +475,7 @@ export default function AppSettingsForm() {
                                         type={showPin ? 'text' : 'password'}
                                         value={penerimaPin}
                                         onChange={(e) => setPenerimaPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
-                                        placeholder="123456"
+                                        placeholder="Kosongkan jika tidak diubah"
                                         maxLength={8}
                                         className="text-center text-2xl tracking-widest font-mono"
                                     />
