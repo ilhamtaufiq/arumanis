@@ -12,7 +12,7 @@ import { TableSkeleton } from '@/components/shared/TableSkeleton'
 import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog'
 import { AccessPageShell, AccessSection } from '@/components/shared/AccessSecurityShell'
 import { API_KEY_SCOPES, type ApiKey, type ApiKeyScope, type ApiKeyStatus } from '../types'
-import { useApiKeysList, useCreateApiKey, useRevokeApiKey } from '../hooks/useApiKeys'
+import { useApiKeysList, useCreateApiKey, useRevokeApiKey, useUpdateApiKeyScopes } from '../hooks/useApiKeys'
 
 const STATUS_VARIANT: Record<ApiKeyStatus, 'default' | 'secondary' | 'destructive'> = {
     aktif: 'default',
@@ -29,6 +29,7 @@ export default function ApiKeyList() {
     const { data, isLoading } = useApiKeysList()
     const createMutation = useCreateApiKey()
     const revokeMutation = useRevokeApiKey()
+    const ubahScopeMutation = useUpdateApiKeyScopes()
 
     const [createOpen, setCreateOpen] = useState(false)
     const [name, setName] = useState('')
@@ -37,6 +38,8 @@ export default function ApiKeyList() {
     const [createdKey, setCreatedKey] = useState<string | null>(null)
     const [copied, setCopied] = useState(false)
     const [revokeTarget, setRevokeTarget] = useState<ApiKey | null>(null)
+    const [ubahTarget, setUbahTarget] = useState<ApiKey | null>(null)
+    const [ubahScopes, setUbahScopes] = useState<ApiKeyScope[]>([])
 
     const keys = data?.data ?? []
 
@@ -130,9 +133,21 @@ export default function ApiKeyList() {
                                                 <TableCell>{formatDate(k.last_used_at)}</TableCell>
                                                 <TableCell className="text-right">
                                                     {k.status === 'aktif' && (
-                                                        <Button variant="ghost" size="sm" onClick={() => setRevokeTarget(k)}>
-                                                            Cabut
-                                                        </Button>
+                                                        <>
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setUbahScopes(k.scopes)
+                                                                    setUbahTarget(k)
+                                                                }}
+                                                            >
+                                                                Ubah scope
+                                                            </Button>
+                                                            <Button variant="ghost" size="sm" onClick={() => setRevokeTarget(k)}>
+                                                                Cabut
+                                                            </Button>
+                                                        </>
                                                     )}
                                                 </TableCell>
                                             </TableRow>
@@ -211,6 +226,50 @@ export default function ApiKeyList() {
                     </div>
                     <DialogFooter>
                         <Button onClick={() => setCreatedKey(null)}>Sudah saya simpan</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={ubahTarget !== null} onOpenChange={(open) => !open && setUbahTarget(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Ubah scope kunci</DialogTitle>
+                        <DialogDescription>
+                            Kunci "{ubahTarget?.name ?? ''}" tetap sama. Hanya daftar data yang boleh dibaca yang berubah.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <fieldset className="grid gap-2">
+                        <legend className="text-sm font-medium">Scope</legend>
+                        {API_KEY_SCOPES.map((s) => (
+                            <label key={s.value} className="flex items-center gap-2 text-sm">
+                                <Checkbox
+                                    checked={ubahScopes.includes(s.value)}
+                                    onCheckedChange={(checked) =>
+                                        setUbahScopes((prev) =>
+                                            checked === true
+                                                ? [...prev.filter((x) => x !== s.value), s.value]
+                                                : prev.filter((x) => x !== s.value),
+                                        )
+                                    }
+                                />
+                                {s.label}
+                            </label>
+                        ))}
+                    </fieldset>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setUbahTarget(null)}>Batal</Button>
+                        <Button
+                            disabled={ubahScopes.length === 0 || ubahScopeMutation.isPending}
+                            onClick={() => {
+                                if (!ubahTarget) return
+                                ubahScopeMutation.mutate(
+                                    { id: ubahTarget.id, scopes: ubahScopes },
+                                    { onSuccess: () => setUbahTarget(null) },
+                                )
+                            }}
+                        >
+                            {ubahScopeMutation.isPending ? 'Menyimpan…' : 'Simpan'}
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { createApiKey, getApiKeys, revokeApiKey } from '../api'
-import type { CreateApiKeyInput } from '../types'
+import { createApiKey, getApiKeys, revokeApiKey, updateApiKeyScopes } from '../api'
+import type { ApiKeyScope, CreateApiKeyInput } from '../types'
 
 export const apiKeyKeys = {
     all: ['api-keys'] as const,
@@ -35,5 +35,17 @@ export function useRevokeApiKey() {
             void queryClient.invalidateQueries({ queryKey: apiKeyKeys.all })
         },
         onError: (err: Error) => toast.error(err.message || 'Gagal mencabut kunci API'),
+    })
+}
+
+export function useUpdateApiKeyScopes() {
+    const queryClient = useQueryClient()
+    return useMutation({
+        mutationFn: ({ id, scopes }: { id: number; scopes: ApiKeyScope[] }) => updateApiKeyScopes(id, scopes),
+        onSuccess: () => {
+            toast.success('Scope kunci API diperbarui')
+            void queryClient.invalidateQueries({ queryKey: apiKeyKeys.all })
+        },
+        onError: (err: Error) => toast.error(err.message || 'Gagal mengubah scope kunci API'),
     })
 }
