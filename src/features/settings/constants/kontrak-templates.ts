@@ -4,7 +4,8 @@ export type KontrakTemplateKey =
     | 'kontrak_template_bap'
     | 'kontrak_template_cover_am'
     | 'kontrak_template_cover_san'
-    | 'kontrak_template_nphd';
+    | 'kontrak_template_nphd'
+    | 'kontrak_template_bmd';
 
 export type KontrakTemplateFormField =
     | 'kontrak_template_spk'
@@ -12,7 +13,8 @@ export type KontrakTemplateFormField =
     | 'kontrak_template_bap'
     | 'kontrak_template_cover_am'
     | 'kontrak_template_cover_san'
-    | 'kontrak_template_nphd';
+    | 'kontrak_template_nphd'
+    | 'kontrak_template_bmd';
 
 export interface KontrakTemplateMeta {
     key: KontrakTemplateKey;
