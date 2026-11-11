@@ -29,6 +29,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { DatePickerField } from '@/components/shared/DatePickerField';
 import { Separator } from '@/components/ui/separator';
+import { NomorDokumenInput } from './NomorDokumenInput';
 
 export default function KontrakForm() {
     const params = useParams({ strict: false });
@@ -522,18 +523,52 @@ export default function KontrakForm() {
                                         </div>
                                     </CardHeader>
                                     <CardContent className="space-y-4">
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nomor SPPBJ</Label>
-                                            <Input name="sppbj" value={formData.sppbj} onChange={handleChange} placeholder="No. SPPBJ" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nomor SPK / Kontrak</Label>
-                                            <Input name="spk" value={formData.spk} onChange={handleChange} placeholder="No. Kontrak" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Nomor SPMK</Label>
-                                            <Input name="spmk" value={formData.spmk} onChange={handleChange} placeholder="No. SPMK" />
-                                        </div>
+                                        {(() => {
+                                            const namaPenyedia = penyediaList.find((p) => p.id === formData.id_penyedia)?.nama ?? null;
+                                            const pekerjaanId = formData.pekerjaan_ids[0] ?? null;
+                                            const setNomor = (kunci: 'sppbj' | 'spk' | 'spmk') => (nomor: string) =>
+                                                setFormData((prev) => ({ ...prev, [kunci]: nomor }));
+                                            return (
+                                                <>
+                                                    <NomorDokumenInput
+                                                        id="sppbj"
+                                                        name="sppbj"
+                                                        label="Nomor SPPBJ"
+                                                        kode="SPPBJ"
+                                                        placeholder="No. SPPBJ"
+                                                        value={formData.sppbj}
+                                                        onChange={setNomor('sppbj')}
+                                                        tanggal={formData.tgl_sppbj ?? ''}
+                                                        namaPenyedia={namaPenyedia}
+                                                        pekerjaanId={pekerjaanId}
+                                                    />
+                                                    <NomorDokumenInput
+                                                        id="spk"
+                                                        name="spk"
+                                                        label="Nomor SPK / Kontrak"
+                                                        kode="SPK"
+                                                        placeholder="No. Kontrak"
+                                                        value={formData.spk}
+                                                        onChange={setNomor('spk')}
+                                                        tanggal={formData.tgl_spk ?? ''}
+                                                        namaPenyedia={namaPenyedia}
+                                                        pekerjaanId={pekerjaanId}
+                                                    />
+                                                    <NomorDokumenInput
+                                                        id="spmk"
+                                                        name="spmk"
+                                                        label="Nomor SPMK"
+                                                        kode="SPMK"
+                                                        placeholder="No. SPMK"
+                                                        value={formData.spmk}
+                                                        onChange={setNomor('spmk')}
+                                                        tanggal={formData.tgl_spmk ?? ''}
+                                                        namaPenyedia={namaPenyedia}
+                                                        pekerjaanId={pekerjaanId}
+                                                    />
+                                                </>
+                                            );
+                                        })()}
                                     </CardContent>
                                 </Card>
 
