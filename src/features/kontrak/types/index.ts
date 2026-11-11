@@ -363,3 +363,9 @@ export interface PenyediaResponse {
         total: number;
     };
 }
+
+export interface KontrakBmdExportParams {
+    nomor_surat: string;
+    tanggal_surat: string;
+    tanggal_perolehan: string;
+}

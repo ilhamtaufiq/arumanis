@@ -8,6 +8,7 @@ import type {
     KontrakAddendumResponse,
     KontrakBapContext,
     KontrakBapExportParams,
+    KontrakBmdExportParams,
     KontrakImportResult,
     KontrakResponse,
     KontrakRingkasanExportParams,
@@ -204,6 +205,13 @@ export const exportAllKontrakCovers = async (tahun?: string) => {
 
 export const getKontrakBapContext = async (id: number) => {
     return api.get<KontrakBapContext>(`/kontrak/${id}/bap-context`);
+};
+
+export const exportKontrakBmd = async (id: number, params: KontrakBmdExportParams) => {
+    const blob = await api.post<Blob>(`/kontrak/${id}/export-bmd`, params, {
+        responseType: 'blob',
+    });
+    return blob;
 };
 
 export const exportKontrakBAP = async (id: number, params: KontrakBapExportParams = {}) => {
