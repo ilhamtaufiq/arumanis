@@ -17,7 +17,19 @@ export function perihalNomor(kode: KodeNomorKontrak, namaPenyedia: string | null
 
 type JenisDokumen = { id: number; code?: string | null }
 
-/** Jenis surat dengan kode yang cocok (tanpa memperhatikan huruf besar). `undefined` bila belum ada. */
-export function cariJenis<T extends JenisDokumen>(daftar: T[], kode: KodeNomorKontrak): T | undefined {
-    return daftar.find((j) => (j.code ?? '').trim().toUpperCase() === kode)
+/**
+ * Jenis surat untuk satu dokumen: kode persis (`SPK`) atau kode dengan akhiran (`SPK-...`).
+ * Diurutkan dari kode terpendek supaya kode persisnya tampil paling atas.
+ */
+export function jenisUntuk<T extends JenisDokumen>(daftar: T[], kode: KodeNomorKontrak): T[] {
+    return daftar
+        .filter((j) => {
+            const c = (j.code ?? '').trim().toUpperCase()
+            return c === kode || c.startsWith(`${kode}-`)
+        })
+        .sort((a, b) => {
+            const ca = (a.code ?? '').trim().toUpperCase()
+            const cb = (b.code ?? '').trim().toUpperCase()
+            return ca.length - cb.length || ca.localeCompare(cb)
+        })
 }

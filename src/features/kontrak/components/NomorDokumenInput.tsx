@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { Loader2, Wand2 } from 'lucide-react'
@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { getDocumentTypes } from '@/features/pekerjaan/api/pekerjaan'
 import { createSurat } from '@/features/surat/api'
 import { getApiErrorMessage } from '@/lib/api-error-message'
-import { cariJenis, perihalNomor, type KodeNomorKontrak } from '../lib/nomor-surat'
+import { jenisUntuk, perihalNomor, type KodeNomorKontrak } from '../lib/nomor-surat'
 
 type Props = {
     id: string
@@ -31,11 +31,17 @@ type Props = {
 export function NomorDokumenInput({ id, label, name, kode, value, onChange, tanggal, namaPenyedia, pekerjaanId, placeholder }: Props) {
     const qc = useQueryClient()
     const jenisQuery = useQuery({ queryKey: ['document-types'], queryFn: getDocumentTypes, staleTime: 5 * 60_000 })
-    const jenis = useMemo(() => cariJenis(jenisQuery.data ?? [], kode), [jenisQuery.data, kode])
+    const pilihan = useMemo(() => jenisUntuk(jenisQuery.data ?? [], kode), [jenisQuery.data, kode])
+    const [jenisId, setJenisId] = useState<string>('')
+    // Hanya satu pilihan yang cocok: langsung dipakai. Lebih dari satu: pengguna memilih sendiri.
+    const terpilihId = pilihan.some((j) => String(j.id) === jenisId)
+        ? jenisId
+        : pilihan.length === 1 ? String(pilihan[0].id) : ''
+    const jenis = pilihan.find((j) => String(j.id) === terpilihId)
 
     const buat = useMutation({
         mutationFn: () => {
-            if (!jenis) throw new Error(`Jenis surat ${kode} belum ada di Penomoran Surat.`)
+            if (!jenis) throw new Error(`Pilih jenis surat ${kode} dulu.`)
             return createSurat({
                 type_id: jenis.id,
                 tanggal,
@@ -52,18 +58,36 @@ export function NomorDokumenInput({ id, label, name, kode, value, onChange, tang
         onError: (err) => toast.error(getApiErrorMessage(err, `Gagal membuat nomor ${kode}`)),
     })
 
-    const tanpaJenis = !jenisQuery.isPending && !jenis
+    const tanpaJenis = !jenisQuery.isPending && pilihan.length === 0
     const tanpaTanggal = tanggal.trim() === ''
-    const bisaBuat = !value && !tanpaJenis && !tanpaTanggal && !buat.isPending
+    const bisaBuat = !value && !!jenis && !tanpaTanggal && !buat.isPending
     const keterangan = tanpaJenis
-        ? `Jenis surat ${kode} belum ada di Penomoran Surat.`
-        : tanpaTanggal
-            ? 'Isi tanggal dulu untuk membuat nomor.'
-            : null
+        ? `Belum ada jenis surat ${kode} atau ${kode}-* di Penomoran Surat.`
+        : !jenis
+            ? 'Pilih jenis surat dulu.'
+            : tanpaTanggal
+                ? 'Isi tanggal dulu untuk membuat nomor.'
+                : null
 
     return (
         <div className="space-y-2">
             <Label htmlFor={id} className="text-[10px] font-bold uppercase text-muted-foreground">{label}</Label>
+            {!value && pilihan.length > 1 && (
+                <select
+                    aria-label={`Jenis surat ${label}`}
+                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    value={terpilihId}
+                    onChange={(e) => setJenisId(e.target.value)}
+                >
+                    <option value="">Pilih jenis surat…</option>
+                    {pilihan.map((j) => (
+                        <option key={j.id} value={String(j.id)}>
+                            {j.code}
+                            {j.name ? ` — ${j.name}` : ''}
+                        </option>
+                    ))}
+                </select>
+            )}
             <div className="flex gap-2">
                 <Input id={id} name={name} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="flex-1" />
                 {!value && (

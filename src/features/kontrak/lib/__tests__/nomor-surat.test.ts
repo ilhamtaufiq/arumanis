@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cariJenis, perihalNomor } from '../nomor-surat'
+import { jenisUntuk, perihalNomor } from '../nomor-surat'
 
 describe('perihalNomor', () => {
     it('menambah nama penyedia setelah judul', () => {
@@ -12,18 +12,23 @@ describe('perihalNomor', () => {
     })
 })
 
-describe('cariJenis', () => {
+describe('jenisUntuk', () => {
     const daftar = [
         { id: 1, code: 'BASTP' },
         { id: 2, code: ' spk ' },
-        { id: 3, code: null },
+        { id: 3, code: 'SPK-KONTRAK-2026' },
+        { id: 4, code: 'SPK-ADDENDUM' },
+        { id: 5, code: 'SPPBJ-DESA' },
+        { id: 6, code: 'SPKX' },
+        { id: 7, code: null },
     ]
 
-    it('mencocokkan kode tanpa peduli huruf besar dan spasi', () => {
-        expect(cariJenis(daftar, 'SPK')?.id).toBe(2)
+    it('mengambil kode persis dan kode dengan akhiran, tanpa kode yang hanya mirip', () => {
+        expect(jenisUntuk(daftar, 'SPK').map((j) => j.id)).toEqual([2, 4, 3])
     })
 
-    it('mengembalikan undefined bila jenis belum ada', () => {
-        expect(cariJenis(daftar, 'SPMK')).toBeUndefined()
+    it('kosong bila tidak ada jenis yang cocok', () => {
+        expect(jenisUntuk(daftar, 'SPMK')).toEqual([])
     })
 })
+
