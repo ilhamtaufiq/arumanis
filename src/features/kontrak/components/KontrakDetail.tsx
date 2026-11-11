@@ -31,6 +31,7 @@ import { Header } from '@/components/layout/header';
 import { Main } from '@/components/layout/main';
 import { formatCurrency } from '@/lib/format';
 import { KontrakAddendumPanel } from './KontrakAddendumPanel';
+import { BmdSuratPernyataanModal } from './BmdSuratPernyataanModal';
 import {
     RingkasanExportModal,
     buildRingkasanExportPayload,
@@ -74,6 +75,7 @@ export default function KontrakDetail() {
     const [isRingkasanModalOpen, setIsRingkasanModalOpen] = useState(false);
     const [ringkasanForm, setRingkasanForm] = useState<RingkasanFormState>(createDefaultRingkasanForm);
     const [isRingkasanBusy, setIsRingkasanBusy] = useState(false);
+    const [isBmdModalOpen, setIsBmdModalOpen] = useState(false);
     
     const { data: response, isLoading, error } = useQuery({
         queryKey: ['kontrak', id],
@@ -529,11 +531,29 @@ export default function KontrakDetail() {
                                     </div>
                                     <Download className="w-4 h-4 opacity-50" />
                                 </Button>
+                                {(kontrak.pekerjaans?.length ?? 0) > 0 && (
+                                    <Button
+                                        variant="outline"
+                                        className="w-full justify-between h-11 text-sm font-medium"
+                                        onClick={() => setIsBmdModalOpen(true)}
+                                    >
+                                        <div className="flex items-center">
+                                            <FileText className="w-4 h-4 mr-2 text-slate-600" />
+                                            Surat Pernyataan BMD (Word)
+                                        </div>
+                                    </Button>
+                                )}
                             </CardContent>
                         </Card>
                     </div>
                 </div>
             </Main>
+
+            <BmdSuratPernyataanModal
+                open={isBmdModalOpen}
+                onOpenChange={setIsBmdModalOpen}
+                kontrak={kontrak ?? null}
+            />
 
             <RingkasanExportModal
                 open={isRingkasanModalOpen}

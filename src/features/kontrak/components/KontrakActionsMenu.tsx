@@ -27,6 +27,7 @@ export type KontrakActionsProps = {
     handleExportRingkasan: (kontrak: Kontrak) => void
     handleExportCover: (kontrak: Kontrak) => void
     handleExportBAP: (kontrak: Kontrak) => void | Promise<void>
+    handleExportBmd: (kontrak: Kontrak) => void
     handlePreview: (
         kontrak: Kontrak,
         type: 'spk' | 'ringkasan' | 'bap',
@@ -46,6 +47,7 @@ export function KontrakActionsMenu({
     handleExportRingkasan,
     handleExportCover,
     handleExportBAP,
+    handleExportBmd,
     handlePreview,
 }: KontrakActionsProps) {
     const menuLabel = item.spk || item.pekerjaans?.[0]?.nama_paket || `Kontrak #${item.id}`
@@ -113,6 +115,12 @@ export function KontrakActionsMenu({
                     <ClipboardCheck className="mr-2 h-4 w-4 text-orange-600" />
                     <span>Buat BAP</span>
                 </DropdownMenuItem>
+                {(item.pekerjaans?.length ?? 0) > 0 && (
+                    <DropdownMenuItem onClick={() => handleExportBmd(item)}>
+                        <FileText className="mr-2 h-4 w-4 text-slate-600" />
+                        <span>Surat Pernyataan BMD</span>
+                    </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                     <Link to="/kontrak/$id/edit" params={{ id: item.id.toString() }}>
                         <Pencil className="mr-2 h-4 w-4" />

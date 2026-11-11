@@ -25,6 +25,7 @@ export const KontrakRow = React.memo(function KontrakRow({
     handleExportRingkasan,
     handleExportCover,
     handleExportBAP,
+    handleExportBmd,
     handlePreview,
 }: KontrakRowProps) {
     const totalPagu = getKontrakTotalPagu(item)
@@ -139,6 +140,7 @@ export const KontrakRow = React.memo(function KontrakRow({
                     handleExportRingkasan={handleExportRingkasan}
                     handleExportCover={handleExportCover}
                     handleExportBAP={handleExportBAP}
+                    handleExportBmd={handleExportBmd}
                     handlePreview={handlePreview}
                 />
             </TableCell>

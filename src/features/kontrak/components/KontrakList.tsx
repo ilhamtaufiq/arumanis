@@ -79,6 +79,7 @@ import { BlobPreviewModal } from '@/components/shared/BlobPreviewModal';
 import { Progress } from '@/components/ui/progress';
 import { KontrakRow } from './KontrakRow';
 import { KontrakMobileCard } from './KontrakMobileCard';
+import { BmdSuratPernyataanModal } from './BmdSuratPernyataanModal';
 import {
     getKontrakApiErrorMessage as getApiErrorMessage,
     getKontrakImportErrorPayload as getImportErrorPayload,
@@ -130,6 +131,8 @@ export default function KontrakList() {
     const [blockedBapContext, setBlockedBapContext] = useState<KontrakBapContext | null>(null);
     const [bapForm, setBapForm] = useState<BapFormState>(createDefaultBapForm);
     const [isDownloadingAllCover, setIsDownloadingAllCover] = useState(false);
+    const [bmdKontrak, setBmdKontrak] = useState<Kontrak | null>(null);
+    const [isBmdModalOpen, setIsBmdModalOpen] = useState(false);
 
     // Callback stabil supaya React.memo pada KontrakRow / KontrakMobileCard efektif
     // (dan SearchInput tidak restart timer debounce tiap render)
@@ -336,6 +339,11 @@ export default function KontrakList() {
             setIsRingkasanBusy(false);
         }
     };
+
+    const handleExportBmd = useCallback((kontrak: Kontrak) => {
+        setBmdKontrak(kontrak);
+        setIsBmdModalOpen(true);
+    }, []);
 
     const handleExportAllCovers = async () => {
         setIsDownloadingAllCover(true);
@@ -575,6 +583,7 @@ export default function KontrakList() {
                                     handleExportRingkasan={handleExportRingkasan}
                                     handleExportCover={handleExportCover}
                                     handleExportBAP={handleExportBAP}
+                                    handleExportBmd={handleExportBmd}
                                     handlePreview={handlePreview}
                                 />
                             ))}
@@ -609,6 +618,7 @@ export default function KontrakList() {
                                             handleExportRingkasan={handleExportRingkasan}
                                             handleExportCover={handleExportCover}
                                             handleExportBAP={handleExportBAP}
+                                            handleExportBmd={handleExportBmd}
                                             handlePreview={handlePreview}
                                         />
                                     ))}
@@ -644,6 +654,12 @@ export default function KontrakList() {
                 onPreview={handleBapPreview}
                 onExport={processBapExport}
                 isExporting={isBapExporting}
+            />
+
+            <BmdSuratPernyataanModal
+                open={isBmdModalOpen}
+                onOpenChange={setIsBmdModalOpen}
+                kontrak={bmdKontrak}
             />
 
             <RingkasanExportModal
