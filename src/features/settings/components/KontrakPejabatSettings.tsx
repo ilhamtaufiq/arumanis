@@ -29,6 +29,12 @@ export default function KontrakPejabatSettings() {
     const [nomorDpa, setNomorDpa] = useState('');
     const [tanggalDpa, setTanggalDpa] = useState('');
     const [caraPembayaran, setCaraPembayaran] = useState<KontrakCaraPembayaran>('sekaligus');
+    const [bmdKasubagNama, setBmdKasubagNama] = useState('');
+    const [bmdKasubagNip, setBmdKasubagNip] = useState('');
+    const [bmdPengelolaNama, setBmdPengelolaNama] = useState('');
+    const [bmdPengelolaNip, setBmdPengelolaNip] = useState('');
+    const [bmdPengelolaPangkat, setBmdPengelolaPangkat] = useState('');
+    const [bmdPengelolaJabatan, setBmdPengelolaJabatan] = useState('');
 
     useEffect(() => {
         if (!data?.data) return;
@@ -41,6 +47,12 @@ export default function KontrakPejabatSettings() {
         setSkpd(getSettingValue(data.data, 'kontrak_skpd') || DEFAULT_KONTRAK_SKPD);
         setNomorDpa(getSettingValue(data.data, 'kontrak_nomor_dpa'));
         setTanggalDpa(getSettingValue(data.data, 'kontrak_tanggal_dpa'));
+        setBmdKasubagNama(getSettingValue(data.data, 'bmd_kasubag_nama'));
+        setBmdKasubagNip(getSettingValue(data.data, 'bmd_kasubag_nip'));
+        setBmdPengelolaNama(getSettingValue(data.data, 'bmd_pengelola_nama'));
+        setBmdPengelolaNip(getSettingValue(data.data, 'bmd_pengelola_nip'));
+        setBmdPengelolaPangkat(getSettingValue(data.data, 'bmd_pengelola_pangkat'));
+        setBmdPengelolaJabatan(getSettingValue(data.data, 'bmd_pengelola_jabatan'));
 
         const storedCara = getSettingValue(data.data, 'kontrak_cara_pembayaran');
         if (storedCara === 'sekaligus' || storedCara === 'termin' || storedCara === 'bulan') {
@@ -60,6 +72,12 @@ export default function KontrakPejabatSettings() {
                 kontrak_nomor_dpa: nomorDpa.trim(),
                 kontrak_tanggal_dpa: tanggalDpa.trim(),
                 kontrak_cara_pembayaran: caraPembayaran,
+                bmd_kasubag_nama: bmdKasubagNama.trim(),
+                bmd_kasubag_nip: bmdKasubagNip.trim(),
+                bmd_pengelola_nama: bmdPengelolaNama.trim(),
+                bmd_pengelola_nip: bmdPengelolaNip.trim(),
+                bmd_pengelola_pangkat: bmdPengelolaPangkat.trim(),
+                bmd_pengelola_jabatan: bmdPengelolaJabatan.trim(),
             });
             toast.success('Pengaturan dokumen kontrak berhasil disimpan');
         } catch (saveError) {
@@ -231,6 +249,74 @@ export default function KontrakPejabatSettings() {
                                 max={3650}
                                 value={masaPemeliharaanHari}
                                 onChange={(e) => setMasaPemeliharaanHari(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                <Separator />
+
+                <section className="space-y-4">
+                    <div>
+                        <h3 className="text-sm font-semibold">Surat Pernyataan BMD</h3>
+                        <p className="text-xs text-muted-foreground">
+                            Pejabat yang ditandatangani pada surat pernyataan BMD dari halaman Kontrak. Isi sesuai
+                            jabatan yang berlaku.
+                        </p>
+                    </div>
+                    <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="bmd_kasubag_nama">Nama Kasubag Keuangan</Label>
+                            <Input
+                                id="bmd_kasubag_nama"
+                                value={bmdKasubagNama}
+                                onChange={(e) => setBmdKasubagNama(e.target.value)}
+                                placeholder="Contoh: DIANA DAMAJANTI, SH"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="bmd_kasubag_nip">NIP Kasubag Keuangan</Label>
+                            <Input
+                                id="bmd_kasubag_nip"
+                                value={bmdKasubagNip}
+                                onChange={(e) => setBmdKasubagNip(e.target.value)}
+                                placeholder="Contoh: 19710422 199901 2001"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="bmd_pengelola_nama">Nama Pengelola Barang</Label>
+                            <Input
+                                id="bmd_pengelola_nama"
+                                value={bmdPengelolaNama}
+                                onChange={(e) => setBmdPengelolaNama(e.target.value)}
+                                placeholder="Contoh: DADANG KARYA"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="bmd_pengelola_nip">NIP Pengelola Barang</Label>
+                            <Input
+                                id="bmd_pengelola_nip"
+                                value={bmdPengelolaNip}
+                                onChange={(e) => setBmdPengelolaNip(e.target.value)}
+                                placeholder="Contoh: 197003022008011006"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="bmd_pengelola_pangkat">Pangkat/golongan Pengelola Barang</Label>
+                            <Input
+                                id="bmd_pengelola_pangkat"
+                                value={bmdPengelolaPangkat}
+                                onChange={(e) => setBmdPengelolaPangkat(e.target.value)}
+                                placeholder="Contoh: Penata Muda TK. I / III a"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="bmd_pengelola_jabatan">Jabatan Pengelola Barang</Label>
+                            <Input
+                                id="bmd_pengelola_jabatan"
+                                value={bmdPengelolaJabatan}
+                                onChange={(e) => setBmdPengelolaJabatan(e.target.value)}
+                                placeholder="Contoh: Pengelola Barang"
                             />
                         </div>
                     </div>
