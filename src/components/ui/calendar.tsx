@@ -36,18 +36,19 @@ function Calendar({
                 month: cn('flex w-full flex-col gap-4', defaultClassNames.month),
                 // Full-width top bar so prev/next remain clickable
                 nav: cn(
-                    'absolute inset-x-0 top-0 z-10 flex w-full items-center justify-between gap-1',
+                    // pointer-events-none: bar penuh tidak boleh menutupi dropdown bulan dan tahun di judul.
+                    'pointer-events-none absolute inset-x-0 top-0 z-10 flex w-full items-center justify-between gap-1',
                     defaultClassNames.nav,
                 ),
                 button_previous: cn(
                     buttonVariants({ variant: 'outline' }),
-                    'size-8 shrink-0 bg-transparent p-0 opacity-70 hover:opacity-100 select-none z-20',
+                    'pointer-events-auto size-8 shrink-0 bg-transparent p-0 opacity-70 hover:opacity-100 select-none z-20',
                     'aria-disabled:pointer-events-none aria-disabled:opacity-40',
                     defaultClassNames.button_previous,
                 ),
                 button_next: cn(
                     buttonVariants({ variant: 'outline' }),
-                    'size-8 shrink-0 bg-transparent p-0 opacity-70 hover:opacity-100 select-none z-20',
+                    'pointer-events-auto size-8 shrink-0 bg-transparent p-0 opacity-70 hover:opacity-100 select-none z-20',
                     'aria-disabled:pointer-events-none aria-disabled:opacity-40',
                     defaultClassNames.button_next,
                 ),

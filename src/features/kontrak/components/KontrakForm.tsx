@@ -28,6 +28,7 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { DatePickerField } from '@/components/shared/DatePickerField';
+import { hitungMasaPelaksanaan, hitungTargetSelesai } from '../lib/masa-pelaksanaan';
 import { Separator } from '@/components/ui/separator';
 import { NomorDokumenInput } from './NomorDokumenInput';
 
@@ -40,6 +41,8 @@ export default function KontrakForm() {
     const { tahunAnggaran } = useAppSettingsValues();
     const queryClient = useQueryClient();
 
+    // Masa pelaksanaan (hari kalender). Tidak ikut dikirim; hanya membantu mengisi target selesai.
+    const [masaHari, setMasaHari] = useState('');
     const [formData, setFormData] = useState({
         kode_rup: '',
         kode_paket: '',
@@ -163,6 +166,7 @@ export default function KontrakForm() {
             id_penyedia: Number(data.penyedia?.id) || 0,
             is_checklist_complete: data.is_checklist_complete || false,
         });
+        setMasaHari(hitungMasaPelaksanaan(data.tgl_spmk || '', data.tgl_selesai || '')?.toString() ?? '');
     }, [isEdit, kontrakRes]);
 
     useEffect(() => {
@@ -467,19 +471,52 @@ export default function KontrakForm() {
                                                 />
                                             </div>
                                         </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="masa_pelaksanaan" className="text-[10px] font-bold uppercase text-muted-foreground">
+                                                Masa pelaksanaan (hari kalender)
+                                            </Label>
+                                            <Input
+                                                id="masa_pelaksanaan"
+                                                type="number"
+                                                min={0}
+                                                inputMode="numeric"
+                                                placeholder="Contoh: 45"
+                                                value={masaHari}
+                                                onChange={(e) => {
+                                                    const nilai = e.target.value;
+                                                    setMasaHari(nilai);
+                                                    if (nilai.trim() === '') return;
+                                                    const selesai = hitungTargetSelesai(formData.tgl_spmk ?? '', Number(nilai));
+                                                    if (selesai) setFormData((prev) => ({ ...prev, tgl_selesai: selesai }));
+                                                }}
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                Mengisi target selesai otomatis dari tanggal SPMK. Tidak disimpan ke data kontrak.
+                                            </p>
+                                        </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-2 p-3 bg-primary/5 rounded-lg border border-primary/20">
                                                 <Label className="text-[10px] font-bold uppercase text-primary/70">Mulai Kerja (SPMK) <span className="text-red-500">*</span></Label>
                                                 <DatePickerField
                                                     value={formData.tgl_spmk ?? ''}
-                                                    onChange={(tgl_spmk) => setFormData((prev) => ({ ...prev, tgl_spmk }))}
+                                                    onChange={(tgl_spmk) => {
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            tgl_spmk,
+                                                            tgl_selesai: masaHari !== '' ? hitungTargetSelesai(tgl_spmk, Number(masaHari)) || prev.tgl_selesai : prev.tgl_selesai,
+                                                        }));
+                                                    }}
                                                 />
                                             </div>
                                             <div className="space-y-2 p-3 bg-orange-500/5 rounded-lg border border-orange-500/20">
                                                 <Label className="text-[10px] font-bold uppercase text-orange-500/70">Target Selesai <span className="text-red-500">*</span></Label>
                                                 <DatePickerField
                                                     value={formData.tgl_selesai ?? ''}
-                                                    onChange={(tgl_selesai) => setFormData((prev) => ({ ...prev, tgl_selesai }))}
+                                                    onChange={(tgl_selesai) => {
+                                                        setFormData((prev) => ({ ...prev, tgl_selesai }));
+                                                        const hari = hitungMasaPelaksanaan(formData.tgl_spmk ?? '', tgl_selesai);
+                                                        setMasaHari(hari === null ? '' : String(hari));
+                                                    }}
                                                 />
                                             </div>
                                         </div>
