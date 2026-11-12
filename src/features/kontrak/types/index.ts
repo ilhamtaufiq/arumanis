@@ -369,3 +369,13 @@ export interface KontrakBmdExportParams {
     tanggal_surat: string;
     tanggal_perolehan: string;
 }
+
+export interface KontrakSuketDesaExportParams {
+    nomor_surat: string;
+    tanggal_surat: string;
+    nama_kepala_desa: string;
+    alamat_kantor: string;
+    serah_terima_kepada: string;
+    nomor_ba: string;
+    tanggal_ba: string;
+}

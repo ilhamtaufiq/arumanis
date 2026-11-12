@@ -12,6 +12,7 @@ import type {
     KontrakImportResult,
     KontrakResponse,
     KontrakRingkasanExportParams,
+    KontrakSuketDesaExportParams,
     PenyediaResponse,
 } from '../types';
 
@@ -209,6 +210,13 @@ export const getKontrakBapContext = async (id: number) => {
 
 export const exportKontrakBmd = async (id: number, params: KontrakBmdExportParams) => {
     const blob = await api.post<Blob>(`/kontrak/${id}/export-bmd`, params, {
+        responseType: 'blob',
+    });
+    return blob;
+};
+
+export const createKontrakSuketDesa = async (id: number, params: KontrakSuketDesaExportParams) => {
+    const blob = await api.post<Blob>(`/kontrak/${id}/export-suket-desa`, params, {
         responseType: 'blob',
     });
     return blob;
