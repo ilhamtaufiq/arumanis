@@ -67,7 +67,7 @@ function Calendar({
                     defaultClassNames.dropdowns,
                 ),
                 dropdown_root: cn(
-                    'relative rounded-md border border-input shadow-xs',
+                    'relative rounded-md border border-input shadow-xs [&_option]:bg-popover [&_option]:text-popover-foreground',
                     defaultClassNames.dropdown_root,
                 ),
                 dropdown: cn(
