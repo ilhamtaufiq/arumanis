@@ -22,6 +22,7 @@ export function KontrakMobileCard({
     handleExportCover,
     handleExportBAP,
     handleExportBmd,
+    handleExportSuketDesa,
     handlePreview,
 }: KontrakActionsProps) {
     const totalPagu = getKontrakTotalPagu(item)
@@ -68,6 +69,7 @@ export function KontrakMobileCard({
                         handleExportCover={handleExportCover}
                         handleExportBAP={handleExportBAP}
                         handleExportBmd={handleExportBmd}
+                        handleExportSuketDesa={handleExportSuketDesa}
                         handlePreview={handlePreview}
                     />
                 </div>

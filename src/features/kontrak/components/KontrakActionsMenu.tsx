@@ -28,6 +28,7 @@ export type KontrakActionsProps = {
     handleExportCover: (kontrak: Kontrak) => void
     handleExportBAP: (kontrak: Kontrak) => void | Promise<void>
     handleExportBmd: (kontrak: Kontrak) => void
+    handleExportSuketDesa: (kontrak: Kontrak) => void
     handlePreview: (
         kontrak: Kontrak,
         type: 'spk' | 'ringkasan' | 'bap',
@@ -48,6 +49,7 @@ export function KontrakActionsMenu({
     handleExportCover,
     handleExportBAP,
     handleExportBmd,
+    handleExportSuketDesa,
     handlePreview,
 }: KontrakActionsProps) {
     const menuLabel = item.spk || item.pekerjaans?.[0]?.nama_paket || `Kontrak #${item.id}`
@@ -119,6 +121,12 @@ export function KontrakActionsMenu({
                     <DropdownMenuItem onClick={() => handleExportBmd(item)}>
                         <FileText className="mr-2 h-4 w-4 text-slate-600" />
                         <span>Surat Pernyataan BMD</span>
+                    </DropdownMenuItem>
+                )}
+                {(item.pekerjaans?.length ?? 0) > 0 && (
+                    <DropdownMenuItem onClick={() => handleExportSuketDesa(item)}>
+                        <FileText className="mr-2 h-4 w-4 text-slate-600" />
+                        <span>Surat Keterangan Kepala Desa</span>
                     </DropdownMenuItem>
                 )}
                 <DropdownMenuItem asChild>

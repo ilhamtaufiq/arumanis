@@ -80,6 +80,7 @@ import { Progress } from '@/components/ui/progress';
 import { KontrakRow } from './KontrakRow';
 import { KontrakMobileCard } from './KontrakMobileCard';
 import { BmdSuratPernyataanModal } from './BmdSuratPernyataanModal';
+import { SuketDesaModal } from './SuketDesaModal';
 import {
     getKontrakApiErrorMessage as getApiErrorMessage,
     getKontrakImportErrorPayload as getImportErrorPayload,
@@ -133,6 +134,8 @@ export default function KontrakList() {
     const [isDownloadingAllCover, setIsDownloadingAllCover] = useState(false);
     const [bmdKontrak, setBmdKontrak] = useState<Kontrak | null>(null);
     const [isBmdModalOpen, setIsBmdModalOpen] = useState(false);
+    const [suketKontrak, setSuketKontrak] = useState<Kontrak | null>(null);
+    const [isSuketModalOpen, setIsSuketModalOpen] = useState(false);
 
     // Callback stabil supaya React.memo pada KontrakRow / KontrakMobileCard efektif
     // (dan SearchInput tidak restart timer debounce tiap render)
@@ -343,6 +346,11 @@ export default function KontrakList() {
     const handleExportBmd = useCallback((kontrak: Kontrak) => {
         setBmdKontrak(kontrak);
         setIsBmdModalOpen(true);
+    }, []);
+
+    const handleExportSuketDesa = useCallback((kontrak: Kontrak) => {
+        setSuketKontrak(kontrak);
+        setIsSuketModalOpen(true);
     }, []);
 
     const handleExportAllCovers = async () => {
@@ -584,6 +592,7 @@ export default function KontrakList() {
                                     handleExportCover={handleExportCover}
                                     handleExportBAP={handleExportBAP}
                                     handleExportBmd={handleExportBmd}
+                                    handleExportSuketDesa={handleExportSuketDesa}
                                     handlePreview={handlePreview}
                                 />
                             ))}
@@ -619,6 +628,7 @@ export default function KontrakList() {
                                             handleExportCover={handleExportCover}
                                             handleExportBAP={handleExportBAP}
                                             handleExportBmd={handleExportBmd}
+                                            handleExportSuketDesa={handleExportSuketDesa}
                                             handlePreview={handlePreview}
                                         />
                                     ))}
@@ -660,6 +670,12 @@ export default function KontrakList() {
                 open={isBmdModalOpen}
                 onOpenChange={setIsBmdModalOpen}
                 kontrak={bmdKontrak}
+            />
+
+            <SuketDesaModal
+                open={isSuketModalOpen}
+                onOpenChange={setIsSuketModalOpen}
+                kontrak={suketKontrak}
             />
 
             <RingkasanExportModal
