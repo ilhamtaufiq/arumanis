@@ -4,12 +4,18 @@ import { createOutput, updateOutput } from '@/features/output/api/output';
 import type { Output } from '@/features/output/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { Save, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { SelectTambahBaru } from './SelectTambahBaru';
+
+const KOMPONEN_BAWAAN = [
+    'Sambungan Rumah', 'MCK', 'MCK Individu', 'MCK Komunal', 'Pipa', 'Kran Umum', 'Hidran Umum',
+    'Broncaptering', 'Reservoir', 'Tangki Septik Individu', 'Tangki Septik Komunal', 'Sumur Bor', 'Pompa',
+];
+const SATUAN_BAWAAN = ['Unit', 'Meter', 'Meter Persegi', 'Meter Kubik'];
 
 interface EmbeddedOutputFormProps {
     pekerjaanId: number;
@@ -111,48 +117,29 @@ export default function EmbeddedOutputForm({ pekerjaanId, onSuccess, initialData
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
                         <Label htmlFor="komponen">Komponen <span className="text-red-500">*</span></Label>
-                        <Select
+                        <SelectTambahBaru
+                            id="komponen"
                             value={formData.komponen}
-                            onValueChange={(value) => setFormData((prev) => ({ ...prev, komponen: value }))}
-                        >
-                            <SelectTrigger>
-                                <SelectValue placeholder="Pilih komponen" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Sambungan Rumah">Sambungan Rumah</SelectItem>
-                                <SelectItem value="MCK">MCK</SelectItem>
-                                <SelectItem value="MCK Individu">MCK Individu</SelectItem>
-                                <SelectItem value="MCK Komunal">MCK Komunal</SelectItem>
-                                <SelectItem value="Pipa">Pipa</SelectItem>
-                                <SelectItem value="Kran Umum">Kran Umum</SelectItem>
-                                <SelectItem value="Hidran Umum">Hidran Umum</SelectItem>
-                                <SelectItem value="Broncaptering">Broncaptering</SelectItem>
-                                <SelectItem value="Reservoir">Reservoir</SelectItem>
-                                <SelectItem value="Tangki Septik Individu">Tangki Septik Individu</SelectItem>
-                                <SelectItem value="Tangki Septik Komunal">Tangki Septik Komunal</SelectItem>
-                                <SelectItem value="Sumur Bor">Sumur Bor</SelectItem>
-                                <SelectItem value="Pompa">Pompa</SelectItem>
-                            </SelectContent>
-                        </Select>
+                            onChange={(value) => setFormData((prev) => ({ ...prev, komponen: value }))}
+                            bawaan={KOMPONEN_BAWAAN}
+                            placeholder="Pilih komponen"
+                            labelTambah="+ Tambah komponen"
+                            placeholderTambah="Nama komponen baru"
+                        />
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <Label htmlFor="satuan">Satuan <span className="text-red-500">*</span></Label>
-                            <Select
+                            <SelectTambahBaru
+                                id="satuan"
                                 value={formData.satuan}
-                                onValueChange={(value) => setFormData((prev) => ({ ...prev, satuan: value }))}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="Pilih satuan" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="Unit">Unit</SelectItem>
-                                    <SelectItem value="Meter">Meter</SelectItem>
-                                    <SelectItem value="Meter Persegi">Meter Persegi</SelectItem>
-                                    <SelectItem value="Meter Kubik">Meter Kubik</SelectItem>
-                                </SelectContent>
-                            </Select>
+                                onChange={(value) => setFormData((prev) => ({ ...prev, satuan: value }))}
+                                bawaan={SATUAN_BAWAAN}
+                                placeholder="Pilih satuan"
+                                labelTambah="+ Tambah satuan"
+                                placeholderTambah="Nama satuan baru"
+                            />
                         </div>
 
                         <div className="space-y-2">
