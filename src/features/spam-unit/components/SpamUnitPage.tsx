@@ -38,7 +38,7 @@ import type { IntegrationUnit, SpamAirMinumOutputType, SpamDesaIntegration, Sync
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { capaianTahunTerbaru } from '../lib/achievement-source'
+import { akumulasiCapaian } from '../lib/achievement-source'
 import { SpamIntegrationDashboard } from './SpamIntegrationDashboard'
 import { SpamSpmCapaianDashboard } from './SpamSpmCapaianDashboard'
 import { SpamKelembagaanDashboard } from './SpamKelembagaanDashboard'
@@ -821,7 +821,7 @@ export default function SpamUnitPage({
                                                                 </button>
                                                             </TableCell>
                                                             <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200">
-                                                                {capaianTahunTerbaru(unit.achievements).sr} SR
+                                                                {akumulasiCapaian(unit.achievements)} SR
                                                             </TableCell>
                                                             <TableCell className="text-center font-bold text-slate-800 dark:text-slate-200">
                                                                 {bjpCount.toLocaleString()} KK

@@ -35,13 +35,9 @@ export function sumAchievementsForTahun(list: SpamAchievement[] | undefined, tah
 }
 
 /**
- * Capaian tahun terbaru per unit: tahun paling baru yang ada, dengan semua rekam pada tahun itu dijumlahkan
- * (manual + integrasi). Aturan sama dengan kartu Capaian, supaya angka di tabel master dan capaian cocok.
+ * Akumulasi SR per unit: jumlah semua rekam (semua tahun, manual + integrasi). Capaian per tahun bersifat
+ * tambahan, bukan snapshot, sehingga akumulasi = penjumlahan seluruh tahun. Aturan ini sama dengan tab SPM.
  */
-export function capaianTahunTerbaru(list: SpamAchievement[] | undefined) {
-    const tahun = (list ?? [])
-        .map((a) => String(a.tahun))
-        .sort((a, b) => b.localeCompare(a))[0]
-    if (!tahun) return { tahun: null as string | null, sr: 0 }
-    return { tahun, sr: sumAchievementsForTahun(list, tahun).sr }
+export function akumulasiCapaian(list: SpamAchievement[] | undefined) {
+    return (list ?? []).reduce((acc, a) => acc + (a.jumlah_sr ?? 0), 0)
 }
