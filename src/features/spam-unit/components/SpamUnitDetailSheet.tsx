@@ -18,6 +18,7 @@ import {
     TableRow,
 } from '@/components/ui/table'
 import { getSpamUnit } from '../api'
+import { SpamTenderReferensiSection } from './SpamTenderReferensiSection'
 import type { UnitSpam } from '../types'
 
 type DetailTab = 'info' | 'pokmas' | 'achievements' | 'budgets'
@@ -250,6 +251,8 @@ export function SpamUnitDetailSheet({
                                 )}
                             </div>
                         )}
+
+                        <SpamTenderReferensiSection unitId={unit.id} />
 
                         <div className="flex items-center gap-2 rounded-lg border border-dashed p-3 text-xs text-muted-foreground">
                             <Users className="h-3.5 w-3.5 shrink-0" />
