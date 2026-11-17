@@ -20,7 +20,7 @@ import { Label } from '@/components/ui/label'
 import type { IntegrationUnit, SyncMode } from '../types'
 import { useSpamSync } from '../hooks/useSpamSync'
 
-const TAHUN_OPTIONS = ['2026', '2025', '2024', '2023', '2022', '2021', '2020']
+import { TAHUN_OPTIONS } from '../lib/tahun-options'
 
 interface SpamSyncDialogProps {
     open: boolean

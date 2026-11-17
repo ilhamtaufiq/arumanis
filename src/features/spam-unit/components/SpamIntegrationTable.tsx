@@ -33,7 +33,7 @@ import { getIntegrationMetricColumnLabel } from '../lib/baseline'
 import type { SpamDesaIntegration, SyncStatus } from '../types'
 import { useSpamIntegration } from '../hooks/useSpamIntegration'
 
-const TAHUN_OPTIONS = ['2026', '2025', '2024', '2023', '2022', '2021', '2020']
+import { TAHUN_OPTIONS } from '../lib/tahun-options'
 
 const SYNC_STATUS_CONFIG: Record<
     SyncStatus,

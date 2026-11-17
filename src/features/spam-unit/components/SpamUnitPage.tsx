@@ -738,6 +738,9 @@ export default function SpamUnitPage({
                                                     <SelectItem value="2022">Tahun 2022</SelectItem>
                                                     <SelectItem value="2021">Tahun 2021</SelectItem>
                                                     <SelectItem value="2020">Tahun 2020</SelectItem>
+                                                    <SelectItem value="2019">Tahun 2019</SelectItem>
+                                                    <SelectItem value="2018">Tahun 2018</SelectItem>
+                                                    <SelectItem value="2017">Tahun 2017</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -1125,6 +1128,9 @@ export default function SpamUnitPage({
                                                                     <SelectItem value="2022">2022</SelectItem>
                                                                     <SelectItem value="2021">2021</SelectItem>
                                                                     <SelectItem value="2020">2020</SelectItem>
+                                                                    <SelectItem value="2019">2019</SelectItem>
+                                                                    <SelectItem value="2018">2018</SelectItem>
+                                                                    <SelectItem value="2017">2017</SelectItem>
                                                                 </SelectContent>
                                                             </Select>
                                                         </div>

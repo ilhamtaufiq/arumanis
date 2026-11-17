@@ -40,7 +40,7 @@ import { SPAM_ACCUMULATION_START_TAHUN, SPAM_BASELINE_CAP_TAHUN } from '../lib/b
 import type { SpamStatsMetricBlock, UnitSpamStats } from '../types'
 import { cn } from '@/lib/utils'
 
-const TAHUN_OPTIONS = ['2026', '2025', '2024', '2023', '2022', '2021', '2020']
+import { TAHUN_OPTIONS } from '../lib/tahun-options'
 
 interface SpamSpmCapaianDashboardProps {
     kecamatanId?: number
