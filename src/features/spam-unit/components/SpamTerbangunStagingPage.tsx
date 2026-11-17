@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { getSpamUnits } from '../api'
+import { SpamTenderImportCard } from './SpamTenderImportCard'
 import {
     applyTerbangunStaging,
     getTerbangunStaging,
-    importTerbangunStaging,
     mapTerbangunStaging,
     type TerbangunMatchStatus,
     type TerbangunStagingRow,
@@ -22,7 +22,7 @@ const LABEL: Record<TerbangunMatchStatus, string> = {
 
 const KEY = ['spam-terbangun-staging'] as const
 
-/** Staging SPAM terbangun: impor dari data raw, perbaiki baris belum cocok atau invalid, lalu terapkan ke unit SPAM. */
+/** Staging SPAM terbangun: baris dari sumber terpisah, perbaiki baris belum cocok atau invalid, lalu terapkan ke unit SPAM. */
 export function SpamTerbangunStagingPage() {
     const qc = useQueryClient()
     const [status, setStatus] = useState<TerbangunMatchStatus | ''>('')
@@ -34,15 +34,6 @@ export function SpamTerbangunStagingPage() {
     })
 
     const segarkan = () => qc.invalidateQueries({ queryKey: KEY })
-
-    const impor = useMutation({
-        mutationFn: importTerbangunStaging,
-        onSuccess: () => {
-            toast.success('Data raw diimpor ke batch baru')
-            segarkan()
-        },
-        onError: (e: Error) => toast.error(e.message),
-    })
 
     const terapkan = useMutation({
         mutationFn: (batch: string) => applyTerbangunStaging(batch),
@@ -58,18 +49,17 @@ export function SpamTerbangunStagingPage() {
 
     return (
         <div className="flex flex-col gap-4">
+            <SpamTenderImportCard />
+
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <h2 className="text-lg font-semibold">Staging SPAM terbangun</h2>
                     <p className="text-sm text-muted-foreground">
-                        Sumber: data raw terbangun. Perbaiki baris belum cocok atau invalid, lalu terapkan ke unit SPAM.
+                        Perbaiki baris belum cocok atau invalid, lalu terapkan ke unit SPAM.
                         Capaian diisi manual.
                     </p>
                 </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" onClick={() => impor.mutate()} disabled={impor.isPending}>
-                        Impor dari data raw
-                    </Button>
                     <Button
                         onClick={() => {
                             if (!batch) return
@@ -120,7 +110,7 @@ export function SpamTerbangunStagingPage() {
                     {daftar.isPending && <p className="py-6 text-center text-sm text-muted-foreground">Memuat…</p>}
                     {daftar.data && daftar.data.data.length === 0 && (
                         <p className="py-6 text-center text-sm text-muted-foreground">
-                            Belum ada batch. Tekan &quot;Impor dari data raw&quot;.
+                            Belum ada batch staging.
                         </p>
                     )}
                     <div className="overflow-x-auto">
@@ -128,7 +118,7 @@ export function SpamTerbangunStagingPage() {
                             <thead className="text-left text-xs text-muted-foreground">
                                 <tr>
                                     <th className="py-2 pr-3">Kecamatan</th>
-                                    <th className="py-2 pr-3">Desa (raw)</th>
+                                    <th className="py-2 pr-3">Desa</th>
                                     <th className="py-2 pr-3">Sistem</th>
                                     <th className="py-2 pr-3">Tahun</th>
                                     <th className="py-2 pr-3">Status</th>

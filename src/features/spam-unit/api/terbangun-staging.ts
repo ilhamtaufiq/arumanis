@@ -29,12 +29,6 @@ export const getTerbangunStaging = async (params?: { batch?: string; status?: Te
     return res;
 };
 
-export const importTerbangunStaging = async () => {
-    return api.post<{ batch_id: string; ringkasan: Record<TerbangunMatchStatus, number> }>(
-        '/spam-terbangun/staging/import',
-    );
-};
-
 export const mapTerbangunStaging = async (id: number, unitSpamId: number) => {
     return api.post<{ id: number; unit_spam_id: number; match_status: TerbangunMatchStatus }>(
         `/spam-terbangun/staging/${id}/map`,

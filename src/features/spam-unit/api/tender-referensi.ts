@@ -29,3 +29,9 @@ export const importTenderReferensi = async (file: File) => {
         terhubung_ke_unit: number;
     }>('/spam-tender-referensi/import', formData);
 };
+
+export const terapkanAnggaranTenderReferensi = async () => {
+    return api.post<{ kandidat: number; diterapkan: number; sudah_ada_atau_tidak_lengkap: number }>(
+        '/spam-tender-referensi/terapkan-anggaran',
+    );
+};
