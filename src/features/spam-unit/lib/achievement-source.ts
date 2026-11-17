@@ -33,3 +33,15 @@ export function sumAchievementsForTahun(list: SpamAchievement[] | undefined, tah
             { sr: 0, kk: 0, jiwa: 0, bjpKk: 0, bjpJiwa: 0 },
         )
 }
+
+/**
+ * Capaian tahun terbaru per unit: tahun paling baru yang ada, dengan semua rekam pada tahun itu dijumlahkan
+ * (manual + integrasi). Aturan sama dengan kartu Capaian, supaya angka di tabel master dan capaian cocok.
+ */
+export function capaianTahunTerbaru(list: SpamAchievement[] | undefined) {
+    const tahun = (list ?? [])
+        .map((a) => String(a.tahun))
+        .sort((a, b) => b.localeCompare(a))[0]
+    if (!tahun) return { tahun: null as string | null, sr: 0 }
+    return { tahun, sr: sumAchievementsForTahun(list, tahun).sr }
+}
