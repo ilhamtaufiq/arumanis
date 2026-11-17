@@ -33,7 +33,7 @@ import { Pencil, Trash2, Loader2, Download, FileText, Eye, FileDown, ChevronDown
 import { toast } from 'sonner';
 import EmbeddedBerkasForm from './EmbeddedBerkasForm';
 import { DocumentPreviewModal } from '@/components/shared/DocumentPreviewModal';
-import { resolveBerkasFileName } from '@/features/documents/lib/resolve-berkas-file-name';
+import { namaUnduhBerkas, resolveBerkasFileName } from '@/features/documents/lib/resolve-berkas-file-name';
 import { useBerkasList, useDeleteBerkas } from '@/features/berkas/hooks/useBerkas';
 import { ListPagination } from '@/components/shared/ListPagination';
 import { downloadBffApiFile, safeDownloadFilename } from '@/lib/download-file';
@@ -123,7 +123,7 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
         const link = document.createElement('a');
         link.href = normalizeStorageUrl(berkas.berkas_url);
         link.download = safeDownloadFilename(
-            berkas.original_name || resolveBerkasFileName(berkas),
+            namaUnduhBerkas(berkas),
             `berkas_${berkas.id}`,
         );
         document.body.appendChild(link);
@@ -165,7 +165,7 @@ export default function BerkasTabContent({ pekerjaanId, namaPaket }: BerkasTabCo
     const [exportingPdf, setExportingPdf] = useState<number | null>(null);
 
     const isBerkasExcel = (berkas: Berkas) =>
-        /\.xlsx?$/i.test(berkas.original_name || resolveBerkasFileName(berkas) || '');
+        /\.xlsx?$/i.test(namaUnduhBerkas(berkas));
 
     /** Berkas Excel dicetak di browser: semua sheet, layout A4. */
     const handleExportXlsxPdf = async (berkas: Berkas) => {
