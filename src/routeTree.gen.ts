@@ -92,6 +92,7 @@ import { Route as AuthenticatedApiKeysIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedActionInboxIndexRouteImport } from './routes/_authenticated/action-inbox/index'
 import { Route as KelembagaanSpamFormTokenRouteImport } from './routes/kelembagaan-spam/form.$token'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
+import { Route as AuthenticatedSpamUnitTerbangunRouteImport } from './routes/_authenticated/spam-unit/terbangun'
 import { Route as AuthenticatedSipdRenjaSyncKegiatanRouteImport } from './routes/_authenticated/sipd-renja/sync-kegiatan'
 import { Route as AuthenticatedSettingsKontrakTemplatesRouteImport } from './routes/_authenticated/settings/kontrak-templates'
 import { Route as AuthenticatedSettingsEmailTemplatesRouteImport } from './routes/_authenticated/settings/email-templates'
@@ -613,6 +614,12 @@ const AuthenticatedUsersNewRoute = AuthenticatedUsersNewRouteImport.update({
   path: '/users/new',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedSpamUnitTerbangunRoute =
+  AuthenticatedSpamUnitTerbangunRouteImport.update({
+    id: '/spam-unit/terbangun',
+    path: '/spam-unit/terbangun',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSipdRenjaSyncKegiatanRoute =
   AuthenticatedSipdRenjaSyncKegiatanRouteImport.update({
     id: '/sipd-renja/sync-kegiatan',
@@ -1019,6 +1026,7 @@ export interface FileRoutesByFullPath {
   '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/sipd-renja/sync-kegiatan': typeof AuthenticatedSipdRenjaSyncKegiatanRoute
+  '/spam-unit/terbangun': typeof AuthenticatedSpamUnitTerbangunRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/action-inbox/': typeof AuthenticatedActionInboxIndexRoute
@@ -1159,6 +1167,7 @@ export interface FileRoutesByTo {
   '/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/sipd-renja/sync-kegiatan': typeof AuthenticatedSipdRenjaSyncKegiatanRoute
+  '/spam-unit/terbangun': typeof AuthenticatedSpamUnitTerbangunRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/action-inbox': typeof AuthenticatedActionInboxIndexRoute
@@ -1303,6 +1312,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/email-templates': typeof AuthenticatedSettingsEmailTemplatesRoute
   '/_authenticated/settings/kontrak-templates': typeof AuthenticatedSettingsKontrakTemplatesRoute
   '/_authenticated/sipd-renja/sync-kegiatan': typeof AuthenticatedSipdRenjaSyncKegiatanRoute
+  '/_authenticated/spam-unit/terbangun': typeof AuthenticatedSpamUnitTerbangunRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
   '/_authenticated/action-inbox/': typeof AuthenticatedActionInboxIndexRoute
@@ -1447,6 +1457,7 @@ export interface FileRouteTypes {
     | '/settings/email-templates'
     | '/settings/kontrak-templates'
     | '/sipd-renja/sync-kegiatan'
+    | '/spam-unit/terbangun'
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/action-inbox/'
@@ -1587,6 +1598,7 @@ export interface FileRouteTypes {
     | '/settings/email-templates'
     | '/settings/kontrak-templates'
     | '/sipd-renja/sync-kegiatan'
+    | '/spam-unit/terbangun'
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/action-inbox'
@@ -1730,6 +1742,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/email-templates'
     | '/_authenticated/settings/kontrak-templates'
     | '/_authenticated/sipd-renja/sync-kegiatan'
+    | '/_authenticated/spam-unit/terbangun'
     | '/_authenticated/users/new'
     | '/kelembagaan-spam/form/$token'
     | '/_authenticated/action-inbox/'
@@ -2412,6 +2425,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersNewRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/spam-unit/terbangun': {
+      id: '/_authenticated/spam-unit/terbangun'
+      path: '/spam-unit/terbangun'
+      fullPath: '/spam-unit/terbangun'
+      preLoaderRoute: typeof AuthenticatedSpamUnitTerbangunRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/sipd-renja/sync-kegiatan': {
       id: '/_authenticated/sipd-renja/sync-kegiatan'
       path: '/sipd-renja/sync-kegiatan'
@@ -2930,6 +2950,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSettingsEmailTemplatesRoute: typeof AuthenticatedSettingsEmailTemplatesRoute
   AuthenticatedSettingsKontrakTemplatesRoute: typeof AuthenticatedSettingsKontrakTemplatesRoute
   AuthenticatedSipdRenjaSyncKegiatanRoute: typeof AuthenticatedSipdRenjaSyncKegiatanRoute
+  AuthenticatedSpamUnitTerbangunRoute: typeof AuthenticatedSpamUnitTerbangunRoute
   AuthenticatedUsersNewRoute: typeof AuthenticatedUsersNewRoute
   AuthenticatedActionInboxIndexRoute: typeof AuthenticatedActionInboxIndexRoute
   AuthenticatedApiKeysIndexRoute: typeof AuthenticatedApiKeysIndexRoute
@@ -3052,6 +3073,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedSettingsKontrakTemplatesRoute,
   AuthenticatedSipdRenjaSyncKegiatanRoute:
     AuthenticatedSipdRenjaSyncKegiatanRoute,
+  AuthenticatedSpamUnitTerbangunRoute: AuthenticatedSpamUnitTerbangunRoute,
   AuthenticatedUsersNewRoute: AuthenticatedUsersNewRoute,
   AuthenticatedActionInboxIndexRoute: AuthenticatedActionInboxIndexRoute,
   AuthenticatedApiKeysIndexRoute: AuthenticatedApiKeysIndexRoute,
