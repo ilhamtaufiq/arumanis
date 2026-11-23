@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
 import { Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -58,6 +59,10 @@ export function PekerjaanMobileCard({
     onDeleteRequest,
 }: PekerjaanMobileCardProps) {
     const isUpdating = updatingRow === item.id;
+    // Pengawas dan pendamping disembunyikan di balik ringkasan agar kartu tidak penuh.
+    const [pengawasTerbuka, setPengawasTerbuka] = useState(false);
+    const namaPengawas = (id: number | null | undefined) =>
+        pengawasList.find((p) => p.id === id)?.nama ?? 'Belum Ada';
     const subKegiatan = item.kegiatan?.nama_sub_kegiatan || '-';
 
     return (
@@ -132,7 +137,16 @@ export function PekerjaanMobileCard({
                 </div>
             </dl>
 
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+                <div className="flex items-center justify-between gap-2">
+                    <span className="min-w-0 truncate">Pengawas: <span className="text-foreground">{namaPengawas(item.pengawas_id)}</span></span>
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" aria-expanded={pengawasTerbuka} onClick={() => setPengawasTerbuka((v) => !v)}>
+                        {pengawasTerbuka ? 'Tutup' : 'Ubah'}
+                    </Button>
+                </div>
+                <span className="min-w-0 truncate">Pendamping: <span className="text-foreground">{namaPengawas(item.pendamping_id)}</span></span>
+                {pengawasTerbuka && (
+                <div className="grid grid-cols-1 gap-2">
                 <div className="flex flex-col gap-1 text-xs text-muted-foreground">
                     <span>Pengawas</span>
                     <Select
@@ -177,6 +191,8 @@ export function PekerjaanMobileCard({
                         </SelectContent>
                     </Select>
                 </div>
+            </div>
+                )}
             </div>
         </div>
     );

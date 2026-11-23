@@ -183,6 +183,59 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
         }
     };
 
+    const renderAksi = (tiket: (typeof filteredTikets)[number]) => (
+
+        <div className="flex items-center justify-end gap-1">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                            title="Diskusi & Detail"
+                                            onClick={() => setSelectedTicketId(tiket.id)}
+                                        >
+                                            <MessageSquare className="h-4 w-4" />
+                                        </Button>
+
+                                        {(isAdmin || tiket.status === 'open') && (
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="h-8 w-8"
+                                                onClick={() => onEdit?.(tiket)}
+                                            >
+                                                <Pencil className="h-4 w-4" />
+                                            </Button>
+                                        )}
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                    disabled={!isAdmin && tiket.status !== 'open'}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Hapus Tiket</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Apakah Anda yakin ingin menghapus tiket ini? Tindakan ini tidak dapat dibatalkan.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDelete(tiket.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                                        Hapus
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                    </div>
+
+    );
+
     return (
         <div className="space-y-4">
             {/* Toolbar */}
@@ -231,7 +284,7 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
                 </div>
             </div>
 
-            <div className="relative rounded-md border overflow-x-auto">
+            <div className="relative hidden rounded-md border overflow-x-auto md:block">
                 {loading && tikets.length === 0 && (
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -356,60 +409,40 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
                                     })}
                                 </TableCell>
                                 <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">
-                                    <div className="flex items-center justify-end gap-1">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                            title="Diskusi & Detail"
-                                            onClick={() => setSelectedTicketId(tiket.id)}
-                                        >
-                                            <MessageSquare className="h-4 w-4" />
-                                        </Button>
-
-                                        {(isAdmin || tiket.status === 'open') && (
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="h-8 w-8"
-                                                onClick={() => onEdit?.(tiket)}
-                                            >
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                        )}
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="icon"
-                                                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                    disabled={!isAdmin && tiket.status !== 'open'}
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>Hapus Tiket</AlertDialogTitle>
-                                                    <AlertDialogDescription>
-                                                        Apakah Anda yakin ingin menghapus tiket ini? Tindakan ini tidak dapat dibatalkan.
-                                                    </AlertDialogDescription>
-                                                </AlertDialogHeader>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>Batal</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDelete(tiket.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                                                        Hapus
-                                                    </AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                    </div>
+                                    {renderAksi(tiket)}
                                 </TableCell>
                             </TableRow>
                             ))
                         ) : null}
                     </TableBody>
                 </Table>
+            </div>
+
+            {/* Di ponsel tabel diganti kartu: judul, status, dan aksi langsung terlihat. */}
+            <div className="flex flex-col gap-3 md:hidden">
+                {filteredTikets.map((tiket) => (
+                    <div key={tiket.id} className="flex flex-col gap-2 rounded-lg border bg-background p-4">
+                        <div className="flex items-start justify-between gap-2">
+                            {getStatusBadge(tiket.status)}
+                            <span className="text-xs text-muted-foreground">
+                                {new Date(tiket.created_at).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                            </span>
+                        </div>
+                        <p className="font-medium leading-snug">{tiket.subjek}</p>
+                        {tiket.deskripsi ? <p className="line-clamp-2 text-sm text-muted-foreground">{tiket.deskripsi}</p> : null}
+                        <div className="flex flex-wrap items-center gap-2 text-xs">
+                            {getKategoriBadge(tiket.kategori)}
+                            {getPrioritasBadge(tiket.prioritas)}
+                        </div>
+                        <div className="flex items-center justify-between gap-2 border-t pt-2">
+                            <span className="min-w-0 truncate text-xs text-muted-foreground">Oleh: {tiket.user?.name ?? '-'}</span>
+                            {renderAksi(tiket)}
+                        </div>
+                    </div>
+                ))}
+                {!loading && filteredTikets.length === 0 ? (
+                    <p className="py-8 text-center text-sm text-muted-foreground">Belum ada tiket.</p>
+                ) : null}
             </div>
 
             <Dialog open={!!selectedTicketId} onOpenChange={(open) => !open && setSelectedTicketId(null)}>
