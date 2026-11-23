@@ -4,15 +4,32 @@ import { useQuery } from '@tanstack/react-query'
 import { Search } from 'lucide-react'
 import { sidebarData } from '@/components/layout/data/sidebar-data'
 import type { NavGroup } from '@/components/layout/type'
+import { Skeleton } from '@/components/ui/skeleton'
 import { canViewAdvancedMvpFeatures } from '@/lib/mvp-access'
 import { filterSidebarNavGroups } from '@/lib/sidebar-nav'
 import { useAuthStore } from '@/stores/auth-stores'
 import { useMenuPermissionStore } from '@/stores/menu-permission-store'
 import { cariData, type HasilData } from '../api/cari-data'
-import { cariModul, pecahKueri } from '../lib/cari-modul'
+import { cariModul, pecahKueri, type ModulHasil } from '../lib/cari-modul'
+import { sorotPotongan } from '../lib/sorot'
 
 /** Minimal kata sebelum pencarian data dikirim ke server. */
 const MIN_KATA_DATA = 3
+
+type Filter = 'semua' | 'modul' | 'paket' | 'unit' | 'desa'
+
+const FILTER_LABEL: Record<Filter, string> = {
+    semua: 'Semua',
+    modul: 'Modul',
+    paket: 'Paket',
+    unit: 'Unit SPAM',
+    desa: 'Desa',
+}
+
+const STATUS_LABEL: Record<string, string> = {
+    active: 'Aktif',
+    canceled: 'Dibatalkan',
+}
 
 function useDebounced<T>(nilai: T, ms: number): T {
     const [tertunda, setTertunda] = useState(nilai)
@@ -23,21 +40,83 @@ function useDebounced<T>(nilai: T, ms: number): T {
     return tertunda
 }
 
-function Bagian({ judul, children }: { judul: string; children: React.ReactNode }) {
+function Judul({ teks, kueri }: { teks: string; kueri: string }) {
+    return (
+        <span className="text-base font-medium">
+            {sorotPotongan(teks, kueri).map((p, i) =>
+                p.cocok ? (
+                    <mark key={i} className="bg-transparent font-semibold text-primary">{p.teks}</mark>
+                ) : (
+                    <span key={i}>{p.teks}</span>
+                ),
+            )}
+        </span>
+    )
+}
+
+function Bagian({ judul, jumlah, children }: { judul: string; jumlah: number; children: React.ReactNode }) {
     return (
         <section className="flex flex-col gap-2">
-            <h2 className="px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{judul}</h2>
+            <h2 className="flex items-center justify-between px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <span>{judul}</span>
+                <span className="tabular-nums">{jumlah}</span>
+            </h2>
             <ul className="divide-y rounded-xl border bg-background">{children}</ul>
         </section>
     )
 }
 
+function Baris({ to, params, search, judul, sub, status, kueri }: {
+    to: string
+    params?: Record<string, string>
+    search?: Record<string, string>
+    judul: string
+    sub: string
+    status?: string
+    kueri: string
+}) {
+    return (
+        <li>
+            <Link
+                to={to as never}
+                params={params as never}
+                search={search as never}
+                className="flex flex-col gap-1 px-4 py-3 active:bg-muted"
+            >
+                <Judul teks={judul} kueri={kueri} />
+                <span className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <span>{sub}</span>
+                    {status ? (
+                        <span className="rounded-full bg-muted px-2 py-0.5 font-medium text-foreground">
+                            {STATUS_LABEL[status] ?? status}
+                        </span>
+                    ) : null}
+                </span>
+            </Link>
+        </li>
+    )
+}
+
+function SkeletonBagian({ judul }: { judul: string }) {
+    return (
+        <Bagian judul={judul} jumlah={0}>
+            {[0, 1].map((i) => (
+                <li key={i} className="flex flex-col gap-2 px-4 py-3">
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-3 w-1/2" />
+                </li>
+            ))}
+        </Bagian>
+    )
+}
+
 /**
- * Beranda mobile: kolom pencarian saja. Hasil berupa modul (dari menu yang boleh diakses) dan data
+ * Beranda mobile: kolom pencarian dengan filter. Hasil berupa modul (dari menu yang boleh diakses) dan data
  * (paket, unit SPAM, desa) dari endpoint yang sudah ada; endpoint itu tetap memeriksa izin sendiri.
  */
 export function MobileSearchPage() {
     const [kueri, setKueri] = useState('')
+    const [filter, setFilter] = useState<Filter>('semua')
     const kueriTertunda = useDebounced(kueri, 300)
     const user = useAuthStore((s) => s.auth.user)
     const userId = user?.id
@@ -68,17 +147,40 @@ export function MobileSearchPage() {
     }, [isLoaded, canAccessMenu, user?.roles])
 
     const kataData = pecahKueri(kueriTertunda).join(' ')
-    const modul = cariModul(menu, kueri)
+    const adaKueri = kueri.trim() !== ''
+    const modul: ModulHasil[] = adaKueri ? cariModul(menu, kueri) : []
     const data = useQuery({
         queryKey: ['mobile-cari-data', kataData],
         queryFn: () => cariData(kataData),
         enabled: kataData.length >= MIN_KATA_DATA,
         staleTime: 30_000,
     })
+    const hasilData = data.data
+    const jumlah = {
+        modul: modul.length,
+        paket: hasilData?.pekerjaan.length ?? 0,
+        unit: hasilData?.unit.length ?? 0,
+        desa: hasilData?.desa.length ?? 0,
+    }
+    const total = jumlah.modul + jumlah.paket + jumlah.unit + jumlah.desa
+    const sedangMemuatData = data.isFetching && !hasilData
+    const kurangKata = adaKueri && kataData.length < MIN_KATA_DATA
 
-    const adaHasil =
-        modul.length > 0 ||
-        (data.data && (data.data.pekerjaan.length + data.data.unit.length + data.data.desa.length) > 0)
+    const tampil = (f: Filter) => filter === 'semua' || filter === f
+
+    const barisData = (items: HasilData[], to: string, paramKey?: (h: HasilData) => Record<string, string>, searchKey?: (h: HasilData) => Record<string, string>) =>
+        items.map((h) => (
+            <Baris
+                key={`${to}-${h.id}`}
+                to={to}
+                params={paramKey?.(h)}
+                search={searchKey?.(h)}
+                judul={h.judul}
+                sub={h.sub}
+                status={h.status}
+                kueri={kueri}
+            />
+        ))
 
     return (
         <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-4 pb-8 pt-6">
@@ -99,67 +201,83 @@ export function MobileSearchPage() {
 
             {!isLoaded ? (
                 <p className="text-center text-sm text-muted-foreground">Memuat menu…</p>
-            ) : kueri.trim() === '' ? null : (
+            ) : !adaKueri ? null : (
                 <>
-                    {modul.length > 0 && (
-                        <Bagian judul="Modul">
+                    {kurangKata && (
+                        <p className="px-1 text-xs text-muted-foreground">
+                            Ketik minimal {MIN_KATA_DATA} huruf untuk mencari paket, unit, dan desa.
+                        </p>
+                    )}
+
+                    <div role="tablist" aria-label="Filter hasil" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+                        {(Object.keys(FILTER_LABEL) as Filter[]).map((f) => {
+                            const n = f === 'semua' ? total : jumlah[f]
+                            const aktif = filter === f
+                            return (
+                                <button
+                                    key={f}
+                                    type="button"
+                                    role="tab"
+                                    aria-selected={aktif}
+                                    onClick={() => setFilter(f)}
+                                    className={`shrink-0 rounded-full border px-3 py-1.5 text-sm ${aktif ? 'border-primary bg-primary text-primary-foreground' : 'bg-background'}`}
+                                >
+                                    {FILTER_LABEL[f]} <span className="tabular-nums opacity-80">{n}</span>
+                                </button>
+                            )
+                        })}
+                    </div>
+
+                    <p className="sr-only" aria-live="polite">{total} hasil</p>
+
+                    {tampil('modul') && modul.length > 0 && (
+                        <Bagian judul="Modul" jumlah={modul.length}>
                             {modul.map((m) => (
-                                <li key={`${m.url}-${m.judul}`}>
-                                    <Link to={m.url} className="flex flex-col gap-0.5 px-4 py-3 active:bg-muted">
-                                        <span className="text-base font-medium">{m.judul}</span>
-                                        <span className="text-xs text-muted-foreground">{m.grup}</span>
-                                    </Link>
-                                </li>
+                                <Baris key={`${m.url}-${m.judul}`} to={m.url} judul={m.judul} sub={m.grup} kueri={kueri} />
                             ))}
                         </Bagian>
                     )}
 
-                    {data.isFetching && <p className="text-center text-sm text-muted-foreground">Mencari data…</p>}
+                    {sedangMemuatData && (
+                        <>
+                            {tampil('paket') && <SkeletonBagian judul="Paket pekerjaan" />}
+                            {tampil('unit') && <SkeletonBagian judul="Unit SPAM" />}
+                            {tampil('desa') && <SkeletonBagian judul="Desa" />}
+                        </>
+                    )}
+
                     {data.isError && (
-                        <p className="text-center text-sm text-red-600">Pencarian data gagal. Coba lagi.</p>
+                        <div className="flex flex-col items-center gap-2 rounded-xl border bg-background p-4 text-center">
+                            <p className="text-sm text-red-600">Pencarian data gagal.</p>
+                            <button type="button" onClick={() => void data.refetch()} className="rounded-full border px-4 py-1.5 text-sm">
+                                Coba lagi
+                            </button>
+                        </div>
                     )}
 
-                    {data.data && data.data.pekerjaan.length > 0 && (
-                        <Bagian judul="Paket pekerjaan">
-                            {data.data.pekerjaan.map((h: HasilData) => (
-                                <li key={`p-${h.id}`}>
-                                    <Link to="/pekerjaan/$id" params={{ id: String(h.id) }} className="flex flex-col gap-0.5 px-4 py-3 active:bg-muted">
-                                        <span className="text-base font-medium">{h.judul}</span>
-                                        <span className="text-xs text-muted-foreground">{h.sub}</span>
-                                    </Link>
-                                </li>
-                            ))}
+                    {hasilData && tampil('paket') && hasilData.pekerjaan.length > 0 && (
+                        <Bagian judul="Paket pekerjaan" jumlah={hasilData.pekerjaan.length}>
+                            {barisData(hasilData.pekerjaan, '/pekerjaan/$id', (h) => ({ id: String(h.id) }))}
                         </Bagian>
                     )}
 
-                    {data.data && data.data.unit.length > 0 && (
-                        <Bagian judul="Unit SPAM">
-                            {data.data.unit.map((h: HasilData) => (
-                                <li key={`u-${h.id}`}>
-                                    <Link to="/spam-unit" search={{ q: h.judul }} className="flex flex-col gap-0.5 px-4 py-3 active:bg-muted">
-                                        <span className="text-base font-medium">{h.judul}</span>
-                                        <span className="text-xs text-muted-foreground">{h.sub}</span>
-                                    </Link>
-                                </li>
-                            ))}
+                    {hasilData && tampil('unit') && hasilData.unit.length > 0 && (
+                        <Bagian judul="Unit SPAM" jumlah={hasilData.unit.length}>
+                            {barisData(hasilData.unit, '/spam-unit', undefined, (h) => ({ q: h.judul }))}
                         </Bagian>
                     )}
 
-                    {data.data && data.data.desa.length > 0 && (
-                        <Bagian judul="Desa">
-                            {data.data.desa.map((h: HasilData) => (
-                                <li key={`d-${h.id}`}>
-                                    <Link to="/desa/$id" params={{ id: String(h.id) }} className="flex flex-col gap-0.5 px-4 py-3 active:bg-muted">
-                                        <span className="text-base font-medium">{h.judul}</span>
-                                        <span className="text-xs text-muted-foreground">{h.sub}</span>
-                                    </Link>
-                                </li>
-                            ))}
+                    {hasilData && tampil('desa') && hasilData.desa.length > 0 && (
+                        <Bagian judul="Desa" jumlah={hasilData.desa.length}>
+                            {barisData(hasilData.desa, '/desa/$id', (h) => ({ id: String(h.id) }))}
                         </Bagian>
                     )}
 
-                    {!adaHasil && !data.isFetching && (
-                        <p className="text-center text-sm text-muted-foreground">Tidak ada yang cocok.</p>
+                    {!sedangMemuatData && !data.isError && total === 0 && !kurangKata && (
+                        <div className="rounded-xl border border-dashed p-6 text-center">
+                            <p className="font-medium">Tidak ada yang cocok dengan “{kueri.trim()}”.</p>
+                            <p className="mt-1 text-sm text-muted-foreground">Periksa ejaan atau coba kata yang lebih umum.</p>
+                        </div>
                     )}
                 </>
             )}
