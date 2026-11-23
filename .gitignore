@@ -84,3 +84,6 @@ docs/~WRL*
 
 # Sementara dari generator route TanStack
 .tanstack/
+
+# Hasil build Android (scripts/build-android.sh)
+release-artifacts/
