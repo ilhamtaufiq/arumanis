@@ -31,7 +31,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PublikasiIndexRouteImport } from './routes/publikasi/index'
 import { Route as MIndexRouteImport } from './routes/m/index'
 import { Route as PublikasiSlugRouteImport } from './routes/publikasi/$slug'
-import { Route as MPetaRouteImport } from './routes/m/peta'
+import { Route as MProfilRouteImport } from './routes/m/profil'
 import { Route as MLapanganRouteImport } from './routes/m/lapangan'
 import { Route as MCariRouteImport } from './routes/m/cari'
 import { Route as AuthenticatedTemplateDokumenRouteImport } from './routes/_authenticated/template-dokumen'
@@ -268,9 +268,9 @@ const PublikasiSlugRoute = PublikasiSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => PublikasiRoute,
 } as any)
-const MPetaRoute = MPetaRouteImport.update({
-  id: '/peta',
-  path: '/peta',
+const MProfilRoute = MProfilRouteImport.update({
+  id: '/profil',
+  path: '/profil',
   getParentRoute: () => MRouteRoute,
 } as any)
 const MLapanganRoute = MLapanganRouteImport.update({
@@ -1038,7 +1038,7 @@ export interface FileRoutesByFullPath {
   '/template-dokumen': typeof AuthenticatedTemplateDokumenRoute
   '/m/cari': typeof MCariRoute
   '/m/lapangan': typeof MLapanganRoute
-  '/m/peta': typeof MPetaRoute
+  '/m/profil': typeof MProfilRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/m/': typeof MIndexRoute
   '/publikasi/': typeof PublikasiIndexRoute
@@ -1185,7 +1185,7 @@ export interface FileRoutesByTo {
   '/template-dokumen': typeof AuthenticatedTemplateDokumenRoute
   '/m/cari': typeof MCariRoute
   '/m/lapangan': typeof MLapanganRoute
-  '/m/peta': typeof MPetaRoute
+  '/m/profil': typeof MProfilRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/m': typeof MIndexRoute
   '/publikasi': typeof PublikasiIndexRoute
@@ -1337,7 +1337,7 @@ export interface FileRoutesById {
   '/_authenticated/template-dokumen': typeof AuthenticatedTemplateDokumenRoute
   '/m/cari': typeof MCariRoute
   '/m/lapangan': typeof MLapanganRoute
-  '/m/peta': typeof MPetaRoute
+  '/m/profil': typeof MProfilRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
   '/m/': typeof MIndexRoute
   '/publikasi/': typeof PublikasiIndexRoute
@@ -1489,7 +1489,7 @@ export interface FileRouteTypes {
     | '/template-dokumen'
     | '/m/cari'
     | '/m/lapangan'
-    | '/m/peta'
+    | '/m/profil'
     | '/publikasi/$slug'
     | '/m/'
     | '/publikasi/'
@@ -1636,7 +1636,7 @@ export interface FileRouteTypes {
     | '/template-dokumen'
     | '/m/cari'
     | '/m/lapangan'
-    | '/m/peta'
+    | '/m/profil'
     | '/publikasi/$slug'
     | '/m'
     | '/publikasi'
@@ -1787,7 +1787,7 @@ export interface FileRouteTypes {
     | '/_authenticated/template-dokumen'
     | '/m/cari'
     | '/m/lapangan'
-    | '/m/peta'
+    | '/m/profil'
     | '/publikasi/$slug'
     | '/m/'
     | '/publikasi/'
@@ -2081,11 +2081,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublikasiSlugRouteImport
       parentRoute: typeof PublikasiRoute
     }
-    '/m/peta': {
-      id: '/m/peta'
-      path: '/peta'
-      fullPath: '/m/peta'
-      preLoaderRoute: typeof MPetaRouteImport
+    '/m/profil': {
+      id: '/m/profil'
+      path: '/profil'
+      fullPath: '/m/profil'
+      preLoaderRoute: typeof MProfilRouteImport
       parentRoute: typeof MRouteRoute
     }
     '/m/lapangan': {
@@ -2976,7 +2976,7 @@ declare module '@tanstack/react-router' {
 interface MRouteRouteChildren {
   MCariRoute: typeof MCariRoute
   MLapanganRoute: typeof MLapanganRoute
-  MPetaRoute: typeof MPetaRoute
+  MProfilRoute: typeof MProfilRoute
   MIndexRoute: typeof MIndexRoute
   MProyekIdRoute: typeof MProyekIdRoute
   MProyekIndexRoute: typeof MProyekIndexRoute
@@ -2985,7 +2985,7 @@ interface MRouteRouteChildren {
 const MRouteRouteChildren: MRouteRouteChildren = {
   MCariRoute: MCariRoute,
   MLapanganRoute: MLapanganRoute,
-  MPetaRoute: MPetaRoute,
+  MProfilRoute: MProfilRoute,
   MIndexRoute: MIndexRoute,
   MProyekIdRoute: MProyekIdRoute,
   MProyekIndexRoute: MProyekIndexRoute,
