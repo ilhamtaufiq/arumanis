@@ -22,12 +22,8 @@ function Header() {
             style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
             <div className="mx-auto flex h-16 w-full max-w-md items-center justify-between px-4">
-                <Link to={'/m' as never} className="flex items-center gap-2.5">
-                    <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-sm font-black text-primary-foreground shadow-sm">A</span>
-                    <span className="flex flex-col leading-none">
-                        <span className="text-[15px] font-extrabold tracking-tight">Arumanis</span>
-                        <span className="mt-1 text-[11px] font-medium text-muted-foreground">Kab. Cianjur · SPM</span>
-                    </span>
+                <Link to={'/m' as never} aria-label="Arumanis Cianjur Space" className="flex items-center">
+                    <img src="/logo-arumanis-cianjur-space.png" alt="Arumanis Cianjur Space" className="h-14 w-14 object-contain" />
                 </Link>
                 <div className="flex items-center gap-2">
                     <Link
