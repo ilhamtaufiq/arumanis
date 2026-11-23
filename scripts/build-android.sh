@@ -13,7 +13,6 @@
 #   scripts/build-android.sh --debug               # APK debug (ditandatangani keystore debug otomatis)
 #   scripts/build-android.sh --aab                 # AAB release untuk Play Console
 #   scripts/build-android.sh --server-url https://arumanis.cianjur.space/m
-#   scripts/build-android.sh --skip-setup          # lewati pemasangan SDK (sudah terpasang)
 #
 # Penandatanganan release (opsional, lewat environment, jangan tulis di file ini):
 #   ANDROID_KEYSTORE=/path/ke/arumanis-release.jks
@@ -41,7 +40,6 @@ OUT_DIR="$ROOT_DIR/release-artifacts"
 
 MODE="release"        # release | debug
 FORMAT="apk"          # apk | aab
-SKIP_SETUP=0
 SERVER_URL="${CAPACITOR_SERVER_URL:-https://arumanis.cianjur.space/m}"
 
 # ---------- helper ----------
@@ -65,7 +63,6 @@ while [ $# -gt 0 ]; do
         --debug)        MODE="debug"; shift ;;
         --aab)          FORMAT="aab"; shift ;;
         --server-url)   SERVER_URL="${2:?--server-url butuh nilai}"; shift 2 ;;
-        --skip-setup)   SKIP_SETUP=1; shift ;;
         -h|--help)      usage ;;
         *)              die "argumen tidak dikenal: $1 (lihat --help)" ;;
     esac
@@ -97,6 +94,7 @@ ensure_java() {
     install_system_packages
 }
 
+# Pasang command-line tools, platform, dan build-tools hanya jika belum ada.
 install_android_sdk() {
     local sdkmanager="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
     if [ ! -x "$sdkmanager" ]; then
@@ -111,12 +109,19 @@ install_android_sdk() {
         rm -rf "$tmp"
     fi
 
-    log "Menerima lisensi SDK dan memasang komponen $ANDROID_PLATFORM, build-tools $ANDROID_BUILD_TOOLS"
+    local paket=()
+    [ -d "$ANDROID_HOME/platform-tools" ] || paket+=("platform-tools")
+    [ -d "$ANDROID_HOME/platforms/$ANDROID_PLATFORM" ] || paket+=("platforms;$ANDROID_PLATFORM")
+    [ -d "$ANDROID_HOME/build-tools/$ANDROID_BUILD_TOOLS" ] || paket+=("build-tools;$ANDROID_BUILD_TOOLS")
+
+    if [ "${#paket[@]}" -eq 0 ]; then
+        log "Android SDK sudah lengkap ($ANDROID_PLATFORM, build-tools $ANDROID_BUILD_TOOLS), dilewati"
+        return 0
+    fi
+
+    log "Menerima lisensi SDK dan memasang: ${paket[*]}"
     yes | "$sdkmanager" --sdk_root="$ANDROID_HOME" --licenses >/dev/null || true
-    "$sdkmanager" --sdk_root="$ANDROID_HOME" \
-        "platform-tools" \
-        "platforms;$ANDROID_PLATFORM" \
-        "build-tools;$ANDROID_BUILD_TOOLS"
+    "$sdkmanager" --sdk_root="$ANDROID_HOME" "${paket[@]}"
 }
 
 ensure_bun() {
@@ -129,17 +134,13 @@ ensure_bun() {
     command -v bun >/dev/null 2>&1 || die "Bun gagal dipasang"
 }
 
-if [ "$SKIP_SETUP" -eq 0 ]; then
-    ensure_java
-    command -v unzip >/dev/null 2>&1 || install_system_packages
-    install_android_sdk
-    ensure_bun
-else
-    log "Lewati pemasangan SDK (--skip-setup)"
-    command -v java >/dev/null 2>&1 || die "java tidak ditemukan"
-    [ -d "$ANDROID_HOME/platforms/$ANDROID_PLATFORM" ] || die "$ANDROID_PLATFORM belum ada di $ANDROID_HOME"
-    ensure_bun
+# Setiap langkah dilewati otomatis bila sudah terpasang.
+ensure_java
+if ! command -v unzip >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
+    install_system_packages
 fi
+install_android_sdk
+ensure_bun
 
 command -v java >/dev/null 2>&1 || die "java tidak ditemukan"
 command -v bun >/dev/null 2>&1 || die "bun tidak ditemukan"
