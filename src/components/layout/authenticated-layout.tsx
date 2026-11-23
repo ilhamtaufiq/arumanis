@@ -1,4 +1,6 @@
 import { Outlet } from '@tanstack/react-router'
+import { useQueryClient } from '@tanstack/react-query'
+import { TarikSegarkan } from '@/features/mobile/components/TarikSegarkan'
 import { usePageSeo } from '@/hooks/use-page-seo'
 import { getCookie } from '@/lib/cookies'
 import { cn } from '@/lib/utils'
@@ -18,6 +20,7 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
     const defaultOpen = getCookie('sidebar_state') !== 'false'
 
     usePageSeo({ robots: 'noindex, nofollow' })
+    const queryClient = useQueryClient()
 
     return (
         <SearchProvider>
@@ -42,7 +45,10 @@ export function AuthenticatedLayout({ children }: AuthenticatedLayoutProps) {
                         )}
                     >
                         <ImpersonateBanner />
-                        {children ?? <Outlet />}
+                        {/* Tarik ke bawah dari atas halaman menyegarkan semua data yang sedang aktif. */}
+                        <TarikSegarkan className="flex min-h-0 grow flex-col" onSegarkan={() => queryClient.invalidateQueries({ type: 'active' })}>
+                            {children ?? <Outlet />}
+                        </TarikSegarkan>
                     </SidebarInset>
                 </SidebarProvider>
             </LayoutProvider>
