@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { Camera, Map as MapIcon, Briefcase, Search, AlertTriangle } from 'lucide-react'
+import { Search, AlertTriangle } from 'lucide-react'
 import { getDashboardStats } from '@/features/dashboard/api/dashboard'
 import { formatCurrency, formatNumber } from '@/features/dashboard/lib/format'
 import { getPekerjaan } from '@/features/pekerjaan/api/pekerjaan'
@@ -80,12 +80,14 @@ export function BerandaScreen() {
             <section aria-label="Ringkasan" className="grid grid-cols-2 gap-3">
                 <Kartu label="Paket aktif" nilai={formatNumber(totalPaket)} catatan={baris.length ? `fisik rata-rata ${persen(rataFisik)}` : undefined} />
                 <Kartu label="Pagu" nilai={formatCurrency(pagu)} catatan={statistik.data ? 'seluruh paket aktif' : 'dari paket yang dimuat'} />
+                <div className="col-span-2">
                 <Kartu
                     label="Capaian SPM air minum"
                     nilai={spm.targetKk > 0 ? persen(spmPersen) : '–'}
                     catatan={spm.targetKk > 0 ? `${formatNumber(spm.totalKk)} dari ${formatNumber(spm.targetKk)} KK` : 'target belum tersedia'}
                     persenNilai={spmPersen}
                 />
+                </div>
             </section>
 
             <section aria-label="Perlu tindak lanjut" className="flex flex-col gap-2">
@@ -111,19 +113,6 @@ export function BerandaScreen() {
                 )}
             </section>
 
-            <section aria-label="Pintasan" className="grid grid-cols-4 gap-2">
-                {[
-                    { to: '/m/proyek', label: 'Proyek', icon: Briefcase },
-                    { to: '/m/lapangan', label: 'Lapangan', icon: Camera },
-                    { to: '/m/peta', label: 'Peta', icon: MapIcon },
-                    { to: '/m/cari', label: 'Cari', icon: Search },
-                ].map((x) => (
-                    <Link key={x.to} to={x.to as never} className="flex flex-col items-center gap-1.5 rounded-xl border bg-background py-3 text-xs">
-                        <x.icon className="h-5 w-5" aria-hidden />
-                        {x.label}
-                    </Link>
-                ))}
-            </section>
         </main>
     )
 }
