@@ -183,7 +183,13 @@ export function MobileSearchPage() {
         ))
 
     return (
-        <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-4 pb-8 pt-6">
+        <main
+            className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-4"
+            style={{
+                paddingTop: 'calc(1.5rem + env(safe-area-inset-top))',
+                paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))',
+            }}
+        >
             <label className="relative block">
                 <span className="sr-only">Cari modul atau data</span>
                 <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" aria-hidden />
