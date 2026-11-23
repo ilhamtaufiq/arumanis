@@ -212,6 +212,7 @@ export const sidebarData: SidebarData = {
                     url: '/spam-unit',
                     icon: Droplets,
                     menuKey: 'spam_unit',
+                    keywords: ['spam', 'spm', 'unit spam', 'air minum'],
                 },
                 {
                     title: 'SPM Sanitasi',
