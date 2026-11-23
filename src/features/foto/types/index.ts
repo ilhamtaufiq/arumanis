@@ -7,6 +7,8 @@ export interface Foto {
     komponen_id: number;
     penerima_id?: number;
     keterangan: '0%' | '25%' | '50%' | '75%' | '100%';
+    /** Cerita singkat dari posting lapangan (opsional). */
+    caption?: string | null;
     koordinat: string;
     validasi_koordinat: boolean;
     validasi_koordinat_message?: string;

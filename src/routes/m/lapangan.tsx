@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { MobilePlaceholder } from '@/features/mobile/components/MobilePlaceholder'
+import { LapanganScreen } from '@/features/mobile/screens/LapanganScreen'
 
 export const Route = createFileRoute('/m/lapangan')({
-    component: () => <MobilePlaceholder judul="lapangan" />,
+    component: LapanganScreen,
 })
