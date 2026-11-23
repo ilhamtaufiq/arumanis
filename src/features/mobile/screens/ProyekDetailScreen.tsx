@@ -87,7 +87,7 @@ export function ProyekDetailScreen({ id }: { id: number }) {
         return (
             <div className="flex flex-col items-center gap-3 p-6 text-center">
                 <p className="text-sm text-red-600">Detail paket tidak bisa dimuat.</p>
-                <Link to={'/m/proyek' as never} className="rounded-full border px-4 py-1.5 text-sm">Kembali ke proyek</Link>
+                <Link to={'/m/proyek' as never} className="rounded-full border px-4 py-1.5 text-sm">Kembali ke pekerjaan</Link>
             </div>
         )
     }
@@ -103,7 +103,7 @@ export function ProyekDetailScreen({ id }: { id: number }) {
         <main className="mx-auto flex w-full max-w-md flex-col gap-5 px-4 pb-28 pt-3">
             <div className="flex items-center justify-between">
                 <Link to={'/m/proyek' as never} className="flex items-center gap-1 text-sm font-medium">
-                    <ArrowLeft className="h-4 w-4" aria-hidden /> Daftar proyek
+                    <ArrowLeft className="h-4 w-4" aria-hidden /> Daftar pekerjaan
                 </Link>
                 <span className="text-xs text-muted-foreground">TA {tahunAnggaran || '–'}</span>
             </div>

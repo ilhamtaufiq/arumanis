@@ -103,7 +103,7 @@ export function BerandaScreen() {
                     <ul className="divide-y rounded-xl border bg-background">
                         {tertinggal.map((p) => (
                             <li key={p.id}>
-                                <Link to={'/pekerjaan/$id' as never} params={{ id: String(p.id) } as never} className="flex flex-col gap-1 px-4 py-3">
+                                <Link to={'/m/proyek/$id' as never} params={{ id: String(p.id) } as never} className="flex flex-col gap-1 px-4 py-3">
                                     <span className="font-medium">{p.nama_paket}</span>
                                     <span className="text-xs text-red-600">Deviasi {persen(p.deviasi_estimasi_fisik ?? 0)} · fisik {persen(Number(p.progress_estimasi_fisik ?? 0))}</span>
                                 </Link>

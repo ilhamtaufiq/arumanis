@@ -7,7 +7,7 @@ type Tab = { to: string; label: string; icon: LucideIcon; aktifJika: (path: stri
 
 const TABS: Tab[] = [
     { to: '/m', label: 'Beranda', icon: Home, aktifJika: (p) => p === '/m' || p === '/m/' },
-    { to: '/m/proyek', label: 'Proyek', icon: Briefcase, aktifJika: (p) => p.startsWith('/m/proyek') || p.startsWith('/m/cari') },
+    { to: '/m/proyek', label: 'Pekerjaan', icon: Briefcase, aktifJika: (p) => p.startsWith('/m/proyek') || p.startsWith('/m/cari') },
     { to: '/m/lapangan', label: 'Lapangan', icon: Camera, aktifJika: (p) => p.startsWith('/m/lapangan') },
     { to: '/m/profil', label: 'Profil', icon: UserRound, aktifJika: (p) => p.startsWith('/m/profil') },
 ]

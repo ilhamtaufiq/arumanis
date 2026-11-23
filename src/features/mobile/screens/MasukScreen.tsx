@@ -9,7 +9,7 @@ export function MasukScreen({ redirect }: { redirect?: string }) {
                     <img src="/logo-arumanis-cianjur-space.png" alt="Arumanis Cianjur Space" className="h-28 w-28 object-contain" />
                     <div className="flex flex-col gap-1">
                         <h1 className="text-2xl font-extrabold tracking-tight">Masuk</h1>
-                        <p className="text-sm text-muted-foreground">Pantau proyek dan lapangan dari ponsel Anda</p>
+                        <p className="text-sm text-muted-foreground">Pantau pekerjaan dan lapangan dari ponsel Anda</p>
                     </div>
                 </div>
 

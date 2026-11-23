@@ -287,7 +287,7 @@ export function MobileSearchPage() {
                             jumlah={hasilData.pekerjaan.length}
                             lihatSemua={hasilData.total.pekerjaan > hasilData.pekerjaan.length ? <LihatSemua to="/pekerjaan" q={kataData} total={hasilData.total.pekerjaan} /> : null}
                         >
-                            {barisData(hasilData.pekerjaan, '/pekerjaan/$id', (h) => ({ id: String(h.id) }))}
+                            {barisData(hasilData.pekerjaan, '/m/proyek/$id', (h) => ({ id: String(h.id) }))}
                         </Bagian>
                     )}
 

@@ -61,7 +61,7 @@ export function ProyekScreen() {
     return (
         <main className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 pb-6 pt-4">
             <div className="flex items-baseline justify-between">
-                <h1 className="text-xl font-bold tracking-tight">Proyek</h1>
+                <h1 className="text-xl font-bold tracking-tight">Pekerjaan</h1>
                 <span className="text-sm text-muted-foreground tabular-nums">{formatNumber(total)} paket</span>
             </div>
 
@@ -96,7 +96,7 @@ export function ProyekScreen() {
                 <p className="py-10 text-center text-sm text-muted-foreground">Memuat paket…</p>
             ) : daftar.isError ? (
                 <div className="flex flex-col items-center gap-2 rounded-xl border p-4 text-center">
-                    <p className="text-sm text-red-600">Daftar proyek gagal dimuat.</p>
+                    <p className="text-sm text-red-600">Daftar pekerjaan gagal dimuat.</p>
                     <button type="button" onClick={() => void daftar.refetch()} className="rounded-full border px-4 py-1.5 text-sm">Coba lagi</button>
                 </div>
             ) : semua.length === 0 ? (
@@ -131,7 +131,7 @@ export function ProyekScreen() {
                                         <div className={`h-full rounded-full ${tertinggal ? 'bg-red-600' : 'bg-primary'}`} style={{ width: `${Math.min(100, Math.max(0, fisik))}%` }} />
                                     </div>
                                 </div>
-                                <Link to={'/pekerjaan/$id' as never} params={{ id: String(p.id) } as never} className="flex h-10 items-center justify-center rounded-lg border text-sm font-medium">
+                                <Link to={'/m/proyek/$id' as never} params={{ id: String(p.id) } as never} className="flex h-10 items-center justify-center rounded-lg border text-sm font-medium">
                                     Buka detail
                                 </Link>
                             </li>
