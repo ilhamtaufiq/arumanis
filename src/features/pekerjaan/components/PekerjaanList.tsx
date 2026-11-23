@@ -29,7 +29,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { ChevronDown, Eye, FileDown, FileUp, Plus, SearchX } from 'lucide-react';
+import { ChevronDown, Eye, FileDown, FileUp, Plus, SearchX, SlidersHorizontal } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 
 import {
@@ -227,6 +227,8 @@ export default function PekerjaanList() {
     const [selectedTag, setSelectedTag] = useState<string>('all');
     const [selectedPengawas, setSelectedPengawas] = useState<string>('all');
     const [sortBy, setSortBy] = useState<string>('updated_at');
+    // Di layar kecil, filter dan urutan disembunyikan di balik tombol agar daftar paket langsung terlihat.
+    const [filterBuka, setFilterBuka] = useState(false);
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [updatingRow, setUpdatingRow] = useState<number | null>(null);
@@ -496,7 +498,19 @@ export default function PekerjaanList() {
                 ) : undefined}
             >
                 <div className="flex flex-col gap-4 mb-4">
-                    <div className="flex flex-wrap items-center gap-4">
+                    <button
+                        type="button"
+                        onClick={() => setFilterBuka((v) => !v)}
+                        aria-expanded={filterBuka}
+                        className="flex h-11 w-full items-center justify-between rounded-lg border bg-background px-4 text-sm font-medium sm:hidden"
+                    >
+                        <span className="flex items-center gap-2">
+                            <SlidersHorizontal className="h-4 w-4" aria-hidden />
+                            Filter &amp; urutkan
+                        </span>
+                        {hasActiveFilters ? <span className="h-2 w-2 rounded-full bg-primary" aria-label="Ada filter aktif" /> : null}
+                    </button>
+                    <div className={`${filterBuka ? 'flex' : 'hidden'} flex-wrap items-center gap-4 sm:flex`}>
                                     {selectedCount > 0 && (
                                         <div className="flex items-center gap-2 rounded-md border bg-muted px-3 py-2">
                                             <span className="text-sm font-medium">{selectedCount.toLocaleString('id-ID')} terpilih</span>

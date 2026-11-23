@@ -82,8 +82,13 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
                                 <Search />
                             </div>
                         )}
-                        <ThemeToggle />
-                        <LayoutControls />
+                        {/* Tema dan pengaturan layout hanya di layar besar; di ponsel tidak diperlukan. */}
+                        <div className="hidden sm:block">
+                            <ThemeToggle />
+                        </div>
+                        <div className="hidden sm:block">
+                            <LayoutControls />
+                        </div>
                         <NotificationBell />
                         <HeaderUserNav />
                     </div>
