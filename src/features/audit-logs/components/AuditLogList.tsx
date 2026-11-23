@@ -142,9 +142,9 @@ export function AuditLogList() {
                                     <TableRow>
                                         <TableHead className="min-w-[180px]">Waktu</TableHead>
                                         <TableHead className="min-w-[200px]">User</TableHead>
-                                        <TableHead className="min-w-[150px]">Model</TableHead>
+                                        <TableHead className="hidden min-w-[150px] md:table-cell">Model</TableHead>
                                         <TableHead className="min-w-[100px]">Event</TableHead>
-                                        <TableHead className="min-w-[80px]">ID</TableHead>
+                                        <TableHead className="hidden min-w-[80px] md:table-cell">ID</TableHead>
                                         <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -180,13 +180,13 @@ export function AuditLogList() {
                                                         <span className="text-sm">{log.user?.name || 'System'}</span>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="text-xs font-mono text-muted-foreground">
+                                                <TableCell className="hidden text-xs font-mono text-muted-foreground md:table-cell">
                                                     {getModelName(log.auditable_type)}
                                                 </TableCell>
                                                 <TableCell>
                                                     {getEventBadge(log.event)}
                                                 </TableCell>
-                                                <TableCell className="font-mono text-xs">
+                                                <TableCell className="hidden font-mono text-xs md:table-cell">
                                                     #{log.auditable_id}
                                                 </TableCell>
                                                 <TableCell className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)]">

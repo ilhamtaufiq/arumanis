@@ -255,11 +255,11 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
                                     />
                                 </TableHead>
                             )}
-                            <TableHead className="min-w-[150px]">Status</TableHead>
+                            <TableHead className="hidden min-w-[150px] md:table-cell">Status</TableHead>
                             <TableHead className="min-w-[300px]">Subjek & Deskripsi</TableHead>
-                            <TableHead className="min-w-[120px]">Kategori</TableHead>
-                            <TableHead className="min-w-[100px]">Prioritas</TableHead>
-                            <TableHead className="min-w-[120px]">Tanggal</TableHead>
+                            <TableHead className="hidden min-w-[120px] md:table-cell">Kategori</TableHead>
+                            <TableHead className="hidden min-w-[100px] md:table-cell">Prioritas</TableHead>
+                            <TableHead className="hidden min-w-[120px] md:table-cell">Tanggal</TableHead>
                             <TableHead className="text-right sticky right-0 bg-background shadow-[-10px_0_10px_-5px_rgba(0,0,0,0.1)] z-10">Aksi</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -285,13 +285,15 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
                                             />
                                         </TableCell>
                                     )}
-                                    <TableCell>
+                                    <TableCell className="hidden md:table-cell">
                                     <div className="flex flex-col gap-1">
                                         {getStatusBadge(tiket.status)}
                                     </div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex flex-col gap-1 min-w-[200px]">
+                                        {/* Di layar kecil, status pindah ke sini karena kolomnya disembunyikan. */}
+                                        <div className="md:hidden">{getStatusBadge(tiket.status)}</div>
                                         <div className="flex items-start gap-3">
                                             {tiket.image_url && (
                                                 <Dialog>
@@ -340,13 +342,13 @@ export default function TicketList({ pekerjaanId, isAdmin, onEdit, refreshTrigge
                                         )}
                                     </div>
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="hidden md:table-cell">
                                     {getKategoriBadge(tiket.kategori)}
                                 </TableCell>
-                                <TableCell>
+                                <TableCell className="hidden md:table-cell">
                                     {getPrioritasBadge(tiket.prioritas)}
                                 </TableCell>
-                                <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
+                                <TableCell className="hidden text-xs text-muted-foreground whitespace-nowrap md:table-cell">
                                     {new Date(tiket.created_at).toLocaleDateString('id-ID', {
                                         day: '2-digit',
                                         month: 'short',
