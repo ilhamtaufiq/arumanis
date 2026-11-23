@@ -31,14 +31,16 @@ import { useAppSettingsValues } from '@/hooks/use-app-settings';
 import { SearchInput } from '@/components/shared/SearchInput';
 import { TableSkeleton } from '@/components/shared/TableSkeleton';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-import { RotateCcw, Eye, FileDown, FileText, ArrowUpDown, ArrowUp, ArrowDown, Inbox, Package, Wallet, FileSignature, Link2 } from 'lucide-react';
+import { RotateCcw, Eye, FileDown, FileText, ArrowUpDown, ArrowUp, ArrowDown, Inbox, AlertTriangle, CheckCircle2, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/format';
+import { formatNumber } from '@/features/dashboard/lib/format';
 import {
     buildRekapExportRows,
     filterRekapGroups,
     groupByKonsolidasi,
     sortRekapGroups,
+    isCanceledRekapItem,
     summarizeGroupMoney,
     type KonsolidasiMode,
     type RekapPekerjaanItem,
@@ -165,19 +167,15 @@ export default function ProgressRekap() {
         [groupedList, currentPage]
     );
 
-    // Summary stats from grouped data (after konsolidasi filter applied).
+    // Ringkasan sama dengan versi mobile: per paket aktif (tidak dibatalkan), bukan per grup konsolidasi.
     const stats = useMemo(() => {
-        const totalPaket = groupedList.reduce((s, items) => s + items.length, 0)
-        const totalPagu = groupedList.reduce((s, items) =>
-            s + items.reduce((ps, i) => ps + (i.pagu ?? 0), 0), 0)
-        // Nilai kontrak deduped per group (konsolidasi share kontrak).
-        let totalKontrak = 0
-        const kontrakGroupCount = groupedList.filter(i => i.length > 1).length
-        for (const items of groupedList) {
-            totalKontrak += summarizeGroupMoney(items).totalKontrak
-        }
-        return { totalPaket, totalPagu, totalKontrak, kontrakGroupCount }
-    }, [groupedList])
+        const aktif = pekerjaanList.filter((p) => !isCanceledRekapItem(p))
+        const fisikList = aktif.map((p) => Number(p.progress_estimasi_fisik ?? 0))
+        const rataFisik = fisikList.length ? fisikList.reduce((a, b) => a + b, 0) / fisikList.length : 0
+        const tertinggal = aktif.filter((p) => Number(p.deviasi_estimasi_fisik ?? 0) < 0).length
+        const selesai = aktif.filter((p) => Number(p.progress_estimasi_fisik ?? 0) >= 100).length
+        return { rataFisik, tertinggal, selesai }
+    }, [pekerjaanList])
 
     const handleSort = useCallback((field: RekapSortField) => {
         setSort(prev => ({
@@ -276,32 +274,26 @@ export default function ProgressRekap() {
                     )}
             </div>
 
-                {/* Summary cards */}
+                {/* Ringkasan, sama dengan versi mobile */}
                 {!loading && pekerjaanList.length > 0 && (
-                    <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                    <div className="mb-6 grid grid-cols-3 gap-4">
                         <DashboardStatCard
-                            title="Total Paket"
-                            value={stats.totalPaket.toLocaleString('id-ID')}
-                            icon={Package}
+                            title="Rata-rata fisik"
+                            value={`${stats.rataFisik.toLocaleString('id-ID', { maximumFractionDigits: 1 })}%`}
+                            icon={TrendingUp}
                             variant="info"
                         />
                         <DashboardStatCard
-                            title="Total Pagu"
-                            value={formatCurrency(stats.totalPagu)}
-                            icon={Wallet}
-                            variant="success"
-                        />
-                        <DashboardStatCard
-                            title="Total Nilai Kontrak"
-                            value={formatCurrency(stats.totalKontrak)}
-                            icon={FileSignature}
-                            variant="primary"
-                        />
-                        <DashboardStatCard
-                            title="Grup Konsolidasi"
-                            value={stats.kontrakGroupCount.toLocaleString('id-ID')}
-                            icon={Link2}
+                            title="Tertinggal"
+                            value={formatNumber(stats.tertinggal)}
+                            icon={AlertTriangle}
                             variant="warning"
+                        />
+                        <DashboardStatCard
+                            title="Selesai"
+                            value={formatNumber(stats.selesai)}
+                            icon={CheckCircle2}
+                            variant="success"
                         />
                     </div>
                 )}

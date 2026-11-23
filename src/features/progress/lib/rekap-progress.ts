@@ -8,6 +8,7 @@ export type RekapPekerjaanItem = {
     status?: string | null
     progress_estimasi_fisik?: number | null
     progress_estimasi_keuangan?: number | null
+    deviasi_estimasi_fisik?: number | null
     kecamatan?: { nama_kecamatan?: string }
     desa?: { nama_desa?: string }
     kegiatan?: { nama_sub_kegiatan?: string }
