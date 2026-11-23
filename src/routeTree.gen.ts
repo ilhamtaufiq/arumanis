@@ -21,15 +21,19 @@ import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
 import { Route as MaintenanceRouteImport } from './routes/maintenance'
-import { Route as MRouteImport } from './routes/m'
 import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as ChangelogRouteImport } from './routes/changelog'
 import { Route as CapaianSpmRouteImport } from './routes/capaian-spm'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as MRouteRouteImport } from './routes/m/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PublikasiIndexRouteImport } from './routes/publikasi/index'
+import { Route as MIndexRouteImport } from './routes/m/index'
 import { Route as PublikasiSlugRouteImport } from './routes/publikasi/$slug'
+import { Route as MPetaRouteImport } from './routes/m/peta'
+import { Route as MLapanganRouteImport } from './routes/m/lapangan'
+import { Route as MCariRouteImport } from './routes/m/cari'
 import { Route as AuthenticatedTemplateDokumenRouteImport } from './routes/_authenticated/template-dokumen'
 import { Route as AuthenticatedPengawasRouteImport } from './routes/_authenticated/pengawas'
 import { Route as AuthenticatedPengaturanSkRouteImport } from './routes/_authenticated/pengaturan-sk'
@@ -45,6 +49,7 @@ import { Route as AuthenticatedChecklistRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCatatanRouteImport } from './routes/_authenticated/catatan'
 import { Route as AuthenticatedBukuKontrakRouteImport } from './routes/_authenticated/buku-kontrak'
 import { Route as AuthenticatedAuditLogsRouteImport } from './routes/_authenticated/audit-logs'
+import { Route as MProyekIndexRouteImport } from './routes/m/proyek/index'
 import { Route as AuthenticatedUsulanKegiatanIndexRouteImport } from './routes/_authenticated/usulan-kegiatan/index'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUserPekerjaanIndexRouteImport } from './routes/_authenticated/user-pekerjaan/index'
@@ -91,6 +96,7 @@ import { Route as AuthenticatedBuatLaporanIndexRouteImport } from './routes/_aut
 import { Route as AuthenticatedBerkasIndexRouteImport } from './routes/_authenticated/berkas/index'
 import { Route as AuthenticatedApiKeysIndexRouteImport } from './routes/_authenticated/api-keys/index'
 import { Route as AuthenticatedActionInboxIndexRouteImport } from './routes/_authenticated/action-inbox/index'
+import { Route as MProyekIdRouteImport } from './routes/m/proyek/$id'
 import { Route as KelembagaanSpamFormTokenRouteImport } from './routes/kelembagaan-spam/form.$token'
 import { Route as AuthenticatedUsersNewRouteImport } from './routes/_authenticated/users/new'
 import { Route as AuthenticatedSpamUnitTerbangunRouteImport } from './routes/_authenticated/spam-unit/terbangun'
@@ -213,11 +219,6 @@ const MaintenanceRoute = MaintenanceRouteImport.update({
   path: '/maintenance',
   getParentRoute: () => rootRouteImport,
 } as any)
-const MRoute = MRouteImport.update({
-  id: '/m',
-  path: '/m',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ForbiddenRoute = ForbiddenRouteImport.update({
   id: '/forbidden',
   path: '/forbidden',
@@ -242,6 +243,11 @@ const SplatRoute = SplatRouteImport.update({
   path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MRouteRoute = MRouteRouteImport.update({
+  id: '/m',
+  path: '/m',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -252,10 +258,30 @@ const PublikasiIndexRoute = PublikasiIndexRouteImport.update({
   path: '/',
   getParentRoute: () => PublikasiRoute,
 } as any)
+const MIndexRoute = MIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => MRouteRoute,
+} as any)
 const PublikasiSlugRoute = PublikasiSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => PublikasiRoute,
+} as any)
+const MPetaRoute = MPetaRouteImport.update({
+  id: '/peta',
+  path: '/peta',
+  getParentRoute: () => MRouteRoute,
+} as any)
+const MLapanganRoute = MLapanganRouteImport.update({
+  id: '/lapangan',
+  path: '/lapangan',
+  getParentRoute: () => MRouteRoute,
+} as any)
+const MCariRoute = MCariRouteImport.update({
+  id: '/cari',
+  path: '/cari',
+  getParentRoute: () => MRouteRoute,
 } as any)
 const AuthenticatedTemplateDokumenRoute =
   AuthenticatedTemplateDokumenRouteImport.update({
@@ -338,6 +364,11 @@ const AuthenticatedAuditLogsRoute = AuthenticatedAuditLogsRouteImport.update({
   id: '/audit-logs',
   path: '/audit-logs',
   getParentRoute: () => AuthenticatedRoute,
+} as any)
+const MProyekIndexRoute = MProyekIndexRouteImport.update({
+  id: '/proyek/',
+  path: '/proyek/',
+  getParentRoute: () => MRouteRoute,
 } as any)
 const AuthenticatedUsulanKegiatanIndexRoute =
   AuthenticatedUsulanKegiatanIndexRouteImport.update({
@@ -609,6 +640,11 @@ const AuthenticatedActionInboxIndexRoute =
     path: '/action-inbox/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const MProyekIdRoute = MProyekIdRouteImport.update({
+  id: '/proyek/$id',
+  path: '/proyek/$id',
+  getParentRoute: () => MRouteRoute,
+} as any)
 const KelembagaanSpamFormTokenRoute =
   KelembagaanSpamFormTokenRouteImport.update({
     id: '/kelembagaan-spam/form/$token',
@@ -968,11 +1004,11 @@ const AuthenticatedKontrakAddendumsGapRegisterIdIndexRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/m': typeof MRouteRouteWithChildren
   '/$': typeof SplatRoute
   '/capaian-spm': typeof CapaianSpmRoute
   '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
-  '/m': typeof MRoute
   '/maintenance': typeof MaintenanceRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
@@ -1000,7 +1036,11 @@ export interface FileRoutesByFullPath {
   '/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/template-dokumen': typeof AuthenticatedTemplateDokumenRoute
+  '/m/cari': typeof MCariRoute
+  '/m/lapangan': typeof MLapanganRoute
+  '/m/peta': typeof MPetaRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
+  '/m/': typeof MIndexRoute
   '/publikasi/': typeof PublikasiIndexRoute
   '/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
@@ -1036,6 +1076,7 @@ export interface FileRoutesByFullPath {
   '/spam-unit/terbangun': typeof AuthenticatedSpamUnitTerbangunRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
+  '/m/proyek/$id': typeof MProyekIdRoute
   '/action-inbox/': typeof AuthenticatedActionInboxIndexRoute
   '/api-keys/': typeof AuthenticatedApiKeysIndexRoute
   '/berkas/': typeof AuthenticatedBerkasIndexRoute
@@ -1082,6 +1123,7 @@ export interface FileRoutesByFullPath {
   '/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users/': typeof AuthenticatedUsersIndexRoute
   '/usulan-kegiatan/': typeof AuthenticatedUsulanKegiatanIndexRoute
+  '/m/proyek/': typeof MProyekIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
@@ -1116,7 +1158,6 @@ export interface FileRoutesByTo {
   '/capaian-spm': typeof CapaianSpmRoute
   '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
-  '/m': typeof MRoute
   '/maintenance': typeof MaintenanceRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
@@ -1142,7 +1183,11 @@ export interface FileRoutesByTo {
   '/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/pengawas': typeof AuthenticatedPengawasRoute
   '/template-dokumen': typeof AuthenticatedTemplateDokumenRoute
+  '/m/cari': typeof MCariRoute
+  '/m/lapangan': typeof MLapanganRoute
+  '/m/peta': typeof MPetaRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
+  '/m': typeof MIndexRoute
   '/publikasi': typeof PublikasiIndexRoute
   '/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/berkas/new': typeof AuthenticatedBerkasNewRoute
@@ -1178,6 +1223,7 @@ export interface FileRoutesByTo {
   '/spam-unit/terbangun': typeof AuthenticatedSpamUnitTerbangunRoute
   '/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
+  '/m/proyek/$id': typeof MProyekIdRoute
   '/action-inbox': typeof AuthenticatedActionInboxIndexRoute
   '/api-keys': typeof AuthenticatedApiKeysIndexRoute
   '/berkas': typeof AuthenticatedBerkasIndexRoute
@@ -1224,6 +1270,7 @@ export interface FileRoutesByTo {
   '/user-pekerjaan': typeof AuthenticatedUserPekerjaanIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/usulan-kegiatan': typeof AuthenticatedUsulanKegiatanIndexRoute
+  '/m/proyek': typeof MProyekIndexRoute
   '/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
@@ -1255,12 +1302,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/m': typeof MRouteRouteWithChildren
   '/$': typeof SplatRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/capaian-spm': typeof CapaianSpmRoute
   '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
-  '/m': typeof MRoute
   '/maintenance': typeof MaintenanceRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
@@ -1288,7 +1335,11 @@ export interface FileRoutesById {
   '/_authenticated/pengaturan-sk': typeof AuthenticatedPengaturanSkRoute
   '/_authenticated/pengawas': typeof AuthenticatedPengawasRoute
   '/_authenticated/template-dokumen': typeof AuthenticatedTemplateDokumenRoute
+  '/m/cari': typeof MCariRoute
+  '/m/lapangan': typeof MLapanganRoute
+  '/m/peta': typeof MPetaRoute
   '/publikasi/$slug': typeof PublikasiSlugRoute
+  '/m/': typeof MIndexRoute
   '/publikasi/': typeof PublikasiIndexRoute
   '/_authenticated/berkas/media': typeof AuthenticatedBerkasMediaRoute
   '/_authenticated/berkas/new': typeof AuthenticatedBerkasNewRoute
@@ -1324,6 +1375,7 @@ export interface FileRoutesById {
   '/_authenticated/spam-unit/terbangun': typeof AuthenticatedSpamUnitTerbangunRoute
   '/_authenticated/users/new': typeof AuthenticatedUsersNewRoute
   '/kelembagaan-spam/form/$token': typeof KelembagaanSpamFormTokenRoute
+  '/m/proyek/$id': typeof MProyekIdRoute
   '/_authenticated/action-inbox/': typeof AuthenticatedActionInboxIndexRoute
   '/_authenticated/api-keys/': typeof AuthenticatedApiKeysIndexRoute
   '/_authenticated/berkas/': typeof AuthenticatedBerkasIndexRoute
@@ -1370,6 +1422,7 @@ export interface FileRoutesById {
   '/_authenticated/user-pekerjaan/': typeof AuthenticatedUserPekerjaanIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/usulan-kegiatan/': typeof AuthenticatedUsulanKegiatanIndexRoute
+  '/m/proyek/': typeof MProyekIndexRoute
   '/_authenticated/berkas/$id/edit': typeof AuthenticatedBerkasIdEditRoute
   '/_authenticated/desa/$id/edit': typeof AuthenticatedDesaIdEditRoute
   '/_authenticated/documents/onlyoffice/$mediaId': typeof AuthenticatedDocumentsOnlyofficeMediaIdRoute
@@ -1402,11 +1455,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/m'
     | '/$'
     | '/capaian-spm'
     | '/changelog'
     | '/forbidden'
-    | '/m'
     | '/maintenance'
     | '/oauth-callback'
     | '/privacy'
@@ -1434,7 +1487,11 @@ export interface FileRouteTypes {
     | '/pengaturan-sk'
     | '/pengawas'
     | '/template-dokumen'
+    | '/m/cari'
+    | '/m/lapangan'
+    | '/m/peta'
     | '/publikasi/$slug'
+    | '/m/'
     | '/publikasi/'
     | '/berkas/media'
     | '/berkas/new'
@@ -1470,6 +1527,7 @@ export interface FileRouteTypes {
     | '/spam-unit/terbangun'
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
+    | '/m/proyek/$id'
     | '/action-inbox/'
     | '/api-keys/'
     | '/berkas/'
@@ -1516,6 +1574,7 @@ export interface FileRouteTypes {
     | '/user-pekerjaan/'
     | '/users/'
     | '/usulan-kegiatan/'
+    | '/m/proyek/'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
     | '/documents/onlyoffice/$mediaId'
@@ -1550,7 +1609,6 @@ export interface FileRouteTypes {
     | '/capaian-spm'
     | '/changelog'
     | '/forbidden'
-    | '/m'
     | '/maintenance'
     | '/oauth-callback'
     | '/privacy'
@@ -1576,7 +1634,11 @@ export interface FileRouteTypes {
     | '/pengaturan-sk'
     | '/pengawas'
     | '/template-dokumen'
+    | '/m/cari'
+    | '/m/lapangan'
+    | '/m/peta'
     | '/publikasi/$slug'
+    | '/m'
     | '/publikasi'
     | '/berkas/media'
     | '/berkas/new'
@@ -1612,6 +1674,7 @@ export interface FileRouteTypes {
     | '/spam-unit/terbangun'
     | '/users/new'
     | '/kelembagaan-spam/form/$token'
+    | '/m/proyek/$id'
     | '/action-inbox'
     | '/api-keys'
     | '/berkas'
@@ -1658,6 +1721,7 @@ export interface FileRouteTypes {
     | '/user-pekerjaan'
     | '/users'
     | '/usulan-kegiatan'
+    | '/m/proyek'
     | '/berkas/$id/edit'
     | '/desa/$id/edit'
     | '/documents/onlyoffice/$mediaId'
@@ -1688,12 +1752,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/m'
     | '/$'
     | '/_authenticated'
     | '/capaian-spm'
     | '/changelog'
     | '/forbidden'
-    | '/m'
     | '/maintenance'
     | '/oauth-callback'
     | '/privacy'
@@ -1721,7 +1785,11 @@ export interface FileRouteTypes {
     | '/_authenticated/pengaturan-sk'
     | '/_authenticated/pengawas'
     | '/_authenticated/template-dokumen'
+    | '/m/cari'
+    | '/m/lapangan'
+    | '/m/peta'
     | '/publikasi/$slug'
+    | '/m/'
     | '/publikasi/'
     | '/_authenticated/berkas/media'
     | '/_authenticated/berkas/new'
@@ -1757,6 +1825,7 @@ export interface FileRouteTypes {
     | '/_authenticated/spam-unit/terbangun'
     | '/_authenticated/users/new'
     | '/kelembagaan-spam/form/$token'
+    | '/m/proyek/$id'
     | '/_authenticated/action-inbox/'
     | '/_authenticated/api-keys/'
     | '/_authenticated/berkas/'
@@ -1803,6 +1872,7 @@ export interface FileRouteTypes {
     | '/_authenticated/user-pekerjaan/'
     | '/_authenticated/users/'
     | '/_authenticated/usulan-kegiatan/'
+    | '/m/proyek/'
     | '/_authenticated/berkas/$id/edit'
     | '/_authenticated/desa/$id/edit'
     | '/_authenticated/documents/onlyoffice/$mediaId'
@@ -1834,12 +1904,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  MRouteRoute: typeof MRouteRouteWithChildren
   SplatRoute: typeof SplatRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   CapaianSpmRoute: typeof CapaianSpmRoute
   ChangelogRoute: typeof ChangelogRoute
   ForbiddenRoute: typeof ForbiddenRoute
-  MRoute: typeof MRoute
   MaintenanceRoute: typeof MaintenanceRoute
   OauthCallbackRoute: typeof OauthCallbackRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -1941,13 +2011,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MaintenanceRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/m': {
-      id: '/m'
-      path: '/m'
-      fullPath: '/m'
-      preLoaderRoute: typeof MRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/forbidden': {
       id: '/forbidden'
       path: '/forbidden'
@@ -1983,6 +2046,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/m': {
+      id: '/m'
+      path: '/m'
+      fullPath: '/m'
+      preLoaderRoute: typeof MRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -1997,12 +2067,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PublikasiIndexRouteImport
       parentRoute: typeof PublikasiRoute
     }
+    '/m/': {
+      id: '/m/'
+      path: '/'
+      fullPath: '/m/'
+      preLoaderRoute: typeof MIndexRouteImport
+      parentRoute: typeof MRouteRoute
+    }
     '/publikasi/$slug': {
       id: '/publikasi/$slug'
       path: '/$slug'
       fullPath: '/publikasi/$slug'
       preLoaderRoute: typeof PublikasiSlugRouteImport
       parentRoute: typeof PublikasiRoute
+    }
+    '/m/peta': {
+      id: '/m/peta'
+      path: '/peta'
+      fullPath: '/m/peta'
+      preLoaderRoute: typeof MPetaRouteImport
+      parentRoute: typeof MRouteRoute
+    }
+    '/m/lapangan': {
+      id: '/m/lapangan'
+      path: '/lapangan'
+      fullPath: '/m/lapangan'
+      preLoaderRoute: typeof MLapanganRouteImport
+      parentRoute: typeof MRouteRoute
+    }
+    '/m/cari': {
+      id: '/m/cari'
+      path: '/cari'
+      fullPath: '/m/cari'
+      preLoaderRoute: typeof MCariRouteImport
+      parentRoute: typeof MRouteRoute
     }
     '/_authenticated/template-dokumen': {
       id: '/_authenticated/template-dokumen'
@@ -2108,6 +2206,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/audit-logs'
       preLoaderRoute: typeof AuthenticatedAuditLogsRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/m/proyek/': {
+      id: '/m/proyek/'
+      path: '/proyek'
+      fullPath: '/m/proyek/'
+      preLoaderRoute: typeof MProyekIndexRouteImport
+      parentRoute: typeof MRouteRoute
     }
     '/_authenticated/usulan-kegiatan/': {
       id: '/_authenticated/usulan-kegiatan/'
@@ -2430,6 +2535,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/action-inbox/'
       preLoaderRoute: typeof AuthenticatedActionInboxIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
+    }
+    '/m/proyek/$id': {
+      id: '/m/proyek/$id'
+      path: '/proyek/$id'
+      fullPath: '/m/proyek/$id'
+      preLoaderRoute: typeof MProyekIdRouteImport
+      parentRoute: typeof MRouteRoute
     }
     '/kelembagaan-spam/form/$token': {
       id: '/kelembagaan-spam/form/$token'
@@ -2861,6 +2973,27 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface MRouteRouteChildren {
+  MCariRoute: typeof MCariRoute
+  MLapanganRoute: typeof MLapanganRoute
+  MPetaRoute: typeof MPetaRoute
+  MIndexRoute: typeof MIndexRoute
+  MProyekIdRoute: typeof MProyekIdRoute
+  MProyekIndexRoute: typeof MProyekIndexRoute
+}
+
+const MRouteRouteChildren: MRouteRouteChildren = {
+  MCariRoute: MCariRoute,
+  MLapanganRoute: MLapanganRoute,
+  MPetaRoute: MPetaRoute,
+  MIndexRoute: MIndexRoute,
+  MProyekIdRoute: MProyekIdRoute,
+  MProyekIndexRoute: MProyekIndexRoute,
+}
+
+const MRouteRouteWithChildren =
+  MRouteRoute._addFileChildren(MRouteRouteChildren)
+
 interface AuthenticatedDashboardRouteChildren {
   AuthenticatedDashboardV2Route: typeof AuthenticatedDashboardV2Route
 }
@@ -3196,12 +3329,12 @@ const PublikasiRouteWithChildren = PublikasiRoute._addFileChildren(
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  MRouteRoute: MRouteRouteWithChildren,
   SplatRoute: SplatRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   CapaianSpmRoute: CapaianSpmRoute,
   ChangelogRoute: ChangelogRoute,
   ForbiddenRoute: ForbiddenRoute,
-  MRoute: MRoute,
   MaintenanceRoute: MaintenanceRoute,
   OauthCallbackRoute: OauthCallbackRoute,
   PrivacyRoute: PrivacyRoute,

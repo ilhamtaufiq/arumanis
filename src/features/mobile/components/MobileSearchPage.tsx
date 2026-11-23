@@ -10,7 +10,6 @@ import { filterSidebarNavGroups } from '@/lib/sidebar-nav'
 import { useAuthStore } from '@/stores/auth-stores'
 import { useMenuPermissionStore } from '@/stores/menu-permission-store'
 import { cariData, type HasilData } from '../api/cari-data'
-import { MobileBottomNav } from './MobileBottomNav'
 import { TarikSegarkan } from './TarikSegarkan'
 import { cariModul, pecahKueri, type ModulHasil } from '../lib/cari-modul'
 import { sorotPotongan } from '../lib/sorot'
@@ -321,7 +320,6 @@ export function MobileSearchPage() {
                 </>
             )}
         </main>
-            <MobileBottomNav />
         </TarikSegarkan>
     )
 }
