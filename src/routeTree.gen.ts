@@ -64,7 +64,6 @@ import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authen
 import { Route as AuthenticatedRoutePermissionsIndexRouteImport } from './routes/_authenticated/route-permissions/index'
 import { Route as AuthenticatedRolesIndexRouteImport } from './routes/_authenticated/roles/index'
 import { Route as AuthenticatedRabAnalyzerIndexRouteImport } from './routes/_authenticated/rab-analyzer/index'
-import { Route as AuthenticatedProgresIndexRouteImport } from './routes/_authenticated/progres/index'
 import { Route as AuthenticatedProgramIndexRouteImport } from './routes/_authenticated/program/index'
 import { Route as AuthenticatedProfileIndexRouteImport } from './routes/_authenticated/profile/index'
 import { Route as AuthenticatedProcurementSyncIndexRouteImport } from './routes/_authenticated/procurement-sync/index'
@@ -451,12 +450,6 @@ const AuthenticatedRabAnalyzerIndexRoute =
   AuthenticatedRabAnalyzerIndexRouteImport.update({
     id: '/rab-analyzer/',
     path: '/rab-analyzer/',
-    getParentRoute: () => AuthenticatedRoute,
-  } as any)
-const AuthenticatedProgresIndexRoute =
-  AuthenticatedProgresIndexRouteImport.update({
-    id: '/progres/',
-    path: '/progres/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedProgramIndexRoute =
@@ -1140,7 +1133,6 @@ export interface FileRoutesByFullPath {
   '/procurement-sync/': typeof AuthenticatedProcurementSyncIndexRoute
   '/profile/': typeof AuthenticatedProfileIndexRoute
   '/program/': typeof AuthenticatedProgramIndexRoute
-  '/progres/': typeof AuthenticatedProgresIndexRoute
   '/rab-analyzer/': typeof AuthenticatedRabAnalyzerIndexRoute
   '/roles/': typeof AuthenticatedRolesIndexRoute
   '/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
@@ -1291,7 +1283,6 @@ export interface FileRoutesByTo {
   '/procurement-sync': typeof AuthenticatedProcurementSyncIndexRoute
   '/profile': typeof AuthenticatedProfileIndexRoute
   '/program': typeof AuthenticatedProgramIndexRoute
-  '/progres': typeof AuthenticatedProgresIndexRoute
   '/rab-analyzer': typeof AuthenticatedRabAnalyzerIndexRoute
   '/roles': typeof AuthenticatedRolesIndexRoute
   '/route-permissions': typeof AuthenticatedRoutePermissionsIndexRoute
@@ -1447,7 +1438,6 @@ export interface FileRoutesById {
   '/_authenticated/procurement-sync/': typeof AuthenticatedProcurementSyncIndexRoute
   '/_authenticated/profile/': typeof AuthenticatedProfileIndexRoute
   '/_authenticated/program/': typeof AuthenticatedProgramIndexRoute
-  '/_authenticated/progres/': typeof AuthenticatedProgresIndexRoute
   '/_authenticated/rab-analyzer/': typeof AuthenticatedRabAnalyzerIndexRoute
   '/_authenticated/roles/': typeof AuthenticatedRolesIndexRoute
   '/_authenticated/route-permissions/': typeof AuthenticatedRoutePermissionsIndexRoute
@@ -1603,7 +1593,6 @@ export interface FileRouteTypes {
     | '/procurement-sync/'
     | '/profile/'
     | '/program/'
-    | '/progres/'
     | '/rab-analyzer/'
     | '/roles/'
     | '/route-permissions/'
@@ -1754,7 +1743,6 @@ export interface FileRouteTypes {
     | '/procurement-sync'
     | '/profile'
     | '/program'
-    | '/progres'
     | '/rab-analyzer'
     | '/roles'
     | '/route-permissions'
@@ -1909,7 +1897,6 @@ export interface FileRouteTypes {
     | '/_authenticated/procurement-sync/'
     | '/_authenticated/profile/'
     | '/_authenticated/program/'
-    | '/_authenticated/progres/'
     | '/_authenticated/rab-analyzer/'
     | '/_authenticated/roles/'
     | '/_authenticated/route-permissions/'
@@ -2361,13 +2348,6 @@ declare module '@tanstack/react-router' {
       path: '/rab-analyzer'
       fullPath: '/rab-analyzer/'
       preLoaderRoute: typeof AuthenticatedRabAnalyzerIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/progres/': {
-      id: '/_authenticated/progres/'
-      path: '/progres'
-      fullPath: '/progres/'
-      preLoaderRoute: typeof AuthenticatedProgresIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/program/': {
@@ -3220,7 +3200,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedProcurementSyncIndexRoute: typeof AuthenticatedProcurementSyncIndexRoute
   AuthenticatedProfileIndexRoute: typeof AuthenticatedProfileIndexRoute
   AuthenticatedProgramIndexRoute: typeof AuthenticatedProgramIndexRoute
-  AuthenticatedProgresIndexRoute: typeof AuthenticatedProgresIndexRoute
   AuthenticatedRabAnalyzerIndexRoute: typeof AuthenticatedRabAnalyzerIndexRoute
   AuthenticatedRolesIndexRoute: typeof AuthenticatedRolesIndexRoute
   AuthenticatedRoutePermissionsIndexRoute: typeof AuthenticatedRoutePermissionsIndexRoute
@@ -3348,7 +3327,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedProcurementSyncIndexRoute,
   AuthenticatedProfileIndexRoute: AuthenticatedProfileIndexRoute,
   AuthenticatedProgramIndexRoute: AuthenticatedProgramIndexRoute,
-  AuthenticatedProgresIndexRoute: AuthenticatedProgresIndexRoute,
   AuthenticatedRabAnalyzerIndexRoute: AuthenticatedRabAnalyzerIndexRoute,
   AuthenticatedRolesIndexRoute: AuthenticatedRolesIndexRoute,
   AuthenticatedRoutePermissionsIndexRoute:

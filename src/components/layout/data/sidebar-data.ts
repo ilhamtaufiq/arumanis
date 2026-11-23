@@ -35,7 +35,6 @@ import {
     Wallet,
     Gauge,
     StickyNote,
-    TrendingUp,
 } from 'lucide-react'
 import { type SidebarData } from '../type'
 
@@ -148,11 +147,6 @@ export const sidebarData: SidebarData = {
                     url: '/tiket',
                     icon: MessageSquare,
                     menuKey: 'tiket',
-                },
-                {
-                    title: 'Progres Fisik',
-                    url: '/progres',
-                    icon: TrendingUp,
                 },
                 {
                     title: 'Lapangan',

@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useLocation } from '@tanstack/react-router'
-import { Bell, Camera, Briefcase, Home, UserRound, type LucideIcon } from 'lucide-react'
+import { Bell, Camera, Briefcase, Home, Menu, UserRound, type LucideIcon } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-stores'
+import { MobileMenu } from './MobileMenu'
 
 type Tab = { to: string; label: string; icon: LucideIcon; aktifJika: (path: string) => boolean }
 
@@ -13,7 +14,7 @@ const TABS: Tab[] = [
 ]
 
 /** Header kaca: merek ringkas, tombol notifikasi, dan avatar. */
-function Header() {
+function Header({ onBuka }: { onBuka: () => void }) {
     const nama = useAuthStore((s) => s.auth.user?.name)
     const inisial = (nama ?? 'A').trim().charAt(0).toUpperCase()
     return (
@@ -22,9 +23,19 @@ function Header() {
             style={{ paddingTop: 'env(safe-area-inset-top)' }}
         >
             <div className="mx-auto flex h-16 w-full max-w-md items-center justify-between px-4">
-                <Link to={'/m' as never} aria-label="Arumanis Cianjur Space" className="flex items-center">
-                    <img src="/logo-arumanis-cianjur-space.png" alt="Arumanis Cianjur Space" className="h-14 w-14 object-contain" />
-                </Link>
+                <div className="flex items-center gap-1">
+                    <button
+                        type="button"
+                        onClick={onBuka}
+                        aria-label="Buka menu"
+                        className="grid h-10 w-10 place-items-center rounded-full bg-muted/70 text-foreground transition-colors active:bg-muted"
+                    >
+                        <Menu className="h-[18px] w-[18px]" aria-hidden />
+                    </button>
+                    <Link to={'/m' as never} aria-label="Arumanis Cianjur Space" className="flex items-center">
+                        <img src="/logo-arumanis-cianjur-space.png" alt="Arumanis Cianjur Space" className="h-14 w-14 object-contain" />
+                    </Link>
+                </div>
                 <div className="flex items-center gap-2">
                     <Link
                         to={'/notifications' as never}
@@ -79,9 +90,11 @@ function BottomNav() {
 
 /** Kerangka layar mobile: header kaca, konten, dan navigasi bawah pil. */
 export function MobileShell({ children }: { children: ReactNode }) {
+    const [menuBuka, setMenuBuka] = useState(false)
     return (
         <div className="flex min-h-dvh flex-col bg-background">
-            <Header />
+            <Header onBuka={() => setMenuBuka(true)} />
+            <MobileMenu open={menuBuka} onOpenChange={setMenuBuka} />
             <div className="flex-1 pb-28">{children}</div>
             <BottomNav />
         </div>
