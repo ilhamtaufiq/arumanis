@@ -10,6 +10,7 @@ import { filterSidebarNavGroups } from '@/lib/sidebar-nav'
 import { useAuthStore } from '@/stores/auth-stores'
 import { useMenuPermissionStore } from '@/stores/menu-permission-store'
 import { cariData, type HasilData } from '../api/cari-data'
+import { MobileBottomNav } from './MobileBottomNav'
 import { cariModul, pecahKueri, type ModulHasil } from '../lib/cari-modul'
 import { sorotPotongan } from '../lib/sorot'
 
@@ -183,11 +184,12 @@ export function MobileSearchPage() {
         ))
 
     return (
+        <>
         <main
             className="mx-auto flex min-h-dvh w-full max-w-md flex-col gap-4 px-4"
             style={{
                 paddingTop: 'calc(1.5rem + env(safe-area-inset-top))',
-                paddingBottom: 'calc(2rem + env(safe-area-inset-bottom))',
+                paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))',
             }}
         >
             <label className="relative block">
@@ -288,5 +290,7 @@ export function MobileSearchPage() {
                 </>
             )}
         </main>
+            <MobileBottomNav />
+        </>
     )
 }
