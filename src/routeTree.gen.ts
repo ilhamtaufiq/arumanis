@@ -20,6 +20,7 @@ import { Route as PublikasiRouteImport } from './routes/publikasi'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OauthCallbackRouteImport } from './routes/oauth-callback'
+import { Route as MasukRouteImport } from './routes/masuk'
 import { Route as MaintenanceRouteImport } from './routes/maintenance'
 import { Route as ForbiddenRouteImport } from './routes/forbidden'
 import { Route as ChangelogRouteImport } from './routes/changelog'
@@ -212,6 +213,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const OauthCallbackRoute = OauthCallbackRouteImport.update({
   id: '/oauth-callback',
   path: '/oauth-callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MasukRoute = MasukRouteImport.update({
+  id: '/masuk',
+  path: '/masuk',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MaintenanceRoute = MaintenanceRouteImport.update({
@@ -1010,6 +1016,7 @@ export interface FileRoutesByFullPath {
   '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
   '/maintenance': typeof MaintenanceRoute
+  '/masuk': typeof MasukRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -1159,6 +1166,7 @@ export interface FileRoutesByTo {
   '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
   '/maintenance': typeof MaintenanceRoute
+  '/masuk': typeof MasukRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -1309,6 +1317,7 @@ export interface FileRoutesById {
   '/changelog': typeof ChangelogRoute
   '/forbidden': typeof ForbiddenRoute
   '/maintenance': typeof MaintenanceRoute
+  '/masuk': typeof MasukRoute
   '/oauth-callback': typeof OauthCallbackRoute
   '/privacy': typeof PrivacyRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -1461,6 +1470,7 @@ export interface FileRouteTypes {
     | '/changelog'
     | '/forbidden'
     | '/maintenance'
+    | '/masuk'
     | '/oauth-callback'
     | '/privacy'
     | '/privacy-policy'
@@ -1610,6 +1620,7 @@ export interface FileRouteTypes {
     | '/changelog'
     | '/forbidden'
     | '/maintenance'
+    | '/masuk'
     | '/oauth-callback'
     | '/privacy'
     | '/privacy-policy'
@@ -1759,6 +1770,7 @@ export interface FileRouteTypes {
     | '/changelog'
     | '/forbidden'
     | '/maintenance'
+    | '/masuk'
     | '/oauth-callback'
     | '/privacy'
     | '/privacy-policy'
@@ -1911,6 +1923,7 @@ export interface RootRouteChildren {
   ChangelogRoute: typeof ChangelogRoute
   ForbiddenRoute: typeof ForbiddenRoute
   MaintenanceRoute: typeof MaintenanceRoute
+  MasukRoute: typeof MasukRoute
   OauthCallbackRoute: typeof OauthCallbackRoute
   PrivacyRoute: typeof PrivacyRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
@@ -2002,6 +2015,13 @@ declare module '@tanstack/react-router' {
       path: '/oauth-callback'
       fullPath: '/oauth-callback'
       preLoaderRoute: typeof OauthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/masuk': {
+      id: '/masuk'
+      path: '/masuk'
+      fullPath: '/masuk'
+      preLoaderRoute: typeof MasukRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/maintenance': {
@@ -3336,6 +3356,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChangelogRoute: ChangelogRoute,
   ForbiddenRoute: ForbiddenRoute,
   MaintenanceRoute: MaintenanceRoute,
+  MasukRoute: MasukRoute,
   OauthCallbackRoute: OauthCallbackRoute,
   PrivacyRoute: PrivacyRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,

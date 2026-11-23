@@ -12,10 +12,15 @@ export async function requireAuthenticatedSession(options?: { force?: boolean })
 
     if (!session?.user) {
         invalidateSessionCache()
+        // Area mobile (/m) memakai login mobile agar tidak tampil layar desktop.
+        const path = typeof window !== 'undefined' ? window.location.pathname : undefined
+        if (path?.startsWith('/m')) {
+            throw redirect({ to: '/masuk', search: { redirect: path } })
+        }
         throw redirect({
             to: '/sign-in',
             search: {
-                redirect: typeof window !== 'undefined' ? window.location.pathname : undefined,
+                redirect: path,
             },
         })
     }
