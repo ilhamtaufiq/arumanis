@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link, useLocation } from '@tanstack/react-router'
-import { Bell, Camera, Home, Map as MapIcon, Briefcase, type LucideIcon } from 'lucide-react'
+import { Bell, Camera, Home, Briefcase, UserRound, type LucideIcon } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth-stores'
 
 type Tab = { to: string; label: string; icon: LucideIcon; aktifJika: (path: string) => boolean }
@@ -9,7 +9,7 @@ const TABS: Tab[] = [
     { to: '/m', label: 'Beranda', icon: Home, aktifJika: (p) => p === '/m' || p === '/m/' },
     { to: '/m/proyek', label: 'Proyek', icon: Briefcase, aktifJika: (p) => p.startsWith('/m/proyek') || p.startsWith('/m/cari') },
     { to: '/m/lapangan', label: 'Lapangan', icon: Camera, aktifJika: (p) => p.startsWith('/m/lapangan') },
-    { to: '/m/peta', label: 'Peta', icon: MapIcon, aktifJika: (p) => p.startsWith('/m/peta') },
+    { to: '/m/profil', label: 'Profil', icon: UserRound, aktifJika: (p) => p.startsWith('/m/profil') },
 ]
 
 /** Kerangka layar mobile: header ringkas (notifikasi dan akun) dan navigasi bawah empat tab. */
