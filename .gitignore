@@ -81,3 +81,6 @@ docs/~WRL*
 /login.json
 /login2.json
 /test_login.json
+
+# Sementara dari generator route TanStack
+.tanstack/
