@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useSearch } from '@tanstack/react-router'
 import { lazy } from 'react'
 import { RouteSuspense } from '@/components/route-suspense'
 import { lazyImport } from '@/lib/utils'
@@ -8,12 +8,22 @@ const PekerjaanList = lazy(() =>
     lazyImport(() => import('@/features/pekerjaan/components/PekerjaanList'), 'pekerjaan'),
 )
 
+type PekerjaanSearch = { q?: string }
+
 export const Route = createFileRoute('/_authenticated/pekerjaan/')({
-  component: () => (
+  validateSearch: (search: Record<string, unknown>): PekerjaanSearch => ({
+    q: typeof search.q === 'string' && search.q.trim() !== '' ? search.q : undefined,
+  }),
+  component: PekerjaanRoute,
+})
+
+function PekerjaanRoute() {
+  const { q } = useSearch({ from: '/_authenticated/pekerjaan/' })
+  return (
     <ProtectedRoute requiredPath="/pekerjaan" requiredMethod="GET">
       <RouteSuspense label="Memuat Pekerjaan...">
-        <PekerjaanList />
+        <PekerjaanList initialSearch={q ?? ''} />
       </RouteSuspense>
     </ProtectedRoute>
-  ),
-})
+  )
+}

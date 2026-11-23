@@ -220,7 +220,7 @@ const PekerjaanRow = React.memo(({
 
 PekerjaanRow.displayName = 'PekerjaanRow';
 
-export default function PekerjaanList() {
+export default function PekerjaanList({ initialSearch = '' }: { initialSearch?: string }) {
     const queryClient = useQueryClient();
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
     const [selectedKegiatan, setSelectedKegiatan] = useState<string>('all');
@@ -233,7 +233,7 @@ export default function PekerjaanList() {
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [updatingRow, setUpdatingRow] = useState<number | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
-    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [exportOpen, setExportOpen] = useState(false);
     const { tahunAnggaran } = useAppSettingsValues();

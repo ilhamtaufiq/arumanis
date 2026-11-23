@@ -56,7 +56,12 @@ function Judul({ teks, kueri }: { teks: string; kueri: string }) {
     )
 }
 
-function Bagian({ judul, jumlah, children }: { judul: string; jumlah: number; children: React.ReactNode }) {
+function Bagian({ judul, jumlah, lihatSemua, children }: {
+    judul: string
+    jumlah: number
+    lihatSemua?: React.ReactNode
+    children: React.ReactNode
+}) {
     return (
         <section className="flex flex-col gap-2">
             <h2 className="flex items-center justify-between px-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -64,6 +69,7 @@ function Bagian({ judul, jumlah, children }: { judul: string; jumlah: number; ch
                 <span className="tabular-nums">{jumlah}</span>
             </h2>
             <ul className="divide-y rounded-xl border bg-background">{children}</ul>
+            {lihatSemua ? <div className="px-1">{lihatSemua}</div> : null}
         </section>
     )
 }
@@ -96,6 +102,18 @@ function Baris({ to, params, search, judul, sub, status, kueri }: {
                 </span>
             </Link>
         </li>
+    )
+}
+
+function LihatSemua({ to, q, total }: { to: string; q: string; total: number }) {
+    return (
+        <Link
+            to={to as never}
+            search={{ q } as never}
+            className="flex h-11 items-center justify-center text-sm font-medium text-primary"
+        >
+            Lihat semua {total.toLocaleString('id-ID')}
+        </Link>
     )
 }
 
@@ -218,7 +236,7 @@ export function MobileSearchPage() {
                         </p>
                     )}
 
-                    <div role="tablist" aria-label="Filter hasil" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+                    <div role="tablist" aria-label="Filter hasil" className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                         {(Object.keys(FILTER_LABEL) as Filter[]).map((f) => {
                             const n = f === 'semua' ? total : jumlah[f]
                             const aktif = filter === f
@@ -265,19 +283,31 @@ export function MobileSearchPage() {
                     )}
 
                     {hasilData && tampil('paket') && hasilData.pekerjaan.length > 0 && (
-                        <Bagian judul="Paket pekerjaan" jumlah={hasilData.pekerjaan.length}>
+                        <Bagian
+                            judul="Paket pekerjaan"
+                            jumlah={hasilData.pekerjaan.length}
+                            lihatSemua={hasilData.total.pekerjaan > hasilData.pekerjaan.length ? <LihatSemua to="/pekerjaan" q={kataData} total={hasilData.total.pekerjaan} /> : null}
+                        >
                             {barisData(hasilData.pekerjaan, '/pekerjaan/$id', (h) => ({ id: String(h.id) }))}
                         </Bagian>
                     )}
 
                     {hasilData && tampil('unit') && hasilData.unit.length > 0 && (
-                        <Bagian judul="Unit SPAM" jumlah={hasilData.unit.length}>
+                        <Bagian
+                            judul="Unit SPAM"
+                            jumlah={hasilData.unit.length}
+                            lihatSemua={hasilData.total.unit > hasilData.unit.length ? <LihatSemua to="/spam-unit" q={kataData} total={hasilData.total.unit} /> : null}
+                        >
                             {barisData(hasilData.unit, '/spam-unit', undefined, (h) => ({ q: h.judul }))}
                         </Bagian>
                     )}
 
                     {hasilData && tampil('desa') && hasilData.desa.length > 0 && (
-                        <Bagian judul="Desa" jumlah={hasilData.desa.length}>
+                        <Bagian
+                            judul="Desa"
+                            jumlah={hasilData.desa.length}
+                            lihatSemua={hasilData.total.desa > hasilData.desa.length ? <LihatSemua to="/desa" q={kataData} total={hasilData.total.desa} /> : null}
+                        >
                             {barisData(hasilData.desa, '/desa/$id', (h) => ({ id: String(h.id) }))}
                         </Bagian>
                     )}

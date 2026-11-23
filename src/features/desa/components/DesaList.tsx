@@ -27,9 +27,9 @@ import { ConfirmDeleteDialog } from '@/components/shared/ConfirmDeleteDialog';
 import { ListRowActions } from '@/components/shared/ListRowActions';
 import { formatDesaNumber } from '../lib/format';
 
-export default function DesaList() {
+export default function DesaList({ initialSearch = '' }: { initialSearch?: string }) {
     const [selectedKecamatan, setSelectedKecamatan] = useState<string>('all');
-    const [search, setSearch] = useState('');
+    const [search, setSearch] = useState(initialSearch);
     const [currentPage, setCurrentPage] = useState(1);
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const kecamatanId = selectedKecamatan === 'all' ? undefined : parseInt(selectedKecamatan);
