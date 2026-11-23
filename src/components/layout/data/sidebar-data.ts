@@ -149,6 +149,11 @@ export const sidebarData: SidebarData = {
                     menuKey: 'tiket',
                 },
                 {
+                    title: 'Lapangan',
+                    url: '/lapangan',
+                    icon: Camera,
+                },
+                {
                     title: 'Jurnal Kegiatan',
                     url: '/jurnal-kegiatan',
                     icon: NotebookPen,
